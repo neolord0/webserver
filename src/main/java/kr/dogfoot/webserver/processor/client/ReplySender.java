@@ -97,7 +97,12 @@ public class ReplySender extends GeneralProcessor {
     }
 
     private void sendBodyBytesRange(Context context, byte[] bodyBytes, ContentRange range) {
-        ByteBuffer temp = ByteBuffer.wrap(bodyBytes, (int) range.firstPos(), ((int) range.lastPos() - (int) range.firstPos() + 1));
+        ByteBuffer temp;
+        if (range != null) {
+            temp = ByteBuffer.wrap(bodyBytes, (int) range.firstPos(), ((int) range.lastPos() - (int) range.firstPos() + 1));
+        } else {
+            temp = ByteBuffer.wrap(bodyBytes);
+        }
         server.sendBufferToClient(context, temp, false);
     }
 

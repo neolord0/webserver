@@ -28,6 +28,11 @@ public class ResourceDirectory extends ResourceContainer {
     }
 
     @Override
+    public String name() {
+        return file.getName();
+    }
+
+    @Override
     public ResourceType type() {
         return ResourceType.Directory;
     }

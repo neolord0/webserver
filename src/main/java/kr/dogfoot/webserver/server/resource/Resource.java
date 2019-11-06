@@ -20,6 +20,8 @@ public abstract class Resource {
         filterCount = 0;
     }
 
+    public abstract String name();
+
     public Filter[] filters() {
         return filters;
     }

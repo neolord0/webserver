@@ -20,6 +20,11 @@ public class ResourceNegotiatedFile extends Resource {
     }
 
     @Override
+    public String name() {
+        return "";
+    }
+
+    @Override
     public ResourceType type() {
         return ResourceType.NegotiationFile;
     }

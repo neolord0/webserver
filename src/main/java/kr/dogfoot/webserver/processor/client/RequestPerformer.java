@@ -45,6 +45,7 @@ public class RequestPerformer extends GeneralProcessor {
 
                 Message.debug(context,
                         "perform request " + new String(context.request().method().getBytes()) + " " + context.request().requestURI());
+                System.out.println(context.clientConnection().id() + "  " + context.request().method() + " " + context.request().requestURI());
 
                 boolean proxied = false;
                 context.host(findHost(context.request()));
@@ -148,6 +149,7 @@ public class RequestPerformer extends GeneralProcessor {
 
     private boolean inboundFilter(Context context) {
         for (Filter f : context.filters()) {
+            System.out.println(f.sort());
             if (f.inboundProcess(context, server) == false) {
                 return false;
             }

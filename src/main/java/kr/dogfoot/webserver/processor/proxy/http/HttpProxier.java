@@ -9,6 +9,7 @@ import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.ChunkedBodySendState;
 import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
 import kr.dogfoot.webserver.parser.HttpReplyParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.processor.util.HttpBodyConveyor;
@@ -56,7 +57,7 @@ public class HttpProxier extends AsyncSocketProcessor {
         Message.debug(connection, "send request to http proxy server");
         ToHttpServer.sendRequest(context, server);
 
-        if (context.request().hasBody()) {
+        if (context.request().hasBody() && context.request().hasExpect100Continue() == false)  {
             sendRequestBodyByReceiver(context);
         } else {
             connection.changeState(HttpProxyState.ReceivingReply);
@@ -153,6 +154,13 @@ public class HttpProxier extends AsyncSocketProcessor {
 
         if (connection.parserStatus().state() == ParsingState.BodyStart) {
             ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
+
+            if (context.reply().code() == ReplyCode.Code100 && context.request().hasBody()) {
+                sendRequestBodyByReceiver(context);
+                connection.resetForNextRequest();
+                return;
+            }
+
             connection.senderStatus().reset();
 
             if (context.reply().hasBody()) {
@@ -167,7 +175,7 @@ public class HttpProxier extends AsyncSocketProcessor {
             } else {
                 onReplyEnd(connection, context);
             }
-        } else {
+            } else {
             if (afterProcess == AfterProcess.Register) {
                 register(connection.channel(), context, SelectionKey.OP_READ);
             } else if (afterProcess == AfterProcess.PrepareContext) {
@@ -222,22 +230,28 @@ public class HttpProxier extends AsyncSocketProcessor {
 
     private void onReplyEnd(HttpProxyConnection connection, Context context) {
         Message.debug(connection, "complete receive reply_body from http proxy server and send to client");
-        if (context.reply().hasKeepAlive()) {
-            Message.debug(context, "Persistent Connection");
-
-            connection.changeState(HttpProxyState.Idle);
-            connection.resetForNextRequest();
-            context.resetForNextRequest();
-            server.gotoRequestReceiver(context);
-        } else {
-            connection.changeState(HttpProxyState.Close);
-            context.proxyId(-1)
-                    .backendServerInfo(null);
-
+        if (context.reply().code().isError()) {
             server.sendCloseSignalForHttpServer(context);
+            server.sendCloseSignalForClient(context);
+        } else {
+            if (context.reply().hasKeepAlive()) {
+                Message.debug(context, "Persistent Connection");
 
-            context.resetForNextRequest();
-            server.gotoRequestReceiver(context);
+                connection.changeState(HttpProxyState.Idle);
+                connection.resetForNextRequest();
+
+                context.resetForNextRequest();
+                server.gotoRequestReceiver(context);
+            } else {
+                connection.changeState(HttpProxyState.Close);
+                context.proxyId(-1)
+                        .backendServerInfo(null);
+
+                server.sendCloseSignalForHttpServer(context);
+
+                context.resetForNextRequest();
+                server.gotoRequestReceiver(context);
+            }
         }
     }
 

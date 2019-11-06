@@ -34,6 +34,11 @@ public class ResourceFile extends Resource {
     }
 
     @Override
+    public String name() {
+        return file.getName();
+    }
+
+    @Override
     public ResourceType type() {
         return ResourceType.File;
     }
