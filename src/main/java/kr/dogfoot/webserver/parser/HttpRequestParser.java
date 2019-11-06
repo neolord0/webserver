@@ -4,11 +4,11 @@ import kr.dogfoot.webserver.context.connection.http.HttpConnection;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParserStatus;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingBuffer;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
+import kr.dogfoot.webserver.httpMessage.request.MethodType;
+import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.CachedReader;
 import kr.dogfoot.webserver.parser.util.ParseState;
-import kr.dogfoot.webserver.httpMessage.request.MethodType;
-import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.http.HttpString;
 

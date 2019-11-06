@@ -1,9 +1,9 @@
 package kr.dogfoot.webserver.server.resource.filter;
 
 import kr.dogfoot.webserver.context.Context;
+import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.resource.filter.part.HeaderSetting;
 import kr.dogfoot.webserver.server.resource.filter.part.condition.HeaderConditionList;
-import kr.dogfoot.webserver.server.Server;
 
 import java.util.ArrayList;
 

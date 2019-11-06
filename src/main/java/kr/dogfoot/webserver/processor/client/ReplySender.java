@@ -1,11 +1,10 @@
 package kr.dogfoot.webserver.processor.client;
 
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.SenderStatus;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.SendingState;
+import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.processor.GeneralProcessor;
 import kr.dogfoot.webserver.processor.util.ToClientCommon;
 import kr.dogfoot.webserver.server.Server;
@@ -113,12 +112,10 @@ public class ReplySender extends GeneralProcessor {
         } else {
             if (context.reply().hasKeepAlive() == true) {
                 Message.debug(context, "Persistent Connection");
-
-                context.resetForNextRequest();
-                server.gotoRequestReceiver(context);
-            } else {
-                server.sendReleaseSignalForClient(context);
             }
+
+            context.resetForNextRequest();
+            server.gotoRequestReceiver(context);
         }
     }
 

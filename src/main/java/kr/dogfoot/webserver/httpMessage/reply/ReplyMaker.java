@@ -2,9 +2,9 @@ package kr.dogfoot.webserver.httpMessage.reply;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.FactoryForHeaderValue;
-import kr.dogfoot.webserver.httpMessage.reply.part.DefaultMessageBody;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAllow;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
+import kr.dogfoot.webserver.httpMessage.reply.part.DefaultMessageBody;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.object.ServerProperties;
@@ -35,6 +35,25 @@ public class ReplyMaker {
         this.serverProperties = serverProperties;
 
         createStaticReply();
+    }
+
+    private static void addHeader_WWWAuthenticate(Reply reply, String authorizationType, String realmDescription) {
+        OutputBuffer buffer = OutputBuffer.pooledObject();
+        buffer
+                .append(authorizationType.getBytes())
+                .append(HttpString.Space)
+                .append(HttpString.Realm)
+                .append(HttpString.Equal)
+                .appendQuoted(realmDescription);
+        reply.addHeader(HeaderSort.WWW_Authenticate, buffer.getBytes());
+    }
+
+    private static void addHeader_Allow(Reply reply, MethodType[] allowedMethods) {
+        HeaderValueAllow allow = (HeaderValueAllow) FactoryForHeaderValue.create(HeaderSort.Allow);
+        for (MethodType mt : allowedMethods) {
+            allow.addMethodType(mt);
+        }
+        reply.addHeader(HeaderSort.Allow, allow.combineValue());
     }
 
     private void createStaticReply() {
@@ -95,7 +114,6 @@ public class ReplyMaker {
         return reply;
     }
 
-
     public Reply new_304NotModified(ResourceFile resource) {
         Reply reply = new Reply().code(ReplyCode.Code304);
         addHeader_Date(reply);
@@ -122,17 +140,6 @@ public class ReplyMaker {
         return reply;
     }
 
-    private static void addHeader_WWWAuthenticate(Reply reply, String authorizationType, String realmDescription) {
-        OutputBuffer buffer = OutputBuffer.pooledObject();
-        buffer
-                .append(authorizationType.getBytes())
-                .append(HttpString.Space)
-                .append(HttpString.Realm)
-                .append(HttpString.Equal)
-                .appendQuoted(realmDescription);
-        reply.addHeader(HeaderSort.WWW_Authenticate, buffer.getBytes());
-    }
-
     public Reply new_404NotFound(Request request) {
         Reply reply = new Reply().code(ReplyCode.Code404);
         addHeader_Date(reply);
@@ -148,14 +155,6 @@ public class ReplyMaker {
         addHeader_Allow(reply, allowedMethods);
         DefaultMessageBody.make_405MethodNotAllowed(reply, request, allowedMethods);
         return reply;
-    }
-
-    private static void addHeader_Allow(Reply reply, MethodType[] allowedMethods) {
-        HeaderValueAllow allow = (HeaderValueAllow) FactoryForHeaderValue.create(HeaderSort.Allow);
-        for (MethodType mt : allowedMethods) {
-            allow.addMethodType(mt);
-        }
-        reply.addHeader(HeaderSort.Allow, allow.combineValue());
     }
 
     /*

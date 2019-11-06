@@ -1,8 +1,8 @@
 package kr.dogfoot.webserver.context.connection.http;
 
+import kr.dogfoot.webserver.context.connection.Connection;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParserStatus;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.SenderStatus;
-import kr.dogfoot.webserver.context.connection.Connection;
 import kr.dogfoot.webserver.parser.util.CachedReader;
 
 import java.nio.ByteBuffer;

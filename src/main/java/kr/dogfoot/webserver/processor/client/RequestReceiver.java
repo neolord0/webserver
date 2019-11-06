@@ -13,6 +13,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class RequestReceiver extends AsyncSocketProcessor {
+    private int closeCount = 0;
+
     public RequestReceiver(Server server) {
         super(server);
     }
@@ -53,6 +55,8 @@ public class RequestReceiver extends AsyncSocketProcessor {
 
     @Override
     protected void closeConnectionForKeepAlive(Context context) {
+        closeCount++;
+
         unregister(context.clientConnection().selectionKey());
         closeAllConnectionFor(context);
     }

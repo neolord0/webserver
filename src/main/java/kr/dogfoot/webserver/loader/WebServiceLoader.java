@@ -1,11 +1,11 @@
 package kr.dogfoot.webserver.loader;
 
+import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.loader.resourcesetting.ResourceSetting;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.MediaTypeManager;
 import kr.dogfoot.webserver.server.object.ServerProperties;
-import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 

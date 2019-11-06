@@ -1,7 +1,7 @@
 package kr.dogfoot.webserver.util.bytes;
 
-import kr.dogfoot.webserver.server.object.BufferManager;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
+import kr.dogfoot.webserver.server.object.BufferManager;
 
 import java.io.*;
 import java.nio.ByteBuffer;

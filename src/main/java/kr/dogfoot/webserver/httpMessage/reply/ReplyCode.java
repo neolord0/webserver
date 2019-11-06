@@ -84,9 +84,6 @@ public enum ReplyCode {
     }
 
     public boolean isError() {
-        if (code > 400) {
-            return true;
-        }
-        return false;
+        return code > 400;
     }
 }

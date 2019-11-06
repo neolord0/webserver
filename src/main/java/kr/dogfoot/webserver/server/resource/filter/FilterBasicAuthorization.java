@@ -28,20 +28,15 @@ public class FilterBasicAuthorization extends Filter {
 
     private boolean isAuthenticated(Request request) {
         HeaderValueAuthorization authorization = (HeaderValueAuthorization) request.getHeaderValueObj(HeaderSort.Authorization);
-        if (authorization != null && check(authorization)) {
-            return true;
-        }
-        return false;
+        return authorization != null && check(authorization);
     }
 
     private boolean check(HeaderValueAuthorization authorization) {
         if (authorization.type().equalsIgnoreCase(HttpString.Basic_Auth)) {
             if (authorization.credentials() != null) {
-                String credentials[] = new String(Base64.getDecoder().decode(authorization.credentials())).split(":");
+                String[] credentials = new String(Base64.getDecoder().decode(authorization.credentials())).split(":");
                 if (credentials.length == 2) {
-                    if (userName.equals(credentials[0]) && password.equals(credentials[1])) {
-                        return true;
-                    }
+                    return userName.equals(credentials[0]) && password.equals(credentials[1]);
                 }
             }
         }

@@ -67,17 +67,15 @@ public class HttpString {
     public static final String none = "none";
     public static final String Continue100 = "100-continue";
     public static final byte[] Reply100Continue = "HTTP/1.1 100 Continue\r\n\n".getBytes();
+    public static final byte[] Realm = "realm".getBytes();
+    public static final String Basic_Auth = "Basic";
+    public static final byte[] No_Cache = "no_cache".getBytes();
+    public static final String Charset_String = "charset";
+    public static final byte[] Charset = "charset".getBytes();
     private static final byte[] Multipart_Boundar_Chars =
             "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     .getBytes();
     private static final byte[] MultiPart_Byteranges_Prefix = "multipart/byteranges; boundary=".getBytes();
-    public static final byte[] Realm = "realm".getBytes();
-    public static final String Basic_Auth = "Basic";
-    public static final byte[] No_Cache = "no_cache".getBytes();
-
-    public static final String Charset_String = "charset";
-    public static final byte[] Charset = "charset".getBytes();
-
 
     public static byte[] newBoundary() {
         Random rand = new Random();

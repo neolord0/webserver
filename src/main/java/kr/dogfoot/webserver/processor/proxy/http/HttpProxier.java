@@ -1,6 +1,5 @@
 package kr.dogfoot.webserver.processor.proxy.http;
 
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.BodyParsingType;
@@ -9,6 +8,7 @@ import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.ChunkedBodySendState;
+import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.parser.HttpReplyParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.processor.util.HttpBodyConveyor;

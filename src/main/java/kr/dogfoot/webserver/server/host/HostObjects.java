@@ -1,9 +1,9 @@
 package kr.dogfoot.webserver.server.host;
 
 import kr.dogfoot.webserver.httpMessage.reply.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.server.object.ServerObjects;
 import kr.dogfoot.webserver.server.object.ServerProperties;
-import kr.dogfoot.webserver.httpMessage.request.MethodType;
 
 public class HostObjects {
     private ServerObjects serverObjects;

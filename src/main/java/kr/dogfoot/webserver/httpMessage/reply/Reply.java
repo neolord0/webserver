@@ -9,15 +9,13 @@ import java.io.File;
 
 public class Reply extends EachRangePart {
     private static final int Default_RangePart_Count = 3;
+    public boolean isPartial;
     private short majorVersion;
     private short minorVersion;
     private ReplyCode code;
     private byte[] reason;
-
     private byte[] bodyBytes;
     private File bodyFile;
-
-    public boolean isPartial;
     private byte[] boundary;
     private EachRangePart[] rangeParts;
     private int rangePartCount;

@@ -2,10 +2,10 @@ package kr.dogfoot.webserver.parser;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.part.TransferCodingSort;
 import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
 import kr.dogfoot.webserver.httpMessage.reply.ReplyMaker;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.part.TransferCodingSort;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 
 import java.nio.ByteBuffer;

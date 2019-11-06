@@ -1,8 +1,8 @@
 package kr.dogfoot.webserver.util.net.ssl;
 
 import kr.dogfoot.webserver.server.host.ssl.SSLConfig;
-import kr.dogfoot.webserver.util.net.ssl.compat.JreVendor;
 import kr.dogfoot.webserver.util.Message;
+import kr.dogfoot.webserver.util.net.ssl.compat.JreVendor;
 
 import javax.net.ssl.SSLContext;
 import java.security.KeyManagementException;

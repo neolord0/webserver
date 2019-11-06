@@ -79,7 +79,6 @@ public class ResourceSetting {
                 } else {
                     parentURLFromRoot = item.parentItem().urlFromRoot();
                 }
-                System.out.println("  " + item.urlFromRoot() + parentURLFromRoot);
                 if (fp.url.equalsIgnoreCase(parentURLFromRoot)) {
                     fp.resultForVirtualDirectorySetting.add((VirtualDirectorySetting) item);
                 } else {

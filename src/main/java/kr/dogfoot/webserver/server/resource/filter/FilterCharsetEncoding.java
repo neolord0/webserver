@@ -49,9 +49,7 @@ public class FilterCharsetEncoding extends Filter {
         HeaderValueContentType contentType = (HeaderValueContentType) reply.getHeaderValueObj(HeaderSort.Content_Type);
         if (contentType != null && contentType.isText()) {
             HeaderValueContentEncoding contentEncoding = (HeaderValueContentEncoding) reply.getHeaderValueObj(HeaderSort.Content_Encoding);
-            if (contentEncoding == null || contentEncoding.isIdentity()) {
-                return true;
-            }
+            return contentEncoding == null || contentEncoding.isIdentity();
         }
         return false;
     }

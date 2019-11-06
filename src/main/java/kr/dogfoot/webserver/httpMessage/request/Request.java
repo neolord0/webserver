@@ -2,10 +2,10 @@ package kr.dogfoot.webserver.httpMessage.request;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderList;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
-import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueConnection;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueExpect;
+import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 
 public class Request {
     private MethodType method;
