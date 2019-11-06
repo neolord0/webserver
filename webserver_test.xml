@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webserver>
+    <properties>
+        <processor_count ssl_handshaker="1" request_receiver="1" body_receiver="1" request_performer="1"
+                         ajp_proxier="1" http_proxier="1"/>
+        <io_thread_pools>1000</io_thread_pools>
+        <server_header send="true"/>
+        <keep_alive timeout="3"/>
+    </properties>
+    <host name="host1" domain="" ip="192.168.10.29" port="8443" default_charset="utf-8">
+        <root_path><![CDATA[/Users/neolord/WebServerHome/Host1]]></root_path>
+        <resource_setting>
+            <directory url="/">
+                <default_file>index.html</default_file>
+                <not_serviced_files>
+                    <filename>t*.*</filename>
+                    <filename>*.vt</filename>
+                </not_serviced_files>
+                <filters>
+                    <basic_authorization realm_description="r_d_test" username="u_test" password="p_test"/>
+                    <expect_checking>
+                        <fail_condition_list condition_op="and">
+                            <condition header="Content-Length" compare_op="LessThen" value="32" />
+                            <condition_list condition_op="or">
+                                <condition header="Age" compare_op="LessThen" value="12" />
+                                <condition header="From" compare_op="Equal" value="neolord@hanmail.net" />
+                            </condition_list>
+                            <condition header="Content-Type" compare_op="Equal" value="image/jpeg" />
+                        </fail_condition_list>
+                    </expect_checking>
+                    <forbidden_method_checking forbidden_methods="OPTIONS, POST"/>
+                    <url_redirecting source_rest_url="redirecting_test1" reply_code="307" target_url="target1"/>
+                    <header_adding>
+                        <adding_condition header="Content-Length" compare_op="LessThen" value="32" />
+                        <header_list>
+                            <header sort="Location" value="http://www.daum.net" />
+                            <header sort="Via" value="testvia1" />
+                        </header_list>
+                    </header_adding>
+                    <charset_encoding source_charset="EUC-KR" target_charset="UTF-8"/>
+                    <content_encoding coding="compress">
+                        <apply_condition_list condition_op="and">
+                            <condition header="Content-Length" compare_op="LessThen" value="32" />
+                            <condition_list condition_op="or">
+                                <condition header="Age" compare_op="LessThen" value="12" />
+                                <condition header="From" compare_op="Equal" value="neolord@hanmail.net" />
+                            </condition_list>
+                            <condition header="Content-Type" compare_op="Equal" value="image/jpeg" />
+                        </apply_condition_list>
+                    </content_encoding>
+                    <transfer_encoding coding="Chunked">
+                        <apply_condition header="Content-Length" compare_op="LessThen" value="32" />
+                    </transfer_encoding>
+                </filters>
+                <child>
+                    <directory url="AAA"></directory>
+                </child>
+            </directory>
+        </resource_setting>
+        <custom_media_types>
+            <media_type ext="crf" type="report/clipreport"/>
+        </custom_media_types>
+        <ssl_config key_alias="neokey" certificate_verification="no">
+            <key_store type="jks">
+                <path><![CDATA[server.keystore.jks]]></path>
+                <password>p1a2r3k4</password>
+            </key_store>
+            <trust_store type="jks">
+                <path><![CDATA[server.truststore.jks]]></path>
+                <password>p1a2r3k4</password>
+            </trust_store>
+        </ssl_config>
+        <proxy_infos>
+            <proxy_info>
+                <applied_url_pattern><![CDATA[/*.jsp]]></applied_url_pattern>
+                <backend_servers balance="round_robin">
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                </backend_servers>
+            </proxy_info>
+        </proxy_infos>
+    </host>
+</webserver>

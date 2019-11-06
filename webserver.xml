@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webserver>
+    <properties>
+        <io_thread_pools>1000</io_thread_pools>
+        <server_header send="true"/>
+        <keep_alive timeout="3"/>
+    </properties>
+    <!--
+    <host name="host1" domain="" ip="192.168.10.29" port="8443" default_charset="utf-8" default_allowed_method="GET, HEAD">
+        <root_path><![CDATA[/Users/neolord/WebServerHome/Host1]]></root_path>
+        <custom_media_types>
+            <media_type ext="crf" type="report/clipreport"/>
+        </custom_media_types>
+        <ssl_config key_alias="neokey" certificate_verification="no">
+            <key_store type="jks">
+                <path><![CDATA[server.keystore.jks]]></path>
+                <password>p1a2r3k4</password>
+            </key_store>
+            <trust_store type="jks">
+                <path><![CDATA[server.truststore.jks]]></path>
+                <password>p1a2r3k4</password>
+            </trust_store>
+        </ssl_config>
+        <proxy_infos>
+            <proxy_info>
+                <applied_url_pattern><![CDATA[/*.jsp]]></applied_url_pattern>
+                <backend_servers balance="round_robin">
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                </backend_servers>
+            </proxy_info>
+        </proxy_infos>
+    </host>
+    -->
+    <host name="host2" domain="" ip="192.168.10.29" port="8070" default_host="true" default_charset="utf-8" default_allowed_method="GET, HEAD">
+        <root_path><![CDATA[/Users/neolord/WebServerHome/Host2]]></root_path>
+        <resource_setting>
+            <directory url="/auth">
+                <not_serviced_files>
+                    <not_serviced_file name_pattern="*.aaa" inheritable="false" />
+                </not_serviced_files>
+                <filters>
+                    <basic_authorization realm_description="This is the area of certification." username="neolord" password="1234"/>
+                </filters>
+                <virtual_directory url="kkk/aaa">
+                    <source_path><![CDATA[/Users/neolord/WebServerHome/virtual_test]]></source_path>
+                </virtual_directory>
+            </directory>
+            <directory url="/">
+                <not_serviced_files>
+                    <not_serviced_file name_pattern="*.bbb" inheritable="true" />
+                    <not_serviced_file name_pattern="*.ccc" inheritable="false" />
+                </not_serviced_files>
+                <filters>
+                    <url_redirecting rest_source_url_pattern="old/*.*" reply_code="301" target_url="/redirect.html"/>
+                    <header_adding>
+                        <adding_condition header="Content-Length" compare_op="GreaterThan" value="500" />
+                        <header_list>
+                            <header sort="Cache-Control" value="no-cache" />
+                            <header sort="Pragma" value="no-cache" />
+                        </header_list>
+                    </header_adding>
+                </filters>
+            </directory>
+            <directory url="/gzip">
+                <filters>
+                    <content_encoding coding="gzip"/>
+                </filters>
+            </directory>
+            <directory url="/charsetChange">
+                <filters>
+                    <charset_encoding source_charset="utf-8" target_charset="utf-16le"/>
+                </filters>
+            </directory>
+            <directory url="/post">
+                <filters>
+                    <allowed_method_checking methods="POST"/>
+                </filters>
+            </directory>
+            <file url="/post.html">
+                <filters>
+                    <expect_checking>
+                        <fail_condition header="Content-Length" compare_op="GreaterThan" value="50000" />
+                    </expect_checking>
+                </filters>
+            </file>
+        </resource_setting>
+        <proxy_infos>
+            <proxy_info>
+                <applied_url_pattern><![CDATA[/*.jsp]]></applied_url_pattern>
+                <backend_servers balance="round_robin">
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                    <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.29" port="8009" keep_alive_timeout="3" idle_timeout="1800"/>
+                </backend_servers>
+            </proxy_info>
+            <proxy_info>
+                <applied_url_pattern><![CDATA[/proxy1/*.*]]></applied_url_pattern>
+                <backend_servers balance="round_robin">
+                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8090" keep_alive_timeout="3"/>
+                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8090" keep_alive_timeout="3"/>
+                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8090" keep_alive_timeout="3"/>
+                </backend_servers>
+            </proxy_info>
+        </proxy_infos>
+    </host>
+    <!--
+    <host name="host3" domain="" ip="192.168.10.29" port="8090" default_charset="utf-8" default_allowed_method="GET, HEAD">
+        <root_path><![CDATA[/Users/neolord/WebServerHome/Host3]]></root_path>
+        <proxy_infos>
+            <proxy_info>
+                <applied_url_pattern><![CDATA[*.jsp]]></applied_url_pattern>
+                <backend_servers balance="round_robin">
+                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8070" keep_alive_timeout="3"/>
+                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8070" keep_alive_timeout="3"/>
+                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8070" keep_alive_timeout="3"/>
+                </backend_servers>
+            </proxy_info>
+        </proxy_infos>
+    </host>
+    -->
+</webserver>
