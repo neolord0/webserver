@@ -141,14 +141,6 @@ public class ParserStatus {
         return this;
     }
 
-    public void resetReadBodySize() {
-        readBodySize = 0;
-    }
-
-    public int readBodySize() {
-        return readBodySize;
-    }
-
     public void addReadBodySize(int size) {
         readBodySize += size;
     }
@@ -198,10 +190,6 @@ public class ParserStatus {
 
     public void chunkSize(int chunkSize) {
         this.chunkSize = chunkSize;
-    }
-
-    public int positionInChunk() {
-        return positionInChunk;
     }
 
     public void addPositionInChunk(int size) {

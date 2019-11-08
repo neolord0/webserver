@@ -84,15 +84,6 @@ public enum HeaderSort {
         return hs;
     }
 
-    public static HeaderSort fromAjpSendCode(short ajpCode) {
-        for (HeaderSort hs : values()) {
-            if (hs.ajpSendCode == ajpCode) {
-                return hs;
-            }
-        }
-        return getUnknown(new Integer(ajpCode).toString());
-    }
-
     public static HeaderSort fromAjpReceiveCode(short ajpCode) {
         for (HeaderSort hs : values()) {
             if (hs.ajpReceiveCode == ajpCode) {

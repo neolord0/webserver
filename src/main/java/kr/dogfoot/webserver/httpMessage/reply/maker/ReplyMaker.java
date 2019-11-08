@@ -1,10 +1,12 @@
-package kr.dogfoot.webserver.httpMessage.reply;
+package kr.dogfoot.webserver.httpMessage.reply.maker;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.FactoryForHeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAllow;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.reply.part.DefaultMessageBody;
+import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
+import kr.dogfoot.webserver.httpMessage.reply.maker.DefaultMessageBody;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.object.ServerProperties;

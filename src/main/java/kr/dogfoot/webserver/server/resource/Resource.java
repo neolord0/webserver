@@ -26,10 +26,6 @@ public abstract class Resource {
         return filters;
     }
 
-    public int filterCount() {
-        return filterCount;
-    }
-
     public void addFilter(Filter filter) {
         if (filters.length <= filterCount) {
             Filter[] newArray = new Filter[filters.length * 2];

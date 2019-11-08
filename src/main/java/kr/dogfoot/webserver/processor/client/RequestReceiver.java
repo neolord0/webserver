@@ -84,11 +84,10 @@ public class RequestReceiver extends AsyncSocketProcessor {
                 }
 
                 if (numRead > 0) {
-                    context.debugInfo().addReadBytes(numRead);
                     setLastAccessTime(context, currentTime);
                 }
 
-                process(connection, context, AfterProcess.PrepareContext);
+                process(connection, context, AfterProcess.GotoSelf);
             }
         };
         server.objects().ioExecutorService().execute(r);
@@ -102,8 +101,8 @@ public class RequestReceiver extends AsyncSocketProcessor {
         if (connection.parserStatus().state() == ParsingState.BodyStart) {
             server.gotoPerformer(context);
         } else {
-            if (afterProcess == AfterProcess.PrepareContext) {
-                prepareContext(context);
+            if (afterProcess == AfterProcess.GotoSelf) {
+                gotoSelf(context);
             } else {
                 register(connection.channel(), context, SelectionKey.OP_READ);
             }

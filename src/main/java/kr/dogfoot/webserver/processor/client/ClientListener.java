@@ -93,26 +93,32 @@ public class ClientListener extends AsyncSocketProcessor {
     protected void onAccept(ServerSocketChannel serverChannel, long currentTime) {
         SocketChannel channel = accept(serverChannel);
         if (channel != null) {
-            ServerSocketInfo info = serverSocketInfos.get(serverChannel);
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    ServerSocketInfo info = serverSocketInfos.get(serverChannel);
 
-            HttpClientConnection conn = clientConnectionManager().pooledObject(channel, info.adjustSSL);
-            conn.lastAccessTime(currentTime);
+                    HttpClientConnection conn = clientConnectionManager().pooledObject(channel, info.adjustSSL);
+                    conn.lastAccessTime(currentTime);
 
-            Context context = contextManager().pooledObject();
-            context.clientConnection(conn);
+                    Context context = contextManager().pooledObject();
+                    context.clientConnection(conn);
 
-            if (info.adjustSSL) {
-                server.gotoSSLHandshaker(context);
-            } else {
-                server.gotoRequestReceiver(context);
-            }
+                    if (info.adjustSSL) {
+                        server.gotoSSLHandshaker(context);
+                    } else {
+                        server.gotoRequestReceiver(context);
+                    }
 
-            acceptCount++;
-            Message.debug(context, "accept " + acceptCount);
+                    acceptCount++;
+                    Message.debug(context, "accept " + acceptCount);
+                }
+            };
+            server.objects().ioExecutorService().execute(r);
         }
     }
 
-    private SocketChannel accept(ServerSocketChannel serverChannel) {
+    private synchronized SocketChannel accept(ServerSocketChannel serverChannel) {
         SocketChannel channel = null;
         try {
             channel = serverChannel.accept();

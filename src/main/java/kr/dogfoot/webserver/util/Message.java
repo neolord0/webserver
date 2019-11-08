@@ -34,20 +34,6 @@ public class Message {
         debug(context.clientConnection(), msg);
     }
 
-    public static void debugWithInterval(Context context, String msg) {
-        if (enableDebug == false) {
-            return;
-        }
-        StringBuffer sb = new StringBuffer();
-        sb.append("Debug : Http(")
-                .append(context.clientConnection().id())
-                .append(") : ")
-                .append(context.debugInfo().getInterval())
-                .append(" - ")
-                .append(msg);
-        System.out.println(sb.toString());
-    }
-
     public static void debug(HttpClientConnection client, String msg) {
         if (enableDebug == false) {
             return;

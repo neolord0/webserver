@@ -153,6 +153,6 @@ public abstract class AsyncSocketProcessor extends Processor {
 
     protected enum AfterProcess {
         Register,
-        PrepareContext
+        GotoSelf
     }
 }

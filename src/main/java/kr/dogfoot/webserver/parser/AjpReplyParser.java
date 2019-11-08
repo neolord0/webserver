@@ -5,7 +5,7 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.TransferCodingSort;
 import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 
 import java.nio.ByteBuffer;
@@ -25,7 +25,6 @@ public class AjpReplyParser {
         }
         return adjustHeader(reply, replyMaker);
     }
-
 
     private static Reply adjustHeader(Reply reply, ReplyMaker replyMaker) {
         if (reply.getHeaderItem(HeaderSort.Date) == null) {
@@ -53,7 +52,6 @@ public class AjpReplyParser {
         return reply;
     }
 
-
     private static HeaderSort readHeaderSort(ByteBuffer buffer) {
         short length = readInt(buffer);
         if ((length & 0xA0000) == 0xA0000) {
@@ -66,11 +64,9 @@ public class AjpReplyParser {
         return HeaderSort.fromString(new String(bytes));
     }
 
-
     public static short readInt(ByteBuffer buffer) {
         return buffer.getShort();
     }
-
 
     public static String readString(ByteBuffer buffer) {
         short length = buffer.getShort();
@@ -87,7 +83,6 @@ public class AjpReplyParser {
         return new String(bytes);
     }
 
-
     public static byte[] readBytesInString(ByteBuffer buffer) {
         short length = buffer.getShort();
         if (length == 0xffff) {
@@ -103,7 +98,6 @@ public class AjpReplyParser {
 
         return bytes;
     }
-
 
     public static boolean readBool(ByteBuffer buffer) {
         return buffer.get() == 1;

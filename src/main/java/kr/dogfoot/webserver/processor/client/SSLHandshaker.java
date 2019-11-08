@@ -137,7 +137,7 @@ public class SSLHandshaker extends Processor {
             Message.debug(context, "begin ssl handshake");
 
             connection.handshakeState(HandshakeState.Handshaking);
-            prepareContext(context);
+            gotoSelf(context);
         } else {
             Message.debug(context, "error in begin handshake");
 
@@ -194,7 +194,7 @@ public class SSLHandshaker extends Processor {
         }
 
         if (continueHandshake) {
-            prepareContext(context);
+            gotoSelf(context);
         } else {
             if (connection.handshakeState() == HandshakeState.Fail) {
                 onFailHandshake(context);
@@ -362,7 +362,6 @@ public class SSLHandshaker extends Processor {
         }
 
         if (numRead > 0) {
-            context.debugInfo().addReadBytes(numRead);
             gotoHandshakeThread(context, conn);
         }
     }
@@ -375,7 +374,7 @@ public class SSLHandshaker extends Processor {
         }
 
         unregister(conn.channel());
-        prepareContext(context);
+        gotoSelf(context);
     }
 
     private void unregister(SocketChannel channel) {

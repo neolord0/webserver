@@ -44,22 +44,6 @@ public class CachedReader {
         return buffer.get();
     }
 
-    public String debugCache() {
-        StringBuffer sb = new StringBuffer();
-        for (Integer i : cache) {
-            sb.append(i.toString());
-            sb.append(",");
-        }
-        return sb.toString();
-    }
-
-    public int readWithCache() {
-        if (cache.isEmpty()) {
-            return read();
-        }
-        return cache.poll();
-    }
-
     public int peek() {
         if (cache.isEmpty()) {
             return NO_DATA;
@@ -111,10 +95,6 @@ public class CachedReader {
         return data;
     }
 
-    public int cacheSize() {
-        return cache.size();
-    }
-
     public boolean hasData() {
         return buffer.hasRemaining() || cache.size() > 0;
     }
@@ -122,21 +102,5 @@ public class CachedReader {
     public void rollbackByCache() {
         buffer.position(buffer.position() - cache.size());
         cache.clear();
-    }
-
-    public int remainingSize() {
-        return cache.size() + buffer.remaining();
-    }
-
-    public void skip(int skip) {
-        if (cache.size() >= skip) {
-            for (int i = 0; i < skip; i++) {
-                cache.poll();
-            }
-        } else {
-            int bufferSkip = skip - cache.size();
-            cache.clear();
-            buffer.position(buffer.position() + bufferSkip);
-        }
     }
 }

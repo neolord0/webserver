@@ -89,10 +89,6 @@ public class SenderStatus {
         return range.firstPos() + sentSizeInRange;
     }
 
-    public long sentSizeInRange() {
-        return sentSizeInRange;
-    }
-
     public void addSentSizeInRange(long sent) {
         sentSizeInRange += sent;
     }

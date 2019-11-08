@@ -369,23 +369,4 @@ public class ByteParser {
         ParseState.release(it);
         return Date.UTC(y, m, d, hh, mm, ss);
     }
-
-    public static double parseQuality(byte[] buf, ParseState ps) throws ParserException {
-        // Skip spaces if needed
-        int off = -1;
-        if (ps.isSkipable)
-            ps.start = off = skipSpaces(buf, ps);
-        else
-            ps.start = off = ps.ioff;
-        // Parse the integer from byte[] straight (without creating Strings)
-        int len = (ps.bufend > 0) ? ps.bufend : buf.length;
-        String str = new String(buf, 0, off, len - off);
-        try {
-            return Double.valueOf(str).doubleValue();
-        } catch (Exception ex) {
-            error("parseQuality", "Invalid floating point number.");
-        }
-        // Not reached:
-        return 1.0;
-    }
 }

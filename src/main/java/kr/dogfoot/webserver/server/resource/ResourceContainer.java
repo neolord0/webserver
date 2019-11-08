@@ -48,17 +48,6 @@ public abstract class ResourceContainer extends Resource {
         resources[resourceCount++] = resource;
     }
 
-    public boolean includedDirectory(String path) {
-        for (Resource r : resources) {
-            if (r != null
-                    && r.type() == ResourceType.Directory
-                    && r.path().equalsIgnoreCase(path)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public ResourceDirectory getDirectory(String path) {
         for (Resource r : resources) {
             if (r != null

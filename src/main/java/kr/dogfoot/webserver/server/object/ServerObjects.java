@@ -4,7 +4,7 @@ import kr.dogfoot.webserver.context.ContextManager;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.client.ClientConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionManager;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
 import kr.dogfoot.webserver.server.buffersender.SendBufferStorage;
 import kr.dogfoot.webserver.server.timer.Timer;
 
@@ -34,7 +34,7 @@ public class ServerObjects {
         timer = new Timer();
 
         contextManager = new ContextManager();
-        clientConnectionManager = new ClientConnectionManager(timer);
+        clientConnectionManager = new ClientConnectionManager();
         ajpProxyConnectionManager = new AjpProxyConnectionManager(timer);
         httpProxyConnectionManager = new HttpProxyConnectionManager(timer);
 

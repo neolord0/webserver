@@ -130,6 +130,7 @@ public class Host {
     public void initialize() {
         if (sslConfig != null) {
             createSSLContext();
+
             Message.debug("create SSL Context for " + ipAddress + ":" + port);
         }
     }

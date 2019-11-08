@@ -87,25 +87,24 @@ public class BodyReceiver extends AsyncSocketProcessor {
 
                 if (numRead > 0) {
                     setLastAccessTime(context, currentTime);
-                    context.debugInfo().addReadBytes(numRead);
                 }
 
-                process(clientConn, context, AfterProcess.PrepareContext);
+                process(clientConn, context, AfterProcess.GotoSelf);
             }
         };
         server.objects().ioExecutorService().execute(r);
     }
 
-    private void process(HttpClientConnection clientConn, Context context, AfterProcess prepareContext) {
+    private void process(HttpClientConnection clientConn, Context context, AfterProcess afterProcess) {
         switch (clientConn.parserStatus().bodyParsingType()) {
             case ForDefaultProcessing:
-                processForDefaultProcessing(clientConn, context, prepareContext);
+                processForDefaultProcessing(clientConn, context, afterProcess);
                 break;
             case ForAjpProxy:
-                processForAjpProxy(clientConn, context, prepareContext);
+                processForAjpProxy(clientConn, context, afterProcess);
                 break;
             case ForHttpProxy:
-                processForHttpProxy(clientConn, context, prepareContext);
+                processForHttpProxy(clientConn, context, afterProcess);
                 break;
         }
     }
@@ -122,8 +121,8 @@ public class BodyReceiver extends AsyncSocketProcessor {
         if (continueSend == true) {
             if (afterProcess == AfterProcess.Register) {
                 register(clientConn.channel(), context, SelectionKey.OP_READ);
-            } else if (afterProcess == AfterProcess.PrepareContext) {
-                prepareContext(context);
+            } else if (afterProcess == AfterProcess.GotoSelf) {
+                gotoSelf(context);
             }
         } else {
             server.gotoPerformer(context);
@@ -156,8 +155,8 @@ public class BodyReceiver extends AsyncSocketProcessor {
         } else {
             if (afterProcess == AfterProcess.Register) {
                 register(context.clientConnection().channel(), context, SelectionKey.OP_READ);
-            } else if (afterProcess == AfterProcess.PrepareContext) {
-                prepareContext(context);
+            } else if (afterProcess == AfterProcess.GotoSelf) {
+                gotoSelf(context);
             }
         }
     }
@@ -185,8 +184,8 @@ public class BodyReceiver extends AsyncSocketProcessor {
         if (continueSend == true) {
             if (afterProcess == AfterProcess.Register) {
                 register(clientConn.channel(), context, SelectionKey.OP_READ);
-            } else if (afterProcess == AfterProcess.PrepareContext) {
-                prepareContext(context);
+            } else if (afterProcess == AfterProcess.GotoSelf) {
+                gotoSelf(context);
             }
         } else {
             context.httpProxy().changeState(HttpProxyState.ReceivingReply);

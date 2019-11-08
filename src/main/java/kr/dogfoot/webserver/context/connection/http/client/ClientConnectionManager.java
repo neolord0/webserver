@@ -16,7 +16,7 @@ public class ClientConnectionManager {
 
     private volatile int staticId;
 
-    public ClientConnectionManager(Timer timer) {
+    public ClientConnectionManager() {
         poolForHttp = new ConcurrentLinkedQueue<HttpClientConnection>();
         poolForHttps = new ConcurrentLinkedQueue<HttpsClientConnection>();
     }

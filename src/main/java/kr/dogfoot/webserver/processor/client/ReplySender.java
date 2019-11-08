@@ -38,11 +38,17 @@ public class ReplySender extends GeneralProcessor {
     }
 
     private void sendReply(Context context) {
-        if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
-            ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
-        }
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
+                    ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
+                }
 
-        sendBodyBlock(context);
+                sendBodyBlock(context);
+            }
+        };
+        server.objects().ioExecutorService().execute(r);
     }
 
     private void sendBodyBlock(Context context) {
@@ -67,6 +73,7 @@ public class ReplySender extends GeneralProcessor {
             context.clientConnection().senderStatus().resourceFileCh(is.getChannel());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+
             context.clientConnection().senderStatus().resourceFileCh(null);
             if (e.getMessage().endsWith(Error_TooManyFielsOpen)) {
                 context.reply(replyMaker().get_500TooManyFileOpen());
@@ -159,56 +166,37 @@ public class ReplySender extends GeneralProcessor {
     }
 
     private void sendResourceFileBlock(Context context) {
-        readResourceFile(context, new MyCompletionHandler<Integer, Context, ByteBuffer>() {
-            @Override
-            public void completed(Integer result, Context context, ByteBuffer buffer) {
-                buffer.flip();
+        SenderStatus ss = context.clientConnection().senderStatus();
+        ByteBuffer buffer = bufferManager().pooledLargeBuffer();
+        if (buffer.capacity() > ss.remainingSendSize()) {
+            buffer.limit(ss.remainingSendSize());
+        }
 
-                server.sendBufferToClient(context, buffer, true);
+        int read = -1;
+        try {
+            read = ss.resourceFileCh().read(buffer, ss.readingPosition());
+        } catch (IOException e) {
+            e.printStackTrace();
+            read = -1;
+        }
 
-                SenderStatus ss = context.clientConnection().senderStatus();
-                ss.addSentSizeInRange(result);
+        if (read > 0) {
+            buffer.flip();
+            server.sendBufferToClient(context, buffer, true);
+            ss.addSentSizeInRange(read);
 
-                if (ss.isEndRange()) {
-                    onEndRange(context);
+            if (ss.isEndRange()) {
+                onEndRange(context);
 
-                    if (ss.stateIsEndBody()) {
-                        onEndBody(context, ss);
-                    } else {
-                        prepareContext(context);
-                    }
+                if (ss.stateIsEndBody()) {
+                    onEndBody(context, ss);
                 } else {
-                    prepareContext(context);
+                    gotoSelf(context);
                 }
+            } else {
+                gotoSelf(context);
             }
-
-            @Override
-            public void failed(Throwable exc, Context context) {
-
-            }
-        });
-    }
-
-    private void readResourceFile(final Context context, final MyCompletionHandler<Integer, Context, ByteBuffer> handler) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    SenderStatus ss = context.clientConnection().senderStatus();
-                    ByteBuffer buffer = bufferManager().pooledLargeBuffer();
-                    if (buffer.capacity() > ss.remainingSendSize()) {
-                        buffer.limit(ss.remainingSendSize());
-                    }
-                    int read = ss.resourceFileCh().read(buffer, ss.readingPosition());
-
-                    handler.completed(read, context, buffer);
-                } catch (IOException e) {
-                    handler.failed(e, context);
-                }
-
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+        }
     }
 
     private void onEndRange(Context context) {
@@ -247,6 +235,7 @@ public class ReplySender extends GeneralProcessor {
         try {
             context.clientConnection().senderStatus().resourceFileCh().close();
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

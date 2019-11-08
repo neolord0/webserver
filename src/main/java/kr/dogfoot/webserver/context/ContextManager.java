@@ -12,10 +12,6 @@ public class ContextManager {
         usedContexts = new ConcurrentLinkedQueue<Context>();
     }
 
-    public int usedCount() {
-        return usedContexts.size();
-    }
-
     public Context pooledObject() {
         Context context = contextPool.poll();
         if (context == null) {

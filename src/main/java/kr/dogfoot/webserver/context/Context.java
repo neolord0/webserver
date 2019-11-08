@@ -27,8 +27,6 @@ public class Context {
     private AjpProxyConnection ajpProxyConnection;
     private HttpProxyConnection httpProxyConnection;
 
-    private DebugInfo debugInfo;
-
     public Context() {
         state = ContextState.Waiting;
 
@@ -45,8 +43,6 @@ public class Context {
         backendServerInfo = null;
         ajpProxyConnection = null;
         httpProxyConnection = null;
-
-        debugInfo = new DebugInfo();
     }
 
     public Context resetForPooled() {
@@ -65,8 +61,6 @@ public class Context {
         backendServerInfo = null;
         ajpProxyConnection = null;
         httpProxyConnection = null;
-
-        debugInfo.reset();
 
         return this;
     }
@@ -181,10 +175,4 @@ public class Context {
             httpProxyConnection.context(this);
         }
     }
-
-    public DebugInfo debugInfo() {
-        return debugInfo;
-    }
-
-
 }

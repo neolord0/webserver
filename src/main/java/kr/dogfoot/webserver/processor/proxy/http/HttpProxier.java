@@ -134,10 +134,10 @@ public class HttpProxier extends AsyncSocketProcessor {
 
                 switch (connection.state()) {
                     case ReceivingReply:
-                        onReply(connection, context, AfterProcess.PrepareContext);
+                        onReply(connection, context, AfterProcess.GotoSelf);
                         break;
                     case ReceivingReplyBody:
-                        onReplyBody(connection, context, AfterProcess.PrepareContext);
+                        onReplyBody(connection, context, AfterProcess.GotoSelf);
                         break;
                 }
             }
@@ -171,15 +171,15 @@ public class HttpProxier extends AsyncSocketProcessor {
                 connection.parserStatus()
                         .prepareBodyParsing(BodyParsingType.ForHttpProxy, context.reply().contentLength());
 
-                prepareContext(context);
+                gotoSelf(context);
             } else {
                 onReplyEnd(connection, context);
             }
             } else {
             if (afterProcess == AfterProcess.Register) {
                 register(connection.channel(), context, SelectionKey.OP_READ);
-            } else if (afterProcess == AfterProcess.PrepareContext) {
-                prepareContext(context);
+            } else if (afterProcess == AfterProcess.GotoSelf) {
+                gotoSelf(context);
             }
         }
     }
@@ -210,8 +210,8 @@ public class HttpProxier extends AsyncSocketProcessor {
             if (hasParsed == false || continueSend == true) {
                 if (afterProcess == AfterProcess.Register) {
                     register(connection.channel(), context, SelectionKey.OP_READ);
-                } else if (afterProcess == AfterProcess.PrepareContext) {
-                    prepareContext(context);
+                } else if (afterProcess == AfterProcess.GotoSelf) {
+                    gotoSelf(context);
                 }
             }
         }

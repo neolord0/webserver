@@ -302,8 +302,4 @@ public class Server implements Startable {
         objects().sendBufferStorage().addForHttpServerClose(context);
         bufferSender.notifyStoring(context.httpProxy().channel());
     }
-
-    public boolean emptySendBuffer(SocketChannel channel) {
-        return objects().sendBufferStorage().noBuffer(channel);
-    }
 }

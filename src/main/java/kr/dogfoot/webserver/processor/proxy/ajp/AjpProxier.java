@@ -149,7 +149,7 @@ public class AjpProxier extends AsyncSocketProcessor {
 
                 switch (result) {
                     case MoreReceive:
-                        prepareContext(context);
+                        gotoSelf(context);
                         break;
                     case SendRequestBodyChunkByReceiver:
                         sendRequestBodyChunkByReceiver(context);

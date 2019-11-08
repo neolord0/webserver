@@ -5,7 +5,7 @@ import kr.dogfoot.webserver.context.ContextManager;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.client.ClientConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionManager;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.Startable;
 import kr.dogfoot.webserver.server.object.BufferManager;
@@ -23,23 +23,20 @@ public abstract class Processor implements Startable {
         waitingContextQueue = new ConcurrentLinkedQueue<Context>();
     }
 
+
     public void prepareContext(Context context) {
         waitingContextQueue.add(context);
         wakeup();
     }
 
-    protected abstract void wakeup();
-
-    public int waitingContextCount() {
-        return waitingContextQueue.size();
+    protected void gotoSelf(Context context) {
+        prepareContext(context);
     }
+
+    protected abstract void wakeup();
 
     protected ServerProperties serverProperties() {
         return server.objects().properties();
-    }
-
-    protected Timer timer() {
-        return server.objects().timer();
     }
 
     protected ContextManager contextManager() {
