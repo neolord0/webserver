@@ -29,27 +29,16 @@ public class HttpDateMaker {
             {(byte) 'D', (byte) 'e', (byte) 'c'}};
 
     private static Calendar cal = null;
-
     private byte[] buffer;
     private int index;
     private Date now;
 
-    private HttpDateMaker() {
-        buffer = new byte[29];
-        index = 0;
+    static {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        cal = Calendar.getInstance(tz);
     }
-
-    private static void createUTCCalendar() {
-        if (cal == null) {
-            TimeZone tz = TimeZone.getTimeZone("UTC");
-            cal = Calendar.getInstance(tz);
-        }
-    }
-
 
     public static byte[] makeBytes(Long date) {
-        createUTCCalendar();
-
         HttpDateMaker maker = new HttpDateMaker();
         maker.setDate(date);
         maker.dayOfWeek();
@@ -64,16 +53,23 @@ public class HttpDateMaker {
     }
 
 
+    private HttpDateMaker() {
+        buffer = new byte[29];
+        index = 0;
+    }
+
     private void setDate(Long date) {
         Date now = new Date(date.longValue());
         cal.setTime(now);
     }
 
     private void dayOfWeek() {
-        int dayofweek = cal.get(Calendar.DAY_OF_WEEK);
-
+        int week = 0;
+        do {
+            week = cal.get(Calendar.DAY_OF_WEEK);
+        } while (week < 0 || week > 8);
         for (int i = 0; i < 3; i++) {
-            buffer[index++] = bdays[dayofweek][i];
+            buffer[index++] = bdays[week][i];
         }
 
         buffer[index++] = (byte) ',';

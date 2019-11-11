@@ -122,10 +122,12 @@ public class ClientListener extends AsyncSocketProcessor {
         SocketChannel channel = null;
         try {
             channel = serverChannel.accept();
-            channel.configureBlocking(false);
-            channel.setOption(StandardSocketOptions.TCP_NODELAY, true)
-                    .setOption(StandardSocketOptions.SO_LINGER, 0)
-                    .setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            if (channel != null) {
+                channel.configureBlocking(false);
+                channel.setOption(StandardSocketOptions.TCP_NODELAY, true)
+                        .setOption(StandardSocketOptions.SO_LINGER, 0)
+                        .setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             channel = null;

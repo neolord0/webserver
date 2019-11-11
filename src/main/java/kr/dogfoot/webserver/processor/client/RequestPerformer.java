@@ -140,7 +140,6 @@ public class RequestPerformer extends GeneralProcessor {
                 } else {
                     context.reply(replyMaker().new_404NotFound(context.request()));
                 }
-
                 outboundFilter(context);
             }
         }
@@ -148,7 +147,7 @@ public class RequestPerformer extends GeneralProcessor {
 
     private boolean inboundFilter(Context context) {
         for (Filter f : context.filters()) {
-             if (f.inboundProcess(context, server) == false) {
+            if (f.inboundProcess(context, server) == false) {
                 return false;
             }
         }

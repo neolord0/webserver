@@ -42,6 +42,7 @@ public class ReplySender extends GeneralProcessor {
             @Override
             public void run() {
                 if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
+                    Message.debug(context, "Send reply");
                     ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
                 }
 
