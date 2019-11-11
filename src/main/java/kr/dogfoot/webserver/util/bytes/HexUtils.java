@@ -59,7 +59,8 @@ public final class HexUtils {
         // Fast for correct values, slower for incorrect ones
         try {
             return DEC[index - '0'];
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
             return -1;
         }
     }

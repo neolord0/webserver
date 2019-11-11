@@ -78,6 +78,7 @@ public class HttpReplyParser extends HttpMessageParser {
                     ps.prepare();
                     reply.minorVersion((short) ByteParser.parseInt(buffer.data(), ps));
                 } catch (Exception e) {
+                    e.printStackTrace();
                     reply.majorVersion((short) 0);
                     reply.minorVersion((short) 9);
                 }
@@ -113,6 +114,7 @@ public class HttpReplyParser extends HttpMessageParser {
         try {
             code = (short) ByteParser.parseInt(buffer.data(), ps);
         } catch (ParserException e) {
+            e.printStackTrace();
             code = -1;
         }
         ParseState.release(ps);

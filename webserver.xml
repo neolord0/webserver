@@ -4,6 +4,7 @@
         <io_thread_pools>1000</io_thread_pools>
         <server_header send="true"/>
         <keep_alive timeout="3"/>
+        <count_of_processor ssl_handshaker="1" request_receiver="10" body_receiver="1" request_performer="10" reply_sender="10" buffer_sender="10" proxy_connector="1" ajp_proxier="1" http_proxier="1"/>
     </properties>
     <!--
     <host name="host1" domain="" ip="192.168.10.29" port="8443" default_charset="utf-8" default_allowed_method="GET, HEAD">
@@ -54,6 +55,7 @@
                 </not_serviced_files>
                 <filters>
                     <url_redirecting rest_source_url_pattern="old/*.*" reply_code="301" target_url="/redirect.html"/>
+                    <!--
                     <header_adding>
                         <adding_condition header="Content-Length" compare_op="GreaterThan" value="500" />
                         <header_list>
@@ -61,6 +63,7 @@
                             <header sort="Pragma" value="no-cache" />
                         </header_list>
                     </header_adding>
+                    -->
                 </filters>
             </directory>
             <directory url="/gzip">
@@ -78,14 +81,18 @@
                     <allowed_method_checking methods="POST"/>
                 </filters>
             </directory>
-            <file url="/post.html">
+            <directory  url="/proxy/expect">
                 <filters>
+                    <allowed_method_checking methods="POST"/>
                     <expect_checking>
                         <fail_condition header="Content-Length" compare_op="GreaterThan" value="50000" />
                     </expect_checking>
                 </filters>
-            </file>
+            </directory>
         </resource_setting>
+    </host>
+    <host name="host3" domain="" ip="192.168.10.29" port="8090" default_charset="utf-8" default_allowed_method="GET, HEAD">
+        <root_path><![CDATA[/Users/neolord/WebServerHome/Host3]]></root_path>
         <proxy_infos>
             <proxy_info>
                 <applied_url_pattern><![CDATA[/*.jsp]]></applied_url_pattern>
@@ -96,21 +103,7 @@
                 </backend_servers>
             </proxy_info>
             <proxy_info>
-                <applied_url_pattern><![CDATA[/proxy1/*.*]]></applied_url_pattern>
-                <backend_servers balance="round_robin">
-                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8090" keep_alive_timeout="3"/>
-                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8090" keep_alive_timeout="3"/>
-                    <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8090" keep_alive_timeout="3"/>
-                </backend_servers>
-            </proxy_info>
-        </proxy_infos>
-    </host>
-    <!--
-    <host name="host3" domain="" ip="192.168.10.29" port="8090" default_charset="utf-8" default_allowed_method="GET, HEAD">
-        <root_path><![CDATA[/Users/neolord/WebServerHome/Host3]]></root_path>
-        <proxy_infos>
-            <proxy_info>
-                <applied_url_pattern><![CDATA[*.jsp]]></applied_url_pattern>
+                <applied_url_pattern><![CDATA[/proxy/*.*]]></applied_url_pattern>
                 <backend_servers balance="round_robin">
                     <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8070" keep_alive_timeout="3"/>
                     <backend_server protocol="http" ip_or_domain="192.168.10.29" port="8070" keep_alive_timeout="3"/>
@@ -119,5 +112,4 @@
             </proxy_info>
         </proxy_infos>
     </host>
-    -->
 </webserver>

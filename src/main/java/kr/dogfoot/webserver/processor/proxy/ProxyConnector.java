@@ -4,8 +4,10 @@ import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.Connection;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyState;
+import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
+import kr.dogfoot.webserver.processor.Processor;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.util.Message;
@@ -15,15 +17,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class ProxyConnector extends AsyncSocketProcessor {
+    private static int ProxyConnectorID = 0;
+
     public ProxyConnector(Server server) {
-        super(server);
-    }
-
-    @Override
-    public void start() throws Exception {
-        Message.debug("start Proxy Connector ...");
-
-        super.start();
+        super(server, ProxyConnectorID++);
     }
 
     @Override
@@ -127,15 +124,10 @@ public class ProxyConnector extends AsyncSocketProcessor {
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();;
+
             releaseAndClose(context);
             sendErrorReplyToClient(context);
         }
-    }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Proxy Connector ...");
     }
 }

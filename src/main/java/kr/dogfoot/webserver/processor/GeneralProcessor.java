@@ -7,8 +7,8 @@ public abstract class GeneralProcessor extends Processor {
     protected volatile boolean running;
     protected Thread thread;
 
-    public GeneralProcessor(Server server) {
-        super(server);
+    public GeneralProcessor(Server server, int id) {
+        super(server, id);
     }
 
     @Override

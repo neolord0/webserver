@@ -35,6 +35,7 @@ public class HttpChunkedBodyParser {
             try {
                 size = ByteParser.parseInt(ps.buffer().data(), 16, ps2);
             } catch (ParserException e) {
+                e.printStackTrace();
                 size = -1;
             }
             ps.chunkSize(size);

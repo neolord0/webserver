@@ -41,10 +41,11 @@ public class ServerObjects {
         bufferManager = new BufferManager();
         sendBufferStorage = new SendBufferStorage();
 
-        ioExecutorService = Executors.newFixedThreadPool(serverProperties.ioThreadCount());
-
         defaultMediaTypeManager = new DefinedMediaTypeManager();
         replyMaker = new ReplyMaker(serverProperties);
+    }
+    public void initialize() {
+        ioExecutorService = Executors.newFixedThreadPool(serverProperties.ioThreadCount());
     }
 
     public ServerProperties properties() {

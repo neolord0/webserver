@@ -31,6 +31,8 @@ public class HeaderValueIfRange extends HeaderValue {
             date = new Long(dateValue);
             entityTag = null;
         } catch (ParserException e) {
+            e.printStackTrace();
+
             ps.ioff = 0;
             ps.bufend = value.length;
             ByteParser.unquote(value, ps);

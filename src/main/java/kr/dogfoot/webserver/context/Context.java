@@ -5,6 +5,7 @@ import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
 import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.resource.Resource;
@@ -26,6 +27,8 @@ public class Context {
     private BackendServerInfo backendServerInfo;
     private AjpProxyConnection ajpProxyConnection;
     private HttpProxyConnection httpProxyConnection;
+
+    private BufferSender bufferSender;
 
     public Context() {
         state = ContextState.Waiting;
@@ -174,5 +177,13 @@ public class Context {
         if (httpProxyConnection != null) {
             httpProxyConnection.context(this);
         }
+    }
+
+    public BufferSender bufferSender() {
+        return bufferSender;
+    }
+
+    public void bufferSender(BufferSender bufferSender) {
+        this.bufferSender = bufferSender;
     }
 }

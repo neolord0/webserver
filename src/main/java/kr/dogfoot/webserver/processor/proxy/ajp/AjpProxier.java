@@ -22,15 +22,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class AjpProxier extends AsyncSocketProcessor {
+    private static int AjpProxierID = 0;
     public AjpProxier(Server server) {
-        super(server);
-    }
-
-    @Override
-    public void start() throws Exception {
-        Message.debug("start Ajp Proxier ...");
-
-        super.start();
+        super(server, AjpProxierID++);
     }
 
     @Override
@@ -117,53 +111,47 @@ public class AjpProxier extends AsyncSocketProcessor {
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                AjpProxyConnection connection = context.ajpProxy();
+        AjpProxyConnection connection = context.ajpProxy();
 
-                int numRead = -2;
-                try {
-                    numRead = channel.read(connection.receiveBuffer());
-                } catch (Exception e) {
-                    e.printStackTrace();
+        int numRead = -2;
+        try {
+            numRead = channel.read(connection.receiveBuffer());
+        } catch (Exception e) {
+            e.printStackTrace();
 
-                    numRead = -2;
-                }
+            numRead = -2;
+        }
 
-                if (numRead == -2) {
-                    Message.debug(connection, "read error from ajp proxy server.");
+        if (numRead == -2) {
+            Message.debug(connection, "read error from ajp proxy server.");
 
-                    sendErrorReplyToClient(context);
-                    server.sendCloseSignalForAjpServer(context);
-                    return;
-                }
+            sendErrorReplyToClient(context);
+            server.sendCloseSignalForAjpServer(context);
+            return;
+        }
 
-                if (numRead > 0) {
-                    setLastAccessTime(context, currentTime);
-                }
+        if (numRead > 0) {
+            setLastAccessTime(context, currentTime);
+        }
 
-                connection.receiveBuffer().flip();
-                ProcessResult result = parseAndProcessAjpMessage(context);
-                connection.receiveBuffer().compact();
+        connection.receiveBuffer().flip();
+        ProcessResult result = parseAndProcessAjpMessage(context);
+        connection.receiveBuffer().compact();
 
-                switch (result) {
-                    case MoreReceive:
-                        gotoSelf(context);
-                        break;
-                    case SendRequestBodyChunkByReceiver:
-                        sendRequestBodyChunkByReceiver(context);
-                        break;
-                    case EndResponse:
-                        nextRequest(context, false);
-                        break;
-                    case EndResponseAndReuse:
-                        nextRequest(context, true);
-                        break;
-                }
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+        switch (result) {
+            case MoreReceive:
+                gotoSelf(context);
+                break;
+            case SendRequestBodyChunkByReceiver:
+                sendRequestBodyChunkByReceiver(context);
+                break;
+            case EndResponse:
+                nextRequest(context, false);
+                break;
+            case EndResponseAndReuse:
+                nextRequest(context, true);
+                break;
+        }
     }
 
     private ProcessResult parseAndProcessAjpMessage(Context context) {
@@ -308,13 +296,6 @@ public class AjpProxier extends AsyncSocketProcessor {
 
             server.sendReleaseSignalForClient(context);
         }
-    }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Ajp Proxier ...");
     }
 
     private enum ProcessResult {

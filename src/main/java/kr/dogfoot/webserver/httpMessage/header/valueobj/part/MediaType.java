@@ -51,6 +51,7 @@ public class MediaType implements AppendableToByte {
                         parameterList.add(p);
                     }
                 } catch (ParserException e) {
+                    e.printStackTrace();
                 }
             }
         }

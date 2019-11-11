@@ -16,8 +16,8 @@ public abstract class AsyncSocketProcessor extends Processor {
     protected volatile boolean running;
     protected Thread thread;
 
-    public AsyncSocketProcessor(Server server) {
-        super(server);
+    public AsyncSocketProcessor(Server server, int id) {
+        super(server, id);
 
         contextMap = new ConcurrentHashMap<SocketChannel, Context>();
     }
@@ -34,6 +34,7 @@ public abstract class AsyncSocketProcessor extends Processor {
                 try {
                     nioSelector.select(One_Second);
                 } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
                 long currentTime = System.currentTimeMillis();

@@ -38,6 +38,7 @@ public class HeaderValueCacheControl extends HeaderValue {
 
                 cacheDirectiveList.add(cd);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

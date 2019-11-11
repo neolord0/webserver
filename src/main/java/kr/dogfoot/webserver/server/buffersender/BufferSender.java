@@ -20,7 +20,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class BufferSender implements Startable {
+    private static int BufferSenderID = 0;
     private Server server;
+    private int id;
 
     private volatile boolean running;
 
@@ -34,9 +36,15 @@ public class BufferSender implements Startable {
 
     public BufferSender(Server server) {
         this.server = server;
+        id = BufferSenderID++;
+
         waitingJobQueueForObserver = new LinkedBlockingQueue<ObserveJob>();
         sendingBufferMap = new ConcurrentHashMap<SocketChannel, SendBufferInfo>();
         waitingJobQueueForSocket = new ConcurrentLinkedQueue<SendJob>();
+    }
+
+    public int id() {
+        return id;
     }
 
     public void notifyStoring(SocketChannel channel) {
@@ -45,8 +53,6 @@ public class BufferSender implements Startable {
 
     @Override
     public void start() throws Exception {
-        Message.debug("start Buffer Sender ...");
-
         running = true;
 
         create_startObserverThread();
@@ -167,6 +173,7 @@ public class BufferSender implements Startable {
                         }
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -181,6 +188,7 @@ public class BufferSender implements Startable {
         try {
             nioSelector.selectNow();
         } catch (IOException e) {
+            e.printStackTrace();
         }
 
         SendJob job;
@@ -198,43 +206,38 @@ public class BufferSender implements Startable {
     }
 
     private void onSend(SocketChannel channel, SendBufferInfo bufferInfo) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
-                    wrapBuffer(bufferInfo);
-                }
-                boolean error = false;
-                try {
-                    channel.write(bufferInfo.buffer());
-                } catch (IOException e) {
-                    switch (bufferInfo.protocol()) {
-                        case Client:
-                            Message.debug(bufferInfo.context().clientConnection(), "error in send : " + e.getMessage());
-                            break;
-                        case AjpProxy:
-                            Message.debug(bufferInfo.context().ajpProxy(), "error in send : " + e.getMessage());
-                            break;
-                        case HttpProxy:
-                            Message.debug(bufferInfo.context().httpProxy(), "error in send: " + e.getMessage());
-                            break;
-                    }
-                    e.printStackTrace();
-                    error = true;
-                }
+        if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
+            wrapBuffer(bufferInfo);
+        }
+        boolean error = false;
+        try {
+            channel.write(bufferInfo.buffer());
+        } catch (IOException e) {
+            e.printStackTrace();
 
-                if (error == true) {
-                    server.objects().sendBufferStorage().removeBuffer(channel);
-                } else {
-                    if (bufferInfo.buffer().hasRemaining()) {
-                        waitingJobQueueForObserver.add(new ObserveJob(JobType.RetrySending, channel));
-                    } else {
-                        waitingJobQueueForObserver.add(new ObserveJob(JobType.EndSending, channel));
-                    }
-                }
+            switch (bufferInfo.protocol()) {
+                case Client:
+                    Message.debug(bufferInfo.context().clientConnection(), "error in send : " + e.getMessage());
+                    break;
+                case AjpProxy:
+                    Message.debug(bufferInfo.context().ajpProxy(), "error in send : " + e.getMessage());
+                    break;
+                case HttpProxy:
+                    Message.debug(bufferInfo.context().httpProxy(), "error in send: " + e.getMessage());
+                    break;
             }
-        };
-        server.objects().ioExecutorService().execute(r);
+            error = true;
+        }
+
+        if (error == true) {
+            server.objects().sendBufferStorage().removeBuffer(channel);
+        } else {
+            if (bufferInfo.buffer().hasRemaining()) {
+                waitingJobQueueForObserver.add(new ObserveJob(JobType.RetrySending, channel));
+            } else {
+                waitingJobQueueForObserver.add(new ObserveJob(JobType.EndSending, channel));
+            }
+        }
     }
 
     private void wrapBuffer(SendBufferInfo bufferInfo) {
@@ -283,6 +286,16 @@ public class BufferSender implements Startable {
     }
 
     private void onClose(SocketChannel channel, SendBufferInfo bufferInfo) {
+        if (bufferInfo.protocol() == SendBufferInfo.Protocol.Client) {
+            server.objects().clientConnectionManager().releaseAndClose(bufferInfo.context());
+            server.objects().contextManager().release(bufferInfo.context());
+        } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.AjpProxy) {
+            server.objects().ajpProxyConnectionManager().releaseAndClose(bufferInfo.context());
+        } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.HttpProxy) {
+            server.objects().httpProxyConnectionManager().releaseAndClose(bufferInfo.context());
+        }
+
+        /*
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -297,6 +310,7 @@ public class BufferSender implements Startable {
             }
         };
         server.objects().ioExecutorService().execute(r);
+         */
     }
 
 
@@ -314,8 +328,6 @@ public class BufferSender implements Startable {
 
         waitingJobQueueForObserver.add(new ObserveJob(JobType.None, null));
         nioSelector.wakeup();
-
-        Message.debug("terminate Buffer Sender2 ...");
     }
 
     private enum JobType {

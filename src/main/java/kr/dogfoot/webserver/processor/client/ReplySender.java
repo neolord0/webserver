@@ -19,16 +19,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ReplySender extends GeneralProcessor {
+    private static int ReplySenderID = 0;
     private static final String Error_TooManyFielsOpen = "(Too many open files)";
 
     public ReplySender(Server server) {
-        super(server);
-    }
-
-    public void start() throws Exception {
-        Message.debug("start Reply Sender ...");
-
-        super.start();
+        super(server, ReplySenderID++);
     }
 
     @Override
@@ -37,28 +32,24 @@ public class ReplySender extends GeneralProcessor {
         sendReply(context);
     }
 
-    private void sendReply(Context context) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
-                    Message.debug(context, "Send reply");
-                    ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
-                }
+    void sendReply(Context context) {
+        if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
+            Message.debug(context, "Send reply");
 
-                sendBodyBlock(context);
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+            ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
+
+            SenderStatus ss = context.clientConnection().senderStatus();
+            ss.changeState(SendingState.Body);
+        }
+
+        sendBodyBlock(context);
     }
 
     private void sendBodyBlock(Context context) {
         SenderStatus ss = context.clientConnection().senderStatus();
-
         if (context.reply().isBodyFile() && ss.openedResourceFile() == false) {
             openResourceFile(context);
         }
-
         if (context.reply().isBodyFile()) {
             sendBodyBlockFile(context);
         } else if (context.reply().bodyBytes() != null) {
@@ -134,7 +125,6 @@ public class ReplySender extends GeneralProcessor {
 
     private void sendBodyBlockFile(Context context) {
         SenderStatus ss = context.clientConnection().senderStatus();
-        ss.changeState(SendingState.Body);
 
         if (ss.isStartRange()) {
             setRange(ss, context.reply());
@@ -167,38 +157,58 @@ public class ReplySender extends GeneralProcessor {
     }
 
     private void sendResourceFileBlock(Context context) {
-        SenderStatus ss = context.clientConnection().senderStatus();
-        ByteBuffer buffer = bufferManager().pooledLargeBuffer();
-        if (buffer.capacity() > ss.remainingSendSize()) {
-            buffer.limit(ss.remainingSendSize());
-        }
+        readResourceFile(context, new MyCompletionHandler<Integer, Context, ByteBuffer>() {
+            @Override
+            public void completed(Integer result, Context context, ByteBuffer buffer) {
+                buffer.flip();
+                server.sendBufferToClient(context, buffer, true);
 
-        int read = -1;
-        try {
-            read = ss.resourceFileCh().read(buffer, ss.readingPosition());
-        } catch (IOException e) {
-            e.printStackTrace();
-            read = -1;
-        }
+                SenderStatus ss = context.clientConnection().senderStatus();
+                ss.addSentSizeInRange(result);
 
-        if (read > 0) {
-            buffer.flip();
-            server.sendBufferToClient(context, buffer, true);
-            ss.addSentSizeInRange(read);
+                if (ss.isEndRange()) {
+                    onEndRange(context);
 
-            if (ss.isEndRange()) {
-                onEndRange(context);
-
-                if (ss.stateIsEndBody()) {
-                    onEndBody(context, ss);
+                    if (ss.stateIsEndBody()) {
+                        onEndBody(context, ss);
+                    } else {
+                        gotoSelf(context);
+                    }
                 } else {
                     gotoSelf(context);
                 }
-            } else {
-                gotoSelf(context);
             }
-        }
+
+            @Override
+            public void failed(Throwable exc, Context context) {
+                server.sendCloseSignalForClient(context);
+            }
+        });
     }
+
+
+    private void readResourceFile(final Context context, final MyCompletionHandler<Integer, Context, ByteBuffer> handler) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SenderStatus ss = context.clientConnection().senderStatus();
+                    ByteBuffer buffer = bufferManager().pooledLargeBuffer();
+                    if (buffer.capacity() > ss.remainingSendSize()) {
+                        buffer.limit(ss.remainingSendSize());
+                    }
+                    int read = ss.resourceFileCh().read(buffer, ss.readingPosition());
+
+                    handler.completed(read, context, buffer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    handler.failed(e, context);
+                }
+            }
+        };
+        server.objects().ioExecutorService().execute(r);
+    }
+
 
     private void onEndRange(Context context) {
         SenderStatus ss = context.clientConnection().senderStatus();
@@ -238,13 +248,6 @@ public class ReplySender extends GeneralProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Reply Sender ...");
     }
 
     private interface MyCompletionHandler<V, A, A2> {

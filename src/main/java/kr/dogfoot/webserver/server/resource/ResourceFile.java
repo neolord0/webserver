@@ -6,6 +6,7 @@ import kr.dogfoot.webserver.server.host.HostObjects;
 import kr.dogfoot.webserver.server.resource.look.LookResult;
 import kr.dogfoot.webserver.server.resource.look.LookState;
 import kr.dogfoot.webserver.server.resource.performer.FilePerformer;
+import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 import java.io.File;
@@ -105,10 +106,14 @@ public class ResourceFile extends Resource {
             byte[] part1 = Long.toString(length, 32).getBytes();
             byte[] part2 = Long.toString(lastModified, 32).getBytes();
 
-            byte[] etag = new byte[part1.length + 1 + part2.length];
-            System.arraycopy(part1, 0, etag, 0, part1.length);
-            etag[part1.length] = ':';
-            System.arraycopy(part2, 0, etag, part1.length + 1, part2.length);
+            OutputBuffer buffer =  OutputBuffer.pooledObject();
+            buffer.append(HttpString.DQuote)
+                    .append(part1)
+                    .append(HttpString.Colon)
+                    .append(part2)
+                    .append(HttpString.DQuote);
+            byte[] etag = buffer.getBytes();
+            OutputBuffer.release(buffer);
             return etag;
         }
         return null;

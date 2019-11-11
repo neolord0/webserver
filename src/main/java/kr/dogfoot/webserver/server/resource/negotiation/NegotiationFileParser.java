@@ -22,10 +22,13 @@ public class NegotiationFileParser {
         try {
             root = openXMLFile(file);
         } catch (ParserConfigurationException e) {
+            e.printStackTrace();
             root = null;
         } catch (SAXException e) {
+            e.printStackTrace();
             root = null;
         } catch (IOException e) {
+            e.printStackTrace();
             root = null;
         }
         if (root != null && root.getNodeName().equalsIgnoreCase(NegoXML.Root_Node)) {
