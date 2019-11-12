@@ -81,7 +81,7 @@ public class AjpProxier extends AsyncSocketProcessor {
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
         sendErrorReplyToClient(context);
-        server.sendCloseSignalForAjpServer(context);
+        context.bufferSender().sendCloseSignalForAjpServer(context);
     }
 
     private void sendErrorReplyToClient(Context context) {
@@ -106,7 +106,7 @@ public class AjpProxier extends AsyncSocketProcessor {
         sendErrorReplyToClient(context);
 
         unregister(context.ajpProxy().selectionKey());
-        server.sendCloseSignalForAjpServer(context);
+        context.bufferSender().sendCloseSignalForAjpServer(context);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class AjpProxier extends AsyncSocketProcessor {
             Message.debug(connection, "read error from ajp proxy server.");
 
             sendErrorReplyToClient(context);
-            server.sendCloseSignalForAjpServer(context);
+            context.bufferSender().sendCloseSignalForAjpServer(context);
             return;
         }
 
@@ -283,7 +283,7 @@ public class AjpProxier extends AsyncSocketProcessor {
         if (reuse == true) {
             ajpProxyConnectionManager().idle(context);
         } else {
-            server.sendCloseSignalForAjpServer(context);
+            context.bufferSender().sendCloseSignalForAjpServer(context);
         }
 
         if (context.request().isPersistentConnection() == true) {
@@ -292,10 +292,9 @@ public class AjpProxier extends AsyncSocketProcessor {
             context.resetForNextRequest();
             server.gotoRequestReceiver(context);
         } else {
-            Message.debug(context, "close connection");
-
-            server.sendReleaseSignalForClient(context);
+            context.bufferSender().sendCloseSignalForClient(context);
         }
+
     }
 
     private enum ProcessResult {

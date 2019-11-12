@@ -411,42 +411,6 @@ public class Server implements Startable {
         appropriateProccsser(httpProxiers).prepareContext(context);
     }
 
-
-    public void sendBufferToClient(Context context, ByteBuffer buffer, boolean willRelease) {
-        objects().sendBufferStorage().addForClient(context, buffer, willRelease);
-        context.bufferSender().notifyStoring(context.clientConnection().channel());
-    }
-
-    public void sendCloseSignalForClient(Context context) {
-        objects().sendBufferStorage().addForClientClose(context);
-        context.bufferSender().notifyStoring(context.clientConnection().channel());
-    }
-
-    public void sendReleaseSignalForClient(Context context) {
-        objects().sendBufferStorage().addForClientRelease(context);
-        context.bufferSender().notifyStoring(context.clientConnection().channel());
-    }
-
-    public void sendBufferToAjpServer(Context context, ByteBuffer buffer, boolean willRelease) {
-        objects().sendBufferStorage().addForAjpServer(context, buffer, willRelease);
-        context.bufferSender().notifyStoring(context.ajpProxy().channel());
-    }
-
-    public void sendCloseSignalForAjpServer(Context context) {
-        objects().sendBufferStorage().addForAjpServerClose(context);
-        context.bufferSender().notifyStoring(context.ajpProxy().channel());
-    }
-
-    public void sendBufferToHttpServer(Context context, ByteBuffer buffer, boolean willRelease) {
-        objects().sendBufferStorage().addForHttpServer(context, buffer, willRelease);
-        context.bufferSender().notifyStoring(context.httpProxy().channel());
-    }
-
-    public void sendCloseSignalForHttpServer(Context context) {
-        objects().sendBufferStorage().addForHttpServerClose(context);
-        context.bufferSender().notifyStoring(context.httpProxy().channel());
-    }
-
     public ServerObjects objects() {
         return serverObjects;
     }

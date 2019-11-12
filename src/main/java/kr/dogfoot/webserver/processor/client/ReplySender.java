@@ -28,8 +28,11 @@ public class ReplySender extends GeneralProcessor {
 
     @Override
     protected void onNewContext(Context context) {
-        context.changeState(ContextState.SendingReply);
-        sendReply(context);
+        server.objects().ioExecutorService()
+                .execute(() -> {
+                    context.changeState(ContextState.SendingReply);
+                    sendReply(context);
+                });
     }
 
     void sendReply(Context context) {
@@ -102,24 +105,26 @@ public class ReplySender extends GeneralProcessor {
         } else {
             temp = ByteBuffer.wrap(bodyBytes);
         }
-        server.sendBufferToClient(context, temp, false);
+        context.bufferSender().sendBufferToClient(context, temp, false);
     }
 
     private void sendBodyCRLF(Context context) {
         ByteBuffer temp = ByteBuffer.wrap(HttpString.CRLF);
-        server.sendBufferToClient(context, temp, false);
+        context.bufferSender().sendBufferToClient(context, temp, false);
     }
 
     private void onEndRequest(Context context) {
         if (context.reply().code().isError()) {
-            server.sendCloseSignalForClient(context);
+            context.bufferSender().sendCloseSignalForClient(context);
         } else {
             if (context.reply().hasKeepAlive() == true) {
                 Message.debug(context, "Persistent Connection");
-            }
 
-            context.resetForNextRequest();
-            server.gotoRequestReceiver(context);
+                context.resetForNextRequest();
+                server.gotoRequestReceiver(context);
+            } else {
+                context.bufferSender().sendCloseSignalForClient(context);
+            }
         }
     }
 
@@ -153,7 +158,7 @@ public class ReplySender extends GeneralProcessor {
         ReplyToBuffer.forPartHeader(buffer, context.clientConnection().senderStatus(), context.reply());
         buffer.flip();
 
-        server.sendBufferToClient(context, buffer, true);
+        context.bufferSender().sendBufferToClient(context, buffer, true);
     }
 
     private void sendResourceFileBlock(Context context) {
@@ -161,7 +166,7 @@ public class ReplySender extends GeneralProcessor {
             @Override
             public void completed(Integer result, Context context, ByteBuffer buffer) {
                 buffer.flip();
-                server.sendBufferToClient(context, buffer, true);
+                context.bufferSender().sendBufferToClient(context, buffer, true);
 
                 SenderStatus ss = context.clientConnection().senderStatus();
                 ss.addSentSizeInRange(result);
@@ -181,32 +186,29 @@ public class ReplySender extends GeneralProcessor {
 
             @Override
             public void failed(Throwable exc, Context context) {
-                server.sendCloseSignalForClient(context);
+                context.bufferSender().sendCloseSignalForClient(context);
             }
         });
     }
 
 
     private void readResourceFile(final Context context, final MyCompletionHandler<Integer, Context, ByteBuffer> handler) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    SenderStatus ss = context.clientConnection().senderStatus();
-                    ByteBuffer buffer = bufferManager().pooledLargeBuffer();
-                    if (buffer.capacity() > ss.remainingSendSize()) {
-                        buffer.limit(ss.remainingSendSize());
-                    }
-                    int read = ss.resourceFileCh().read(buffer, ss.readingPosition());
+        server.objects().ioExecutorService()
+                .execute(() -> {
+                    try {
+                        SenderStatus ss = context.clientConnection().senderStatus();
+                        ByteBuffer buffer = bufferManager().pooledLargeBuffer();
+                        if (buffer.capacity() > ss.remainingSendSize()) {
+                            buffer.limit(ss.remainingSendSize());
+                        }
+                        int read = ss.resourceFileCh().read(buffer, ss.readingPosition());
 
-                    handler.completed(read, context, buffer);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    handler.failed(e, context);
-                }
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+                        handler.completed(read, context, buffer);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        handler.failed(e, context);
+                    }
+                });
     }
 
 
@@ -239,7 +241,7 @@ public class ReplySender extends GeneralProcessor {
         ReplyToBuffer.forEndBoundary(buffer, context.reply());
         buffer.flip();
 
-        server.sendBufferToClient(context, buffer, true);
+        context.bufferSender().sendBufferToClient(context, buffer, true);
     }
 
     private void closeResourceFile(Context context) {

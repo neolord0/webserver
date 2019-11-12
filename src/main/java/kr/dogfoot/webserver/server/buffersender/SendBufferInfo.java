@@ -34,15 +34,6 @@ public class SendBufferInfo {
         return this;
     }
 
-    public SendBufferInfo clientRelease(Context context) {
-        this.protocol = Protocol.Client;
-        this.jobType = JobType.Release;
-        this.context = context;
-        this.buffer = null;
-        this.willRelease = false;
-        return this;
-    }
-
     public SendBufferInfo ajpProxy(Context context, ByteBuffer buffer, boolean willRelease) {
         this.protocol = Protocol.AjpProxy;
         this.jobType = JobType.SendBuffer;
@@ -123,7 +114,6 @@ public class SendBufferInfo {
 
     public enum JobType {
         SendBuffer,
-        Close,
-        Release
+        Close
     }
 }

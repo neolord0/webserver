@@ -26,11 +26,14 @@ public class RequestPerformer extends GeneralProcessor {
 
     @Override
     protected void onNewContext(Context context) {
-        if (context.state() == ContextState.ReceivingRequest) {
-            onAfterReceivingRequest(context);
-        } else {
-            onAfterReceivingBody(context);
-        }
+        server.objects().ioExecutorService()
+                .execute(() -> {
+                    if (context.state() == ContextState.ReceivingRequest) {
+                        onAfterReceivingRequest(context);
+                    } else {
+                        onAfterReceivingBody(context);
+                    }
+                });
     }
 
     private void onAfterReceivingRequest(Context context) {

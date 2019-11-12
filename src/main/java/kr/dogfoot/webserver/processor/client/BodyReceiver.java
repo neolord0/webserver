@@ -37,7 +37,7 @@ public class BodyReceiver extends AsyncSocketProcessor {
 
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
-        server.sendCloseSignalForClient(context);
+        context.bufferSender().sendCloseSignalForClient(context);
     }
 
     @Override

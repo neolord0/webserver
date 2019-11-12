@@ -1,5 +1,6 @@
 package kr.dogfoot.webserver.server.buffersender;
 
+import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.connection.http.client.HttpsClientConnection;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.Startable;
@@ -24,6 +25,8 @@ public class BufferSender implements Startable {
     private Server server;
     private int id;
 
+    private SendBufferStorage storage;
+
     private volatile boolean running;
 
     private Thread observerThread;
@@ -38,6 +41,8 @@ public class BufferSender implements Startable {
         this.server = server;
         id = BufferSenderID++;
 
+        storage = new SendBufferStorage();
+
         waitingJobQueueForObserver = new LinkedBlockingQueue<ObserveJob>();
         sendingBufferMap = new ConcurrentHashMap<SocketChannel, SendBufferInfo>();
         waitingJobQueueForSocket = new ConcurrentLinkedQueue<SendJob>();
@@ -47,7 +52,37 @@ public class BufferSender implements Startable {
         return id;
     }
 
-    public void notifyStoring(SocketChannel channel) {
+    public void sendBufferToClient(Context context, ByteBuffer buffer, boolean willRelease) {
+        storage.addForClient(context, buffer, willRelease);
+        notifyStoring(context.clientConnection().channel());
+    }
+
+    public void sendCloseSignalForClient(Context context) {
+        storage.addForClientClose(context);
+        notifyStoring(context.clientConnection().channel());
+    }
+
+    public void sendBufferToAjpServer(Context context, ByteBuffer buffer, boolean willRelease) {
+        storage.addForAjpServer(context, buffer, willRelease);
+        notifyStoring(context.ajpProxy().channel());
+    }
+
+    public void sendCloseSignalForAjpServer(Context context) {
+        storage.addForAjpServerClose(context);
+        notifyStoring(context.ajpProxy().channel());
+    }
+
+    public void sendBufferToHttpServer(Context context, ByteBuffer buffer, boolean willRelease) {
+        storage.addForHttpServer(context, buffer, willRelease);
+        notifyStoring(context.httpProxy().channel());
+    }
+
+    public void sendCloseSignalForHttpServer(Context context) {
+        storage.addForHttpServerClose(context);
+        notifyStoring(context.httpProxy().channel());
+    }
+
+    private void notifyStoring(SocketChannel channel) {
         waitingJobQueueForObserver.add(new ObserveJob(JobType.NotifyStoring, channel));
     }
 
@@ -75,7 +110,7 @@ public class BufferSender implements Startable {
                 switch (job.type) {
                     case NotifyStoring:
                         if (isSending(job.channel) == false) {
-                            orderToSendNextBuffer(job.channel);
+                            orderToSendNextBufferOrClose(job.channel);
                         }
                         break;
                     case RetrySending:
@@ -83,8 +118,7 @@ public class BufferSender implements Startable {
                         break;
                     case EndSending:
                         releaseBuffer(job.channel);
-                        setSendingFalse(job.channel);
-                        orderToSendNextBuffer(job.channel);
+                        orderToSendNextBufferOrClose(job.channel);
                         break;
                 }
             }
@@ -96,24 +130,35 @@ public class BufferSender implements Startable {
         return sendingBufferMap.containsKey(channel);
     }
 
-    private void orderToSendNextBuffer(SocketChannel channel) {
-        SendBufferInfo nextBufferInfo = server.objects().sendBufferStorage().nextSendBuffer(channel);
+    private void orderToSendNextBufferOrClose(SocketChannel channel) {
+        SendBufferInfo nextBufferInfo = storage.nextSendBuffer(channel);
         if (nextBufferInfo != null) {
-            setSendingTrue(channel, nextBufferInfo);
+            if (nextBufferInfo.jobType() == SendBufferInfo.JobType.SendBuffer) {
+                sendingBufferMap.put(channel, nextBufferInfo);
 
-            waitingJobQueueForSocket.add(new SendJob(channel, nextBufferInfo));
-            nioSelector.wakeup();
+                waitingJobQueueForSocket.add(new SendJob(channel, nextBufferInfo));
+                nioSelector.wakeup();
+            } else if (nextBufferInfo.jobType() == SendBufferInfo.JobType.Close){
+                storage.removeBuffer(channel);
+                closeConnection(nextBufferInfo);
+            }
         } else {
-            setSendingFalse(channel);
+            sendingBufferMap.remove(channel);
         }
     }
 
-    private void setSendingTrue(SocketChannel channel, SendBufferInfo bufferInfo) {
-        sendingBufferMap.put(channel, bufferInfo);
-    }
-
-    private void setSendingFalse(SocketChannel channel) {
-        sendingBufferMap.remove(channel);
+    private void closeConnection(SendBufferInfo bufferInfo) {
+        server.objects().ioExecutorService().
+                execute(() -> {
+                    if (bufferInfo.protocol() == SendBufferInfo.Protocol.Client) {
+                        server.objects().clientConnectionManager().releaseAndClose(bufferInfo.context());
+                        server.objects().contextManager().release(bufferInfo.context());
+                    } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.AjpProxy) {
+                        server.objects().ajpProxyConnectionManager().releaseAndClose(bufferInfo.context());
+                    } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.HttpProxy) {
+                        server.objects().httpProxyConnectionManager().releaseAndClose(bufferInfo.context());
+                    }
+                });
     }
 
     private void orderToSendCurrentBuffer(SocketChannel channel) {
@@ -139,41 +184,35 @@ public class BufferSender implements Startable {
 
         socketThread = new Thread(() -> {
             while (running) {
-                checkNewJobs();
                 try {
-                    if (nioSelector.select() == 0) {
+                    nioSelector.select();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                checkNewJobs();
+
+                Iterator<SelectionKey> keys = nioSelector.selectedKeys().iterator();
+                while (keys.hasNext()) {
+                    SelectionKey key = keys.next();
+                    keys.remove();
+
+                    if (!key.isValid()) {
                         continue;
                     }
 
-                    Iterator<SelectionKey> keys = nioSelector.selectedKeys().iterator();
+                    SocketChannel channel = (SocketChannel) key.channel();
+                    SendBufferInfo bufferInfo = sendingBufferMap.get(channel);
+                    if (key.isWritable()) {
 
-                    while (keys.hasNext()) {
-                        SelectionKey key = keys.next();
-                        keys.remove();
-
-                        if (!key.isValid()) {
-                            continue;
+                        switch (bufferInfo.jobType()) {
+                            case SendBuffer:
+                                onSend(channel, bufferInfo);
+                                break;
                         }
 
-                        SocketChannel channel = (SocketChannel) key.channel();
-                        SendBufferInfo bufferInfo = sendingBufferMap.get(channel);
-                        if (key.isWritable()) {
-                            key.cancel();
-                            switch (bufferInfo.jobType()) {
-                                case SendBuffer:
-                                    onSend(channel, bufferInfo);
-                                    break;
-                                case Close:
-                                    onClose(channel, bufferInfo);
-                                    break;
-                                case Release:
-                                    onRelease(channel, bufferInfo);
-                                    break;
-                            }
-                        }
+                        key.cancel();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -181,63 +220,54 @@ public class BufferSender implements Startable {
     }
 
     private void checkNewJobs() {
-        if (waitingJobQueueForSocket.peek() == null) {
-            return;
-        }
-
-        try {
-            nioSelector.selectNow();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         SendJob job;
         while ((job = waitingJobQueueForSocket.poll()) != null) {
-            register(job.channel);
-        }
-    }
-
-    private void register(SocketChannel channel) {
-        try {
-            channel.register(nioSelector, SelectionKey.OP_WRITE);
-        } catch (ClosedChannelException e) {
-            e.printStackTrace();
+            if (job != null) {
+                try {
+                    job.channel.register(nioSelector, SelectionKey.OP_WRITE);
+                } catch (ClosedChannelException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
     private void onSend(SocketChannel channel, SendBufferInfo bufferInfo) {
-        if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
-            wrapBuffer(bufferInfo);
-        }
-        boolean error = false;
-        try {
-            channel.write(bufferInfo.buffer());
-        } catch (IOException e) {
-            e.printStackTrace();
+        server.objects().ioExecutorService().
+                execute(() -> {
+                    if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
+                        wrapBuffer(bufferInfo);
+                    }
+                    boolean error = false;
+                    try {
+                        channel.write(bufferInfo.buffer());
+                    } catch (IOException e) {
+                        e.printStackTrace();
 
-            switch (bufferInfo.protocol()) {
-                case Client:
-                    Message.debug(bufferInfo.context().clientConnection(), "error in send : " + e.getMessage());
-                    break;
-                case AjpProxy:
-                    Message.debug(bufferInfo.context().ajpProxy(), "error in send : " + e.getMessage());
-                    break;
-                case HttpProxy:
-                    Message.debug(bufferInfo.context().httpProxy(), "error in send: " + e.getMessage());
-                    break;
-            }
-            error = true;
-        }
+                        switch (bufferInfo.protocol()) {
+                            case Client:
+                                Message.debug(bufferInfo.context().clientConnection(), "error in send : " + e.getMessage());
+                                break;
+                            case AjpProxy:
+                                Message.debug(bufferInfo.context().ajpProxy(), "error in send : " + e.getMessage());
+                                break;
+                            case HttpProxy:
+                                Message.debug(bufferInfo.context().httpProxy(), "error in send: " + e.getMessage());
+                                break;
+                        }
+                        error = true;
+                    }
 
-        if (error == true) {
-            server.objects().sendBufferStorage().removeBuffer(channel);
-        } else {
-            if (bufferInfo.buffer().hasRemaining()) {
-                waitingJobQueueForObserver.add(new ObserveJob(JobType.RetrySending, channel));
-            } else {
-                waitingJobQueueForObserver.add(new ObserveJob(JobType.EndSending, channel));
-            }
-        }
+                    if (error == true) {
+                        storage.removeBuffer(channel);
+                    } else {
+                        if (bufferInfo.buffer().hasRemaining()) {
+                            waitingJobQueueForObserver.add(new ObserveJob(JobType.RetrySending, channel));
+                        } else {
+                            waitingJobQueueForObserver.add(new ObserveJob(JobType.EndSending, channel));
+                        }
+                    }
+                });
     }
 
     private void wrapBuffer(SendBufferInfo bufferInfo) {
@@ -284,43 +314,6 @@ public class BufferSender implements Startable {
             }
         } while (retry);
     }
-
-    private void onClose(SocketChannel channel, SendBufferInfo bufferInfo) {
-        if (bufferInfo.protocol() == SendBufferInfo.Protocol.Client) {
-            server.objects().clientConnectionManager().releaseAndClose(bufferInfo.context());
-            server.objects().contextManager().release(bufferInfo.context());
-        } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.AjpProxy) {
-            server.objects().ajpProxyConnectionManager().releaseAndClose(bufferInfo.context());
-        } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.HttpProxy) {
-            server.objects().httpProxyConnectionManager().releaseAndClose(bufferInfo.context());
-        }
-
-        /*
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if (bufferInfo.protocol() == SendBufferInfo.Protocol.Client) {
-                    server.objects().clientConnectionManager().releaseAndClose(bufferInfo.context());
-                    server.objects().contextManager().release(bufferInfo.context());
-                } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.AjpProxy) {
-                    server.objects().ajpProxyConnectionManager().releaseAndClose(bufferInfo.context());
-                } else if (bufferInfo.protocol() == SendBufferInfo.Protocol.HttpProxy) {
-                    server.objects().httpProxyConnectionManager().releaseAndClose(bufferInfo.context());
-                }
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
-         */
-    }
-
-
-    private void onRelease(SocketChannel channel, SendBufferInfo bufferInfo) {
-        if (bufferInfo.protocol() == SendBufferInfo.Protocol.Client) {
-            server.objects().clientConnectionManager().release(bufferInfo.context());
-            server.objects().contextManager().release(bufferInfo.context());
-        }
-    }
-
 
     @Override
     public void terminate() throws Exception {

@@ -22,13 +22,6 @@ public class SendBufferStorage {
         add(context.clientConnection().channel(), new SendBufferInfo().clientClose(context));
     }
 
-
-    public void addForClientRelease(Context context) {
-        add(context.clientConnection().channel(), new SendBufferInfo().clientRelease(context));
-
-    }
-
-
     public void addForAjpServer(Context context, ByteBuffer buffer, boolean willRelease) {
         add(context.ajpProxy().channel(), new SendBufferInfo().ajpProxy(context, buffer, willRelease));
     }

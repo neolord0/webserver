@@ -13,6 +13,6 @@ public class ToClientCommon {
         ReplyToBuffer.forStatusLine(buffer, reply);
         ReplyToBuffer.forHeaders(buffer, reply);
         buffer.flip();
-        server.sendBufferToClient(context, buffer, true);
+        context.bufferSender().sendBufferToClient(context, buffer, true);
     }
 }

@@ -74,12 +74,12 @@ public abstract class Processor implements Startable {
 
     protected void closeAllConnectionFor(Context context) {
         if (context.ajpProxy() != null) {
-            server.sendCloseSignalForAjpServer(context);
+            context.bufferSender().sendCloseSignalForAjpServer(context);
         }
         if (context.httpProxy() != null) {
-            server.sendCloseSignalForHttpServer(context);
+            context.bufferSender().sendCloseSignalForHttpServer(context);
         }
-        server.sendCloseSignalForClient(context);
+        context.bufferSender().sendCloseSignalForClient(context);
     }
 
 }

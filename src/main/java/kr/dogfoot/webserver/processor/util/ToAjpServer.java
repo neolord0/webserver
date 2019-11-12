@@ -19,14 +19,14 @@ public class ToAjpServer {
         AjpMessageMaker.forForwardRequest(buffer, context.request(), context.clientConnection().remoteAddress(), context.clientConnection().adjustSSL());
         buffer.flip();
 
-        server.sendBufferToAjpServer(context, buffer, true);
+        context.bufferSender().sendBufferToAjpServer(context, buffer, true);
     }
 
     public static void sendEmptyBodyChunk(Context context, Server server) {
         ByteBuffer buffer = server.objects().bufferManager().pooledVarySmallBuffer();
         AjpMessageMaker.forEmptyBodyChunk(buffer);
         buffer.flip();
-        server.sendBufferToAjpServer(context, buffer, true);
+        context.bufferSender().sendBufferToAjpServer(context, buffer, true);
     }
 
     public static boolean sendBodyChunkAsMuchContentLength(Context context, Server server) {
@@ -51,7 +51,7 @@ public class ToAjpServer {
             ByteBuffer buffer = server.objects().bufferManager().pooledBufferForAjpPacket();
             AjpMessageMaker.forRequestBodyChunk(buffer, readBuffer, length);
             buffer.flip();
-            server.sendBufferToAjpServer(context, buffer, true);
+            context.bufferSender().sendBufferToAjpServer(context, buffer, true);
 
             clientConn.parserStatus().addReadBodySize(length);
         }
@@ -120,7 +120,7 @@ public class ToAjpServer {
 
             AjpMessageMaker.forRequestBodyChunk(writeBuffer, ajpProxyConn.bodyChunkSize());
             writeBuffer.flip();
-            server.sendBufferToAjpServer(context, writeBuffer, true);
+            context.bufferSender().sendBufferToAjpServer(context, writeBuffer, true);
             ajpProxyConn.bodyBuffer(null);
 
         }
