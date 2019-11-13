@@ -34,6 +34,8 @@ public class HeaderCondition implements HeaderConditionInterface {
             try {
                 headerValue = headerItem.updateValueObj();
             } catch (ParserException e) {
+                e.printStackTrace();;
+
                 headerValue = null;
             }
             if (headerValue != null) {

@@ -2,6 +2,7 @@ package kr.dogfoot.webserver.processor.client;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
+import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.Host;
@@ -19,12 +20,15 @@ import java.util.Iterator;
 import java.util.Vector;
 
 public class ClientListener extends AsyncSocketProcessor {
+    private static int ClientListenerID = 0;
+
     private Vector<Integer> usedPorts;
     private HashMap<ServerSocketChannel, ServerSocketInfo> serverSocketInfos;
     private int acceptCount;
 
+
     public ClientListener(Server server) {
-        super(server);
+        super(server, ClientListenerID++);
 
         usedPorts = new Vector<Integer>();
         serverSocketInfos = new HashMap<ServerSocketChannel, ServerSocketInfo>();
@@ -33,8 +37,6 @@ public class ClientListener extends AsyncSocketProcessor {
 
     @Override
     public void start() throws Exception {
-        Message.debug("start Client Listener ...");
-
         nioSelector = Selector.open();
         running = true;
 
@@ -93,28 +95,25 @@ public class ClientListener extends AsyncSocketProcessor {
     protected void onAccept(ServerSocketChannel serverChannel, long currentTime) {
         SocketChannel channel = accept(serverChannel);
         if (channel != null) {
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    ServerSocketInfo info = serverSocketInfos.get(serverChannel);
+            ServerSocketInfo info = serverSocketInfos.get(serverChannel);
 
-                    HttpClientConnection conn = clientConnectionManager().pooledObject(channel, info.adjustSSL);
-                    conn.lastAccessTime(currentTime);
+            HttpClientConnection conn = clientConnectionManager().pooledObject(channel, info.adjustSSL);
+            conn.lastAccessTime(currentTime);
 
-                    Context context = contextManager().pooledObject();
-                    context.clientConnection(conn);
+            Context context = contextManager().pooledObject();
+            context.clientConnection(conn);
 
-                    if (info.adjustSSL) {
-                        server.gotoSSLHandshaker(context);
-                    } else {
-                        server.gotoRequestReceiver(context);
-                    }
+            context.bufferSender(server.bufferSender());
+            if (info.adjustSSL) {
+                server.gotoSSLHandshaker(context);
+            } else {
+                server.gotoRequestReceiver(context);
+            }
 
-                    acceptCount++;
-                    Message.debug(context, "accept " + acceptCount);
-                }
-            };
-            server.objects().ioExecutorService().execute(r);
+            acceptCount++;
+            Message.debug(context, "accept " + acceptCount);
+        } else {
+            System.out.println("fail to accept.");
         }
     }
 
@@ -141,8 +140,6 @@ public class ClientListener extends AsyncSocketProcessor {
 
         closeServerSocketChannels();
         nioSelector.close();
-
-        Message.debug("terminate Client Listener ...");
     }
 
     private void closeServerSocketChannels() throws IOException {

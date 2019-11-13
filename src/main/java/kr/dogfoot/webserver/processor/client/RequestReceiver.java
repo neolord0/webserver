@@ -4,6 +4,7 @@ import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
+import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.parser.HttpRequestParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.server.Server;
@@ -13,16 +14,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class RequestReceiver extends AsyncSocketProcessor {
-    private int closeCount = 0;
+    private static int RequestReceiverID = 0;
 
     public RequestReceiver(Server server) {
-        super(server);
-    }
-
-    public void start() throws Exception {
-        Message.debug("start Request Receiver ...");
-
-        super.start();
+        super(server, RequestReceiverID++);
     }
 
     @Override
@@ -54,43 +49,39 @@ public class RequestReceiver extends AsyncSocketProcessor {
     }
 
     @Override
-    protected void closeConnectionForKeepAlive(Context context) {
-        closeCount++;
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
+        Message.debug(context, "Keep-Alive time-out event has occurred.");
 
-        unregister(context.clientConnection().selectionKey());
+        if (willUnregister == true) {
+            unregister(context.clientConnection().selectionKey());
+        }
         closeAllConnectionFor(context);
     }
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                HttpClientConnection connection = context.clientConnection();
-                int numRead = -2;
+        HttpClientConnection connection = context.clientConnection();
+        int numRead = -2;
 
-                try {
-                    numRead = channel.read(connection.receiveBuffer());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    numRead = -2;
-                }
+        try {
+            numRead = channel.read(connection.receiveBuffer());
+        } catch (Exception e) {
+            e.printStackTrace();
+            numRead = -2;
+        }
 
-                if (numRead == -2) {
-                    Message.debug(context, "http read error");
+        if (numRead == -2) {
+            Message.debug(context, "http read error");
 
-                    closeAllConnectionFor(context);
-                    return;
-                }
+            closeAllConnectionFor(context);
+            return;
+        }
 
-                if (numRead > 0) {
-                    setLastAccessTime(context, currentTime);
-                }
+        if (numRead > 0) {
+            setLastAccessTime(context, currentTime);
+        }
 
-                process(connection, context, AfterProcess.GotoSelf);
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+        process(connection, context, AfterProcess.GotoSelf);
     }
 
     private void process(HttpClientConnection connection, Context context, AfterProcess afterProcess) {
@@ -118,12 +109,5 @@ public class RequestReceiver extends AsyncSocketProcessor {
                 connection.parserStatus().state() != ParsingState.BodyStart) {
             HttpRequestParser.parse(connection);
         }
-    }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Request Receiver ...");
     }
 }

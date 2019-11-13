@@ -17,16 +17,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public abstract class Processor implements Startable {
     protected Server server;
     protected ConcurrentLinkedQueue<Context> waitingContextQueue;
+    protected int id = 0;
 
-    public Processor(Server server) {
+    public Processor(Server server, int id) {
         this.server = server;
+        this.id = id;
         waitingContextQueue = new ConcurrentLinkedQueue<Context>();
     }
 
+    public int id() {
+        return id;
+    }
 
     public void prepareContext(Context context) {
         waitingContextQueue.add(context);
         wakeup();
+    }
+
+    public int waitContextCount() {
+        return waitingContextQueue.size();
     }
 
     protected void gotoSelf(Context context) {
@@ -65,11 +74,12 @@ public abstract class Processor implements Startable {
 
     protected void closeAllConnectionFor(Context context) {
         if (context.ajpProxy() != null) {
-            server.sendCloseSignalForAjpServer(context);
+            context.bufferSender().sendCloseSignalForAjpServer(context);
         }
         if (context.httpProxy() != null) {
-            server.sendCloseSignalForHttpServer(context);
+            context.bufferSender().sendCloseSignalForHttpServer(context);
         }
-        server.sendCloseSignalForClient(context);
+        context.bufferSender().sendCloseSignalForClient(context);
     }
+
 }

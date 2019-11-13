@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SSLHandshaker extends Processor {
+    private static int SSLHandshakerID = 0;
     private volatile boolean running;
 
     private Thread handshakingThread;
@@ -32,7 +33,7 @@ public class SSLHandshaker extends Processor {
     private Thread socketThread;
 
     public SSLHandshaker(Server server) {
-        super(server);
+        super(server, SSLHandshakerID++);
 
         waitingQueueForSocket = new ConcurrentLinkedQueue<Context>();
         contextMap = new ConcurrentHashMap<SocketChannel, Context>();
@@ -40,8 +41,6 @@ public class SSLHandshaker extends Processor {
 
     @Override
     public void start() throws Exception {
-        Message.debug("start SSL Handshaker ...");
-
         nioSelector = Selector.open();
 
         running = true;
@@ -90,10 +89,11 @@ public class SSLHandshaker extends Processor {
                 checkNewContexts();
 
                 try {
-                    if (nioSelector.select() == 0) {
+                    if (nioSelector.select(1000) == 0) {
                         continue;
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
                 Iterator<SelectionKey> keys = nioSelector.selectedKeys().iterator();
@@ -131,6 +131,7 @@ public class SSLHandshaker extends Processor {
                 error = true;
             }
         } catch (SSLException e) {
+            e.printStackTrace();
         }
 
         if (error == false) {
@@ -226,6 +227,7 @@ public class SSLHandshaker extends Processor {
             try {
                 wrapResult = sslEngine.wrap(buffer, buffer);
             } catch (SSLException e) {
+                e.printStackTrace();
                 bufferManager().release(buffer);
                 connection.handshakeState(HandshakeState.Fail);
                 return false;
@@ -313,6 +315,7 @@ public class SSLHandshaker extends Processor {
         try {
             nioSelector.selectNow();
         } catch (IOException e) {
+            e.printStackTrace();
         }
 
         Context context;
@@ -408,16 +411,15 @@ public class SSLHandshaker extends Processor {
     }
 
     @Override
-    public void terminate() throws Exception {
-        server.terminate();
-
-        Message.debug("terminate SSL Handshaker ...");
-    }
-
-    @Override
     protected void wakeup() {
         synchronized (handshakingThread) {
             handshakingThread.notify();
         }
+    }
+
+    @Override
+    public void terminate() throws Exception {
+        running = false;
+        wakeup();
     }
 }

@@ -8,10 +8,10 @@ public class SettingXML {
     public final static String Root_Node = "webserver";
     public final static String Properties_Node = "properties";
     public final static String Host_Node = "host";
-
     public final static String IO_Thread_Pools_Node = "io_thread_pools";
     public final static String Server_Header_Node = "server_header";
     public final static String Keep_Alive_Node = "keep_alive";
+    public final static String Count_Of_Processor_Node = "count_of_processor";
     public final static String Root_Path_Node = "root_path";
     public final static String Custom_Media_Types_Node = "custom_media_types";
     public final static String SSL_Config_Node = "ssl_config";
@@ -55,6 +55,15 @@ public class SettingXML {
     public final static String Send_Attr = "send";
     public final static String Timeout_Attr = "timeout";
     public final static String Max_Attr = "max";
+    public final static String SSLHandshaker_Attr = "ssl_handshaker";
+    public final static String RequestReceiver_Attr = "request_receiver";
+    public final static String BodyReceiver_Attr = "body_receiver";
+    public final static String RequestPerformer_Attr = "request_performer";
+    public final static String ReplySender_Attr = "reply_sender";
+    public final static String BufferSender_Attr = "buffer_sender";
+    public final static String ProxyConnector_Attr = "proxy_connector";
+    public final static String AjpProxier_Attr = "ajp_proxier";
+    public final static String HttpProxier_Attr = "http_proxier";
     public final static String Name_Attr = "name";
     public final static String Domain_Attr = "domain";
     public final static String Ip_Attr = "ip";

@@ -35,6 +35,7 @@ public class LanguageRange implements AppendableToByte {
                         qvalue = new Float(p.getValue());
                     }
                 } catch (ParserException e) {
+                    e.printStackTrace();
                 }
             }
         }

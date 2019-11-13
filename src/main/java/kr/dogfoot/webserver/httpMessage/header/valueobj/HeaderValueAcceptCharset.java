@@ -38,6 +38,7 @@ public class HeaderValueAcceptCharset extends HeaderValue {
 
                 charsetList.add(cs);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

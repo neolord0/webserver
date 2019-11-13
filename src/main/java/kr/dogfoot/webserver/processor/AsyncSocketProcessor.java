@@ -16,8 +16,8 @@ public abstract class AsyncSocketProcessor extends Processor {
     protected volatile boolean running;
     protected Thread thread;
 
-    public AsyncSocketProcessor(Server server) {
-        super(server);
+    public AsyncSocketProcessor(Server server, int id) {
+        super(server, id);
 
         contextMap = new ConcurrentHashMap<SocketChannel, Context>();
     }
@@ -34,6 +34,7 @@ public abstract class AsyncSocketProcessor extends Processor {
                 try {
                     nioSelector.select(One_Second);
                 } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
                 long currentTime = System.currentTimeMillis();
@@ -78,7 +79,7 @@ public abstract class AsyncSocketProcessor extends Processor {
     protected void checkKeepAliveTimeout(long currentTime) {
         for (Context context : contextMap.values()) {
             if (isOverTimeoutForKeepAlive(context, currentTime)) {
-                closeConnectionForKeepAlive(context);
+                closeConnectionForKeepAlive(context, true);
             }
         }
     }
@@ -87,7 +88,7 @@ public abstract class AsyncSocketProcessor extends Processor {
         return false;
     }
 
-    protected void closeConnectionForKeepAlive(Context context) {
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
     }
 
     protected void onAccept(ServerSocketChannel serverChannel, long currentTime) {
@@ -103,7 +104,7 @@ public abstract class AsyncSocketProcessor extends Processor {
         Context context;
         while ((context = waitingContextQueue.poll()) != null) {
             if (isOverTimeoutForKeepAlive(context, currentTime)) {
-                closeConnectionForKeepAlive(context);
+                closeConnectionForKeepAlive(context, false);
             } else {
                 onNewContext(context);
             }

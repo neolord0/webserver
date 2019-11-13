@@ -39,6 +39,7 @@ public class HeaderValueAcceptEncoding extends HeaderValue {
 
                 codingList.add(c);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

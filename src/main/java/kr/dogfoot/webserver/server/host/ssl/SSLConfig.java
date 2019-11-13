@@ -297,11 +297,12 @@ public class SSLConfig {
         try {
             this.certificateVerification =
                     CertificateVerification.fromString(certificateVerification);
-        } catch (IllegalArgumentException iae) {
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             // If the specified value is not recognised, default to the
             // strictest possible option.
             this.certificateVerification = CertificateVerification.REQUIRED;
-            throw iae;
+            throw e;
         }
     }
 
@@ -473,8 +474,8 @@ public class SSLConfig {
                 try {
                     result = KeyStoreUtil.load(getTruststoreType(), getTruststoreProvider(),
                             getTruststoreFile(), getTruststorePassword());
-                } catch (IOException ioe) {
-                    Throwable cause = ioe.getCause();
+                } catch (IOException e) {
+                    Throwable cause = e.getCause();
                     if (cause instanceof UnrecoverableKeyException) {
                         // Log a warning we had a password issue
                         /*
@@ -487,7 +488,7 @@ public class SSLConfig {
                                 getTruststoreFile(), null);
                     } else {
                         // Something else went wrong - re-throw
-                        throw ioe;
+                        throw e;
                     }
                 }
             }

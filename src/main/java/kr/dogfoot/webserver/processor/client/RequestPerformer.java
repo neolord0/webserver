@@ -18,54 +18,47 @@ import kr.dogfoot.webserver.server.resource.look.LookResult;
 import kr.dogfoot.webserver.util.Message;
 
 public class RequestPerformer extends GeneralProcessor {
+    private static int RequestPerformerID = 0;
+
     public RequestPerformer(Server server) {
-        super(server);
-    }
-
-    public void start() throws Exception {
-        Message.debug("start Request Performer ...");
-
-        super.start();
+        super(server, RequestPerformerID++);
     }
 
     @Override
     protected void onNewContext(Context context) {
-        if (context.state() == ContextState.ReceivingRequest) {
-            onAfterReceivingRequest(context);
-        } else {
-            onAfterReceivingBody(context);
-        }
+        server.objects().ioExecutorService()
+                .execute(() -> {
+                    if (context.state() == ContextState.ReceivingRequest) {
+                        onAfterReceivingRequest(context);
+                    } else {
+                        onAfterReceivingBody(context);
+                    }
+                });
     }
 
     private void onAfterReceivingRequest(Context context) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                context.changeState(ContextState.PerformingRequest);
+        context.changeState(ContextState.PerformingRequest);
 
-                Message.debug(context,
-                        "perform request " + new String(context.request().method().getBytes()) + " " + context.request().requestURI());
+        Message.debug(context,
+                "perform request " + new String(context.request().method().getBytes()) + " " + context.request().requestURI());
 
-                boolean proxied = false;
-                context.host(findHost(context.request()));
-                if (context.host() != null) {
-                    ProxyInfo proxyInfo = context.host().findProxyInfo(context.request().requestURI().path());
-                    if (proxyInfo != null) {
-                        proxied = proxy(context, proxyInfo);
-                    } else {
-                        perform(context);
-                    }
-                } else {
-                    context.reply(replyMaker().new_400BadRequest("no host header"));
-                }
-
-                if (proxied == false && context.reply() != null) {
-                    context.clientConnection().senderStatus().reset();
-                    server.gotoSender(context);
-                }
+        boolean proxied = false;
+        context.host(findHost(context.request()));
+        if (context.host() != null) {
+            ProxyInfo proxyInfo = context.host().findProxyInfo(context.request().requestURI().path());
+            if (proxyInfo != null) {
+                proxied = proxy(context, proxyInfo);
+            } else {
+                perform(context);
             }
-        };
-        server.objects().ioExecutorService().execute(r);
+        } else {
+            context.reply(replyMaker().new_400BadRequest("no host header"));
+        }
+
+        if (proxied == false && context.reply() != null) {
+           context.clientConnection().senderStatus().reset();
+           server.gotoSender(context);
+        }
     }
 
     private Host findHost(Request request) {
@@ -165,31 +158,18 @@ public class RequestPerformer extends GeneralProcessor {
     }
 
     private void onAfterReceivingBody(Context context) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if (context.resource() != null) {
-                    Reply reply = context.resource().perform(context.request(), context.host().hostObjects());
-                    context.reply(reply);
-                } else {
-                    context.reply(replyMaker().new_404NotFound(context.request()));
-                }
+        if (context.resource() != null) {
+            Reply reply = context.resource().perform(context.request(), context.host().hostObjects());
+            context.reply(reply);
+        } else {
+            context.reply(replyMaker().new_404NotFound(context.request()));
+        }
 
-                outboundFilter(context);
+        outboundFilter(context);
 
-                if (context.reply() != null) {
-                    context.clientConnection().senderStatus().reset();
-                    server.gotoSender(context);
-                }
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
-    }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Request Performer ...");
+        if (context.reply() != null) {
+            context.clientConnection().senderStatus().reset();
+            server.gotoSender(context);
+        }
     }
 }

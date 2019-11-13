@@ -74,6 +74,7 @@ public class HeaderValueRange extends HeaderValue {
 
                 rangeList.add(range);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

@@ -43,7 +43,7 @@ public class FilterExpectChecking extends Filter {
 
     private void send100Continue(Context context, Server server) {
         ByteBuffer temp = ByteBuffer.wrap(HttpString.Reply100Continue);
-        server.sendBufferToClient(context, temp, false);
+        context.bufferSender().sendBufferToClient(context, temp, false);
     }
 
 

@@ -28,6 +28,7 @@ public class HeaderValueContentLength extends HeaderValue {
         try {
             this.value = ByteParser.parseInt(value, ps);
         } catch (ParserException e) {
+            e.printStackTrace();
             this.value = -1;
         }
 

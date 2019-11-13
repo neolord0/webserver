@@ -96,6 +96,7 @@ public class Timer {
                 try {
                     wait(100);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
             TimerEvent e = (TimerEvent) events.elementAt(0);
@@ -110,7 +111,8 @@ public class Timer {
 
             try {
                 wait(dt);
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException exx) {
+                exx.printStackTrace();
             }
         }
     }

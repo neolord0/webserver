@@ -38,6 +38,7 @@ public class HeaderValueAcceptLanguage extends HeaderValue {
 
                 languageRangeList.add(lr);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

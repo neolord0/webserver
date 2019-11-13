@@ -34,6 +34,8 @@ public class Coding implements AppendableToByte {
                         qvalue = new Float(p.getValue());
                     }
                 } catch (ParserException e) {
+                    e.printStackTrace();
+
                     p = null;
                 }
             }

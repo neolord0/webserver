@@ -112,6 +112,7 @@ public class FilterCharsetEncoding extends Filter {
         try {
             bytes = Files.readAllBytes(bodyFile.toPath());
         } catch (IOException e) {
+            e.printStackTrace();;
             bytes = null;
             e.printStackTrace();
         }

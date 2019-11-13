@@ -78,6 +78,7 @@ public class TrustManagerMaker {
                         try {
                             ((X509Certificate) cert).checkValidity(now);
                         } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+                            e.printStackTrace();
                             StringBuffer msg = new StringBuffer();
                             msg.append("the trusted certificate with alias [")
                                     .append(alias)
@@ -133,12 +134,12 @@ public class TrustManagerMaker {
             try (InputStream is = ConfigFileLoader.getFileInputStream(revocationListFile)) {
                 crls = cf.generateCRLs(is);
             }
-        } catch (IOException iex) {
-            throw iex;
-        } catch (CRLException crle) {
-            throw crle;
-        } catch (CertificateException ce) {
-            throw ce;
+        } catch (IOException e) {
+            throw e;
+        } catch (CRLException e) {
+            throw e;
+        } catch (CertificateException e) {
+            throw e;
         }
         return crls;
     }

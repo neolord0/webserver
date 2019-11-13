@@ -22,15 +22,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class HttpProxier extends AsyncSocketProcessor {
+    private static int HttpProxierID = 0;
+
     public HttpProxier(Server server) {
-        super(server);
-    }
-
-    @Override
-    public void start() throws Exception {
-        Message.debug("start Http Proxier ...");
-
-        super.start();
+        super(server, HttpProxierID++);
     }
 
     @Override
@@ -81,7 +76,7 @@ public class HttpProxier extends AsyncSocketProcessor {
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
         sendErrorReplyToClient(context);
-        server.sendCloseSignalForHttpServer(context);
+        context.bufferSender().sendCloseSignalForHttpServer(context);
     }
 
     private void sendErrorReplyToClient(Context context) {
@@ -95,54 +90,52 @@ public class HttpProxier extends AsyncSocketProcessor {
         context.httpProxy().lastAccessTime(currentTime);
     }
 
+    @Override
     protected boolean isOverTimeoutForKeepAlive(Context context, long currentTime) {
         long interval = currentTime - context.httpProxy().lastAccessTime();
         return interval > context.backendServerInfo().keepAlive_timeout() * 1000;
     }
 
-    protected void closeConnectionForKeepAlive(Context context) {
-        unregister(context.httpProxy().selectionKey());
-        server.sendCloseSignalForHttpServer(context);
+    @Override
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnRegister) {
+        if (willUnRegister == true) {
+            unregister(context.httpProxy().selectionKey());
+        }
+        context.bufferSender().sendCloseSignalForHttpServer(context);
     }
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                HttpProxyConnection connection = context.httpProxy();
-                int numRead = -2;
-                try {
-                    numRead = channel.read(connection.receiveBuffer());
-                } catch (Exception e) {
-                    e.printStackTrace();
+        HttpProxyConnection connection = context.httpProxy();
+        int numRead = -2;
+        try {
+            numRead = channel.read(connection.receiveBuffer());
+        } catch (Exception e) {
+            e.printStackTrace();
 
-                    numRead = -2;
-                }
+            numRead = -2;
+        }
 
-                if (numRead == -2) {
-                    Message.debug(connection, "read error from http proxy server.");
+        if (numRead == -2) {
+            Message.debug(connection, "read error from http proxy server.");
 
-                    connection.changeState(HttpProxyState.Close);
-                    server.sendCloseSignalForHttpServer(context);
-                    return;
-                }
+            connection.changeState(HttpProxyState.Close);
+            context.bufferSender().sendCloseSignalForHttpServer(context);
+            return;
+        }
 
-                if (numRead > 0) {
-                    setLastAccessTime(context, currentTime);
-                }
+        if (numRead > 0) {
+            setLastAccessTime(context, currentTime);
+        }
 
-                switch (connection.state()) {
-                    case ReceivingReply:
-                        onReply(connection, context, AfterProcess.GotoSelf);
-                        break;
-                    case ReceivingReplyBody:
-                        onReplyBody(connection, context, AfterProcess.GotoSelf);
-                        break;
-                }
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+        switch (connection.state()) {
+            case ReceivingReply:
+                onReply(connection, context, AfterProcess.GotoSelf);
+                break;
+            case ReceivingReplyBody:
+                onReplyBody(connection, context, AfterProcess.GotoSelf);
+                break;
+        }
     }
 
     private void onReply(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
@@ -231,34 +224,24 @@ public class HttpProxier extends AsyncSocketProcessor {
     private void onReplyEnd(HttpProxyConnection connection, Context context) {
         Message.debug(connection, "complete receive reply_body from http proxy server and send to client");
         if (context.reply().code().isError()) {
-            server.sendCloseSignalForHttpServer(context);
-            server.sendCloseSignalForClient(context);
+            context.bufferSender().sendCloseSignalForHttpServer(context);
+            context.bufferSender().sendCloseSignalForClient(context);
         } else {
             if (context.reply().hasKeepAlive()) {
                 Message.debug(context, "Persistent Connection");
 
                 connection.changeState(HttpProxyState.Idle);
                 connection.resetForNextRequest();
-
-                context.resetForNextRequest();
-                server.gotoRequestReceiver(context);
             } else {
                 connection.changeState(HttpProxyState.Close);
                 context.proxyId(-1)
                         .backendServerInfo(null);
 
-                server.sendCloseSignalForHttpServer(context);
-
-                context.resetForNextRequest();
-                server.gotoRequestReceiver(context);
+                context.bufferSender().sendCloseSignalForClient(context);
             }
+
+            context.resetForNextRequest();
+            server.gotoRequestReceiver(context);
         }
-    }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Http Proxier ...");
     }
 }

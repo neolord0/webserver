@@ -44,6 +44,7 @@ public class TransferEncoding implements AppendableToByte {
                         parameterList.add(p);
                     }
                 } catch (ParserException e) {
+                    e.printStackTrace();
                 }
             }
         }

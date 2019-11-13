@@ -20,7 +20,6 @@ public class ServerObjects {
     private HttpProxyConnectionManager httpProxyConnectionManager;
 
     private BufferManager bufferManager;
-    private SendBufferStorage sendBufferStorage;
 
     private ExecutorService ioExecutorService;
 
@@ -39,12 +38,12 @@ public class ServerObjects {
         httpProxyConnectionManager = new HttpProxyConnectionManager(timer);
 
         bufferManager = new BufferManager();
-        sendBufferStorage = new SendBufferStorage();
-
-        ioExecutorService = Executors.newFixedThreadPool(serverProperties.ioThreadCount());
 
         defaultMediaTypeManager = new DefinedMediaTypeManager();
         replyMaker = new ReplyMaker(serverProperties);
+    }
+    public void initialize() {
+        ioExecutorService = Executors.newFixedThreadPool(serverProperties.ioThreadCount());
     }
 
     public ServerProperties properties() {
@@ -76,10 +75,6 @@ public class ServerObjects {
         return bufferManager;
     }
 
-    public SendBufferStorage sendBufferStorage() {
-        return sendBufferStorage;
-    }
-
     public ExecutorService ioExecutorService() {
         return ioExecutorService;
     }
@@ -91,6 +86,5 @@ public class ServerObjects {
     public ReplyMaker replyMaker() {
         return replyMaker;
     }
-
 }
 

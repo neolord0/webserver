@@ -56,6 +56,8 @@ public class WebServiceLoader {
                 setServerHeader(properties, (Element) node);
             } else if (SettingXML.Keep_Alive_Node.equalsIgnoreCase(nodeName)) {
                 setKeepAlive(properties, (Element) node);
+            } else if (SettingXML.Count_Of_Processor_Node.equalsIgnoreCase(nodeName)) {
+                setCountOfProcessor(properties, (Element) node);
             }
         }
     }
@@ -92,6 +94,36 @@ public class WebServiceLoader {
             }
         }
     }
+
+    private static void setCountOfProcessor(ServerProperties properties, Element element) {
+        NamedNodeMap attrMap = element.getAttributes();
+        int count = attrMap.getLength();
+        for (int index = 0; index < count; index++) {
+            Attr attr = (Attr) attrMap.item(index);
+            String attrName = attr.getName();
+
+            if (SettingXML.SSLHandshaker_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfSSLHandshaker(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.RequestReceiver_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfRequestReceiver(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.BodyReceiver_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfBodyReceiver(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.RequestPerformer_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfRequestPerformer(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.ReplySender_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfReplySender(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.BufferSender_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfBufferSender(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.ProxyConnector_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfProxyConnector(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.AjpProxier_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfAjpProxier(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.HttpProxier_Attr.equalsIgnoreCase(attrName)) {
+                properties.countOfHttpProxier(Integer.parseInt(attr.getValue()));
+            }
+        }
+    }
+
 
     private static void addHost(Server server, Element element) throws Exception {
         Host host = server.addNewHost();

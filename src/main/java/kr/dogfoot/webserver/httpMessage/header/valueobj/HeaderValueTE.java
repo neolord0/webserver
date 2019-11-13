@@ -41,6 +41,7 @@ public class HeaderValueTE extends HeaderValue {
 
                 transferEncodingList.add(te);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

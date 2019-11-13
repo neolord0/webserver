@@ -39,6 +39,7 @@ public class HeaderValueWarning extends HeaderValue {
 
                 warningValueList.add(wv);
             } catch (ParserException e) {
+                e.printStackTrace();
             }
         }
         ParseState.release(ps);

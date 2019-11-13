@@ -17,20 +17,16 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class BodyReceiver extends AsyncSocketProcessor {
+    public static int BodyReceiverID = 0;
+
     public BodyReceiver(Server server) {
-        super(server);
+        super(server, BodyReceiverID++);
     }
 
-    public void start() throws Exception {
-        Message.debug("start Body Receiver ...");
-
-        super.start();
-    }
 
     @Override
     protected void onNewContext(Context context) {
         context.changeState(ContextState.ReceivingBody);
-
         process(context.clientConnection(), context, AfterProcess.Register);
     }
 
@@ -41,7 +37,7 @@ public class BodyReceiver extends AsyncSocketProcessor {
 
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
-        server.sendCloseSignalForClient(context);
+        context.bufferSender().sendCloseSignalForClient(context);
     }
 
     @Override
@@ -56,43 +52,39 @@ public class BodyReceiver extends AsyncSocketProcessor {
     }
 
     @Override
-    protected void closeConnectionForKeepAlive(Context context) {
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
         Message.debug(context, "Keep-Alive time-out event has occurred.");
 
-        unregister(context.clientConnection().selectionKey());
+        if (willUnregister == true) {
+            unregister(context.clientConnection().selectionKey());
+        }
         closeAllConnectionFor(context);
     }
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                HttpClientConnection clientConn = context.clientConnection();
-                ByteBuffer receiveBuffer = clientConn.receiveBuffer();
-                int numRead = -2;
+        HttpClientConnection clientConn = context.clientConnection();
+        ByteBuffer receiveBuffer = clientConn.receiveBuffer();
+        int numRead = -2;
 
-                try {
-                    numRead = channel.read(receiveBuffer);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    numRead = -2;
-                }
+        try {
+            numRead = channel.read(receiveBuffer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            numRead = -2;
+        }
 
-                if (numRead == -2) {
-                    Message.debug(context, "http read error");
-                    closeAllConnectionFor(context);
-                    return;
-                }
+        if (numRead == -2) {
+            Message.debug(context, "http read error");
+            closeAllConnectionFor(context);
+            return;
+        }
 
-                if (numRead > 0) {
-                    setLastAccessTime(context, currentTime);
-                }
+        if (numRead > 0) {
+            setLastAccessTime(context, currentTime);
+        }
 
-                process(clientConn, context, AfterProcess.GotoSelf);
-            }
-        };
-        server.objects().ioExecutorService().execute(r);
+        process(clientConn, context, AfterProcess.GotoSelf);
     }
 
     private void process(HttpClientConnection clientConn, Context context, AfterProcess afterProcess) {
@@ -203,12 +195,4 @@ public class BodyReceiver extends AsyncSocketProcessor {
         }
         return false;
     }
-
-    @Override
-    public void terminate() throws Exception {
-        super.terminate();
-
-        Message.debug("terminate Body Receiver ...");
-    }
-
 }
