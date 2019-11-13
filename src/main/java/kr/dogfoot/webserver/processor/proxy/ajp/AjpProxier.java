@@ -102,10 +102,10 @@ public class AjpProxier extends AsyncSocketProcessor {
     }
 
     @Override
-    protected void closeConnectionForKeepAlive(Context context) {
-        sendErrorReplyToClient(context);
-
-        unregister(context.ajpProxy().selectionKey());
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
+        if (willUnregister == true) {
+            unregister(context.ajpProxy().selectionKey());
+        }
         context.bufferSender().sendCloseSignalForAjpServer(context);
     }
 

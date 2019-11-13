@@ -90,13 +90,17 @@ public class HttpProxier extends AsyncSocketProcessor {
         context.httpProxy().lastAccessTime(currentTime);
     }
 
+    @Override
     protected boolean isOverTimeoutForKeepAlive(Context context, long currentTime) {
         long interval = currentTime - context.httpProxy().lastAccessTime();
         return interval > context.backendServerInfo().keepAlive_timeout() * 1000;
     }
 
-    protected void closeConnectionForKeepAlive(Context context) {
-        unregister(context.httpProxy().selectionKey());
+    @Override
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnRegister) {
+        if (willUnRegister == true) {
+            unregister(context.httpProxy().selectionKey());
+        }
         context.bufferSender().sendCloseSignalForHttpServer(context);
     }
 

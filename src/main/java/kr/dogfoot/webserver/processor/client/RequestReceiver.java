@@ -20,7 +20,6 @@ public class RequestReceiver extends AsyncSocketProcessor {
         super(server, RequestReceiverID++);
     }
 
-
     @Override
     protected void onNewContext(Context context) {
         context.changeState(ContextState.ReceivingRequest);
@@ -50,8 +49,12 @@ public class RequestReceiver extends AsyncSocketProcessor {
     }
 
     @Override
-    protected void closeConnectionForKeepAlive(Context context) {
-        unregister(context.clientConnection().selectionKey());
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
+        Message.debug(context, "Keep-Alive time-out event has occurred.");
+
+        if (willUnregister == true) {
+            unregister(context.clientConnection().selectionKey());
+        }
         closeAllConnectionFor(context);
     }
 

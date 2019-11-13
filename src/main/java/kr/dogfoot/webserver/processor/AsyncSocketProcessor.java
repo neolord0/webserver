@@ -79,7 +79,7 @@ public abstract class AsyncSocketProcessor extends Processor {
     protected void checkKeepAliveTimeout(long currentTime) {
         for (Context context : contextMap.values()) {
             if (isOverTimeoutForKeepAlive(context, currentTime)) {
-                closeConnectionForKeepAlive(context);
+                closeConnectionForKeepAlive(context, true);
             }
         }
     }
@@ -88,7 +88,7 @@ public abstract class AsyncSocketProcessor extends Processor {
         return false;
     }
 
-    protected void closeConnectionForKeepAlive(Context context) {
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
     }
 
     protected void onAccept(ServerSocketChannel serverChannel, long currentTime) {
@@ -104,7 +104,7 @@ public abstract class AsyncSocketProcessor extends Processor {
         Context context;
         while ((context = waitingContextQueue.poll()) != null) {
             if (isOverTimeoutForKeepAlive(context, currentTime)) {
-                closeConnectionForKeepAlive(context);
+                closeConnectionForKeepAlive(context, false);
             } else {
                 onNewContext(context);
             }

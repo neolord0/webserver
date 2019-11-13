@@ -190,6 +190,7 @@ public class BufferSender implements Startable {
                     e.printStackTrace();
                 }
 
+                long currentTime = System.currentTimeMillis();
                 checkNewJobs();
 
                 Iterator<SelectionKey> keys = nioSelector.selectedKeys().iterator();
@@ -207,7 +208,7 @@ public class BufferSender implements Startable {
 
                         switch (bufferInfo.jobType()) {
                             case SendBuffer:
-                                onSend(channel, bufferInfo);
+                                onSend(channel, bufferInfo, currentTime);
                                 break;
                         }
 
@@ -232,7 +233,7 @@ public class BufferSender implements Startable {
         }
     }
 
-    private void onSend(SocketChannel channel, SendBufferInfo bufferInfo) {
+    private void onSend(SocketChannel channel, SendBufferInfo bufferInfo, long currentTime) {
         server.objects().ioExecutorService().
                 execute(() -> {
                     if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
@@ -261,6 +262,18 @@ public class BufferSender implements Startable {
                     if (error == true) {
                         storage.removeBuffer(channel);
                     } else {
+                        switch (bufferInfo.protocol()) {
+                            case Client:
+                                bufferInfo.context().clientConnection().lastAccessTime(currentTime);
+                                break;
+                            case AjpProxy:
+                                bufferInfo.context().ajpProxy().lastAccessTime(currentTime);
+                                break;
+                            case HttpProxy:
+                                bufferInfo.context().httpProxy().lastAccessTime(currentTime);
+                                break;
+                        }
+
                         if (bufferInfo.buffer().hasRemaining()) {
                             waitingJobQueueForObserver.add(new ObserveJob(JobType.RetrySending, channel));
                         } else {

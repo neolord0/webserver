@@ -52,10 +52,12 @@ public class BodyReceiver extends AsyncSocketProcessor {
     }
 
     @Override
-    protected void closeConnectionForKeepAlive(Context context) {
+    protected void closeConnectionForKeepAlive(Context context, boolean willUnregister) {
         Message.debug(context, "Keep-Alive time-out event has occurred.");
 
-        unregister(context.clientConnection().selectionKey());
+        if (willUnregister == true) {
+            unregister(context.clientConnection().selectionKey());
+        }
         closeAllConnectionFor(context);
     }
 
