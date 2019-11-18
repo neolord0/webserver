@@ -148,7 +148,7 @@ public class BufferSender implements Startable {
     }
 
     private void closeConnection(SendBufferInfo bufferInfo) {
-        server.objects().ioExecutorService().
+        server.objects().executorForBufferSending().
                 execute(() -> {
                     if (bufferInfo.protocol() == SendBufferInfo.Protocol.Client) {
                         server.objects().clientConnectionManager().releaseAndClose(bufferInfo.context());
@@ -234,7 +234,7 @@ public class BufferSender implements Startable {
     }
 
     private void onSend(SocketChannel channel, SendBufferInfo bufferInfo, long currentTime) {
-        server.objects().ioExecutorService().
+        server.objects().executorForBufferSending().
                 execute(() -> {
                     if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
                         wrapBuffer(bufferInfo);

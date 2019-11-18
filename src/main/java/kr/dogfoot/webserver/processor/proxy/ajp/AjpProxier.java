@@ -81,7 +81,7 @@ public class AjpProxier extends AsyncSocketProcessor {
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
         sendErrorReplyToClient(context);
-        context.bufferSender().sendCloseSignalForAjpServer(context);
+        bufferSender().sendCloseSignalForAjpServer(context);
     }
 
     private void sendErrorReplyToClient(Context context) {
@@ -106,52 +106,55 @@ public class AjpProxier extends AsyncSocketProcessor {
         if (willUnregister == true) {
             unregister(context.ajpProxy().selectionKey());
         }
-        context.bufferSender().sendCloseSignalForAjpServer(context);
+        bufferSender().sendCloseSignalForAjpServer(context);
     }
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        AjpProxyConnection connection = context.ajpProxy();
+        server.objects().executorForAjpProxing()
+                .execute(() -> {
+                    AjpProxyConnection connection = context.ajpProxy();
 
-        int numRead = -2;
-        try {
-            numRead = channel.read(connection.receiveBuffer());
-        } catch (Exception e) {
-            e.printStackTrace();
+                    int numRead = -2;
+                    try {
+                        numRead = channel.read(connection.receiveBuffer());
+                    } catch (Exception e) {
+                        e.printStackTrace();
 
-            numRead = -2;
-        }
+                        numRead = -2;
+                    }
 
-        if (numRead == -2) {
-            Message.debug(connection, "read error from ajp proxy server.");
+                    if (numRead == -2) {
+                        Message.debug(connection, "read error from ajp proxy server.");
 
-            sendErrorReplyToClient(context);
-            context.bufferSender().sendCloseSignalForAjpServer(context);
-            return;
-        }
+                        sendErrorReplyToClient(context);
+                        bufferSender().sendCloseSignalForAjpServer(context);
+                        return;
+                    }
 
-        if (numRead > 0) {
-            setLastAccessTime(context, currentTime);
-        }
+                    if (numRead > 0) {
+                        setLastAccessTime(context, currentTime);
+                    }
 
-        connection.receiveBuffer().flip();
-        ProcessResult result = parseAndProcessAjpMessage(context);
-        connection.receiveBuffer().compact();
+                    connection.receiveBuffer().flip();
+                    ProcessResult result = parseAndProcessAjpMessage(context);
+                    connection.receiveBuffer().compact();
 
-        switch (result) {
-            case MoreReceive:
-                gotoSelf(context);
-                break;
-            case SendRequestBodyChunkByReceiver:
-                sendRequestBodyChunkByReceiver(context);
-                break;
-            case EndResponse:
-                nextRequest(context, false);
-                break;
-            case EndResponseAndReuse:
-                nextRequest(context, true);
-                break;
-        }
+                    switch (result) {
+                        case MoreReceive:
+                            gotoSelf(context);
+                            break;
+                        case SendRequestBodyChunkByReceiver:
+                            sendRequestBodyChunkByReceiver(context);
+                            break;
+                        case EndResponse:
+                            nextRequest(context, false);
+                            break;
+                        case EndResponseAndReuse:
+                            nextRequest(context, true);
+                            break;
+                    }
+                });
     }
 
     private ProcessResult parseAndProcessAjpMessage(Context context) {
@@ -283,7 +286,7 @@ public class AjpProxier extends AsyncSocketProcessor {
         if (reuse == true) {
             ajpProxyConnectionManager().idle(context);
         } else {
-            context.bufferSender().sendCloseSignalForAjpServer(context);
+            bufferSender().sendCloseSignalForAjpServer(context);
         }
 
         if (context.request().isPersistentConnection() == true) {
@@ -292,7 +295,7 @@ public class AjpProxier extends AsyncSocketProcessor {
             context.resetForNextRequest();
             server.gotoRequestReceiver(context);
         } else {
-            context.bufferSender().sendCloseSignalForClient(context);
+            bufferSender().sendCloseSignalForClient(context);
         }
 
     }

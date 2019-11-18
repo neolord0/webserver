@@ -8,6 +8,7 @@ import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionMan
 import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.Startable;
+import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.object.BufferManager;
 import kr.dogfoot.webserver.server.object.ServerProperties;
 import kr.dogfoot.webserver.server.timer.Timer;
@@ -64,6 +65,10 @@ public abstract class Processor implements Startable {
         return server.objects().httpProxyConnectionManager();
     }
 
+    protected BufferSender bufferSender() {
+        return server.bufferSender();
+    }
+
     protected BufferManager bufferManager() {
         return server.objects().bufferManager();
     }
@@ -74,12 +79,12 @@ public abstract class Processor implements Startable {
 
     protected void closeAllConnectionFor(Context context) {
         if (context.ajpProxy() != null) {
-            context.bufferSender().sendCloseSignalForAjpServer(context);
+            bufferSender().sendCloseSignalForAjpServer(context);
         }
         if (context.httpProxy() != null) {
-            context.bufferSender().sendCloseSignalForHttpServer(context);
+            bufferSender().sendCloseSignalForHttpServer(context);
         }
-        context.bufferSender().sendCloseSignalForClient(context);
+        bufferSender().sendCloseSignalForClient(context);
     }
 
 }

@@ -11,7 +11,6 @@ public class SettingXML {
     public final static String Pooled_Thread_Count = "pooled_thread_count";
     public final static String Server_Header_Node = "server_header";
     public final static String Keep_Alive_Node = "keep_alive";
-    public final static String Processor_Count_Node = "processor_count";
     public final static String Root_Path_Node = "root_path";
     public final static String Custom_Media_Types_Node = "custom_media_types";
     public final static String SSL_Config_Node = "ssl_config";
@@ -52,18 +51,21 @@ public class SettingXML {
     public final static String Condition_Node = "condition";
     public final static String Condition_List_Node = "condition_list";
 
+
+    public final static String SSL_Handshaking_Attr = "ssl_handshaking";
+    public final static String Request_Receiving_Attr = "request_receiving";
+    public final static String Body_Receiving_Attr = "body_receiving";
+    public final static String Request_Performing_Attr = "request_performing";
+    public final static String Reply_Sending_Attr = "reply_sending";
+    public final static String File_Reading_Attr = "file_reading";
+    public final static String Buffer_Sending_Attr = "buffer_sending";
+    public final static String Proxy_Connecting_Attr = "proxy_connecting";
+    public final static String Ajp_Proxing_Attr = "ajp_proxing";
+    public final static String Http_Proxing_Attr = "http_proxing";
     public final static String Send_Attr = "send";
     public final static String Timeout_Attr = "timeout";
     public final static String Max_Attr = "max";
-    public final static String SSLHandshaker_Attr = "ssl_handshaker";
-    public final static String RequestReceiver_Attr = "request_receiver";
-    public final static String BodyReceiver_Attr = "body_receiver";
-    public final static String RequestPerformer_Attr = "request_performer";
-    public final static String ReplySender_Attr = "reply_sender";
-    public final static String BufferSender_Attr = "buffer_sender";
-    public final static String ProxyConnector_Attr = "proxy_connector";
-    public final static String AjpProxier_Attr = "ajp_proxier";
-    public final static String HttpProxier_Attr = "http_proxier";
+
     public final static String Name_Attr = "name";
     public final static String Domain_Attr = "domain";
     public final static String Ip_Attr = "ip";

@@ -63,38 +63,43 @@ public class SSLHandshaker extends Processor {
                 }
 
                 Context context = waitingContextQueue.poll();
-                HttpsClientConnection conn = (HttpsClientConnection) context.clientConnection();
-                switch (conn.handshakeState()) {
-                    case NotBegin:
-                        beginHandShaking(context, conn);
-                        break;
-                    case Handshaking:
-                        handshake(context, conn);
-                        break;
-                    case Success:
-                        onSuccessHandshake(context);
-                        break;
-                    case Fail:
-                        onFailHandshake(context);
-                        break;
-                }
+                onNewContext(context);
             }
         });
         handshakingThread.start();
     }
 
+    private void onNewContext(Context context) {
+        server.objects().executorForSSLHandshaking()
+                .execute(() -> {
+                    HttpsClientConnection conn = (HttpsClientConnection) context.clientConnection();
+                    switch (conn.handshakeState()) {
+                        case NotBegin:
+                            beginHandShaking(context, conn);
+                            break;
+                        case Handshaking:
+                            handshake(context, conn);
+                            break;
+                        case Success:
+                            onSuccessHandshake(context);
+                            break;
+                        case Fail:
+                            onFailHandshake(context);
+                            break;
+                    }
+                });
+    }
+
     private void create_startSocketThread() {
         socketThread = new Thread(() -> {
             while (running) {
-                checkNewContexts();
-
                 try {
-                    if (nioSelector.select(1000) == 0) {
-                        continue;
-                    }
+                    nioSelector.select();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                checkNewContexts();
 
                 Iterator<SelectionKey> keys = nioSelector.selectedKeys().iterator();
 
@@ -110,9 +115,11 @@ public class SSLHandshaker extends Processor {
                     Context context = contextMap.get(channel);
 
                     if (key.isValid() && key.isReadable()) {
+                        unregister(channel);
                         onReceive(channel, context);
                     }
                     if (key.isValid() && key.isWritable()) {
+                        unregister(channel);
                         onSend(channel, context);
                     }
                 }
@@ -276,6 +283,7 @@ public class SSLHandshaker extends Processor {
     private boolean unwrap(Context context, HttpsClientConnection connection) {
         SSLEngineResult unwrapResult = null;
         connection.receiveBuffer().flip();
+
         try {
             unwrapResult = connection.sslEngine().unwrap(connection.receiveBuffer(), connection.receiveBuffer());
         } catch (SSLException e) {
@@ -285,6 +293,7 @@ public class SSLHandshaker extends Processor {
             return false;
         }
         connection.receiveBuffer().compact();
+
 
         switch (unwrapResult.getStatus()) {
             case OK:
@@ -310,12 +319,6 @@ public class SSLHandshaker extends Processor {
     private void checkNewContexts() {
         if (waitingQueueForSocket.peek() == null) {
             return;
-        }
-
-        try {
-            nioSelector.selectNow();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         Context context;
@@ -348,25 +351,30 @@ public class SSLHandshaker extends Processor {
 
 
     private void onReceive(SocketChannel channel, Context context) {
-        HttpsClientConnection conn = (HttpsClientConnection) context.clientConnection();
+        server.objects().executorForSSLHandshaking()
+                .execute(() -> {
+                    HttpsClientConnection conn = (HttpsClientConnection) context.clientConnection();
 
-        int numRead = -2;
-        try {
-            numRead = channel.read(conn.receiveBuffer());
-        } catch (Exception e) {
-            e.printStackTrace();
-            numRead = -2;
-        }
+                    int numRead = -2;
+                    try {
+                        numRead = channel.read(conn.receiveBuffer());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        numRead = -2;
+                    }
 
-        if (numRead == -2) {
-            conn.handshakeState(HandshakeState.Fail);
-            gotoHandshakeThread(context, conn);
-            return;
-        }
+                    if (numRead == -2) {
+                        conn.handshakeState(HandshakeState.Fail);
+                        gotoHandshakeThread(context, conn);
+                        return;
+                    }
 
-        if (numRead > 0) {
-            gotoHandshakeThread(context, conn);
-        }
+                    if (numRead > 0) {
+                        gotoHandshakeThread(context, conn);
+                    } else {
+                        register(conn.channel(), context, SelectionKey.OP_READ);
+                    }
+                });
     }
 
     private void gotoHandshakeThread(Context context, HttpsClientConnection conn) {
@@ -375,8 +383,6 @@ public class SSLHandshaker extends Processor {
         } else {
             conn.handshakeState(HandshakeState.Handshaking);
         }
-
-        unregister(conn.channel());
         gotoSelf(context);
     }
 
@@ -389,25 +395,37 @@ public class SSLHandshaker extends Processor {
     }
 
     private void onSend(SocketChannel channel, Context context) {
-        HttpsClientConnection conn = (HttpsClientConnection) context.clientConnection();
-        ByteBuffer buffer = conn.handshakeWrappedBuffer();
+        server.objects().executorForSSLHandshaking()
+                .execute(() -> {
+                    HttpsClientConnection conn = (HttpsClientConnection) context.clientConnection();
 
-        if (buffer.hasRemaining()) {
-            try {
-                channel.write(buffer);
-            } catch (IOException e) {
-                e.printStackTrace();
+                    ByteBuffer buffer = conn.handshakeWrappedBuffer();
 
-                conn.handshakeState(HandshakeState.Fail);
-                gotoHandshakeThread(context, conn);
-            }
-        }
+                    boolean error = false;
+                    if (buffer.hasRemaining()) {
+                        try {
+                            channel.write(buffer);
+                        } catch (IOException e) {
+                            e.printStackTrace();
 
-        if (buffer.hasRemaining() == false) {
-            bufferManager().release(buffer);
+                            error = true;
+                        }
+                    }
 
-            gotoHandshakeThread(context, conn);
-        }
+                    if (error == true) {
+                        conn.handshakeState(HandshakeState.Fail);
+                        gotoHandshakeThread(context, conn);
+                        return;
+                    }
+
+                    if (buffer.hasRemaining() == false) {
+                        bufferManager().release(buffer);
+
+                        gotoHandshakeThread(context, conn);
+                    } else {
+                        register(conn.channel(), context, SelectionKey.OP_WRITE);
+                    }
+                });
     }
 
     @Override

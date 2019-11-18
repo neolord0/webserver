@@ -37,7 +37,7 @@ public class BodyReceiver extends AsyncSocketProcessor {
 
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
-        context.bufferSender().sendCloseSignalForClient(context);
+        bufferSender().sendCloseSignalForClient(context);
     }
 
     @Override
@@ -63,28 +63,31 @@ public class BodyReceiver extends AsyncSocketProcessor {
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        HttpClientConnection clientConn = context.clientConnection();
-        ByteBuffer receiveBuffer = clientConn.receiveBuffer();
-        int numRead = -2;
+        server.objects().executorForBodyReceiving()
+                .execute(() -> {
+                    HttpClientConnection clientConn = context.clientConnection();
+                    ByteBuffer receiveBuffer = clientConn.receiveBuffer();
+                    int numRead = -2;
 
-        try {
-            numRead = channel.read(receiveBuffer);
-        } catch (Exception e) {
-            e.printStackTrace();
-            numRead = -2;
-        }
+                    try {
+                        numRead = channel.read(receiveBuffer);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        numRead = -2;
+                    }
 
-        if (numRead == -2) {
-            Message.debug(context, "http read error");
-            closeAllConnectionFor(context);
-            return;
-        }
+                    if (numRead == -2) {
+                        Message.debug(context, "http read error");
+                        closeAllConnectionFor(context);
+                        return;
+                    }
 
-        if (numRead > 0) {
-            setLastAccessTime(context, currentTime);
-        }
+                    if (numRead > 0) {
+                        setLastAccessTime(context, currentTime);
+                    }
 
-        process(clientConn, context, AfterProcess.GotoSelf);
+                    process(clientConn, context, AfterProcess.GotoSelf);
+                });
     }
 
     private void process(HttpClientConnection clientConn, Context context, AfterProcess afterProcess) {

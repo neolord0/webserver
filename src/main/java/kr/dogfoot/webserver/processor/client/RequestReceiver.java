@@ -60,28 +60,31 @@ public class RequestReceiver extends AsyncSocketProcessor {
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        HttpClientConnection connection = context.clientConnection();
-        int numRead = -2;
+        server.objects().executorForRequestReceiving()
+                .execute(() -> {
+                    HttpClientConnection connection = context.clientConnection();
+                    int numRead = -2;
 
-        try {
-            numRead = channel.read(connection.receiveBuffer());
-        } catch (Exception e) {
-            e.printStackTrace();
-            numRead = -2;
-        }
+                    try {
+                        numRead = channel.read(connection.receiveBuffer());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        numRead = -2;
+                    }
 
-        if (numRead == -2) {
-            Message.debug(context, "http read error");
+                    if (numRead == -2) {
+                        Message.debug(context, "http read error");
 
-            closeAllConnectionFor(context);
-            return;
-        }
+                        closeAllConnectionFor(context);
+                        return;
+                    }
 
-        if (numRead > 0) {
-            setLastAccessTime(context, currentTime);
-        }
+                    if (numRead > 0) {
+                        setLastAccessTime(context, currentTime);
+                    }
 
-        process(connection, context, AfterProcess.GotoSelf);
+                    process(connection, context, AfterProcess.GotoSelf);
+                });
     }
 
     private void process(HttpClientConnection connection, Context context, AfterProcess afterProcess) {

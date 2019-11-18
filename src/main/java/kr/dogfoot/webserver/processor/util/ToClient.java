@@ -13,7 +13,8 @@ public class ToClient {
                 .put(Integer.toHexString(chunkSize).getBytes())
                 .put(HttpString.CRLF);
         buffer.flip();
-        context.bufferSender().sendBufferToClient(context, buffer, true);
+
+        server.bufferSender().sendBufferToClient(context, buffer, true);
     }
 
     public static void sendBodyChunk(Context context, short chunkSize, Server server) {
@@ -23,13 +24,15 @@ public class ToClient {
         readBuffer.position(readBuffer.position() + chunkSize + 1);
         buffer.put(HttpString.CRLF);
         buffer.flip();
-        context.bufferSender().sendBufferToClient(context, buffer, true);
+
+        server.bufferSender().sendBufferToClient(context, buffer, true);
     }
 
     public static void sendLastBodyChunk(Context context, Server server) {
         ByteBuffer buffer = server.objects().bufferManager().pooledVarySmallBuffer();
         buffer.put(HttpString.EndChunk);
         buffer.flip();
-        context.bufferSender().sendBufferToClient(context, buffer, true);
+
+        server.bufferSender().sendBufferToClient(context, buffer, true);
     }
 }

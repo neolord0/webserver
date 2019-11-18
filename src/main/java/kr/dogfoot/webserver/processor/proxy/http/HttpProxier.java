@@ -76,7 +76,7 @@ public class HttpProxier extends AsyncSocketProcessor {
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
         sendErrorReplyToClient(context);
-        context.bufferSender().sendCloseSignalForHttpServer(context);
+        bufferSender().sendCloseSignalForHttpServer(context);
     }
 
     private void sendErrorReplyToClient(Context context) {
@@ -101,41 +101,44 @@ public class HttpProxier extends AsyncSocketProcessor {
         if (willUnRegister == true) {
             unregister(context.httpProxy().selectionKey());
         }
-        context.bufferSender().sendCloseSignalForHttpServer(context);
+        bufferSender().sendCloseSignalForHttpServer(context);
     }
 
     @Override
     protected void onReceive(SocketChannel channel, Context context, long currentTime) {
-        HttpProxyConnection connection = context.httpProxy();
-        int numRead = -2;
-        try {
-            numRead = channel.read(connection.receiveBuffer());
-        } catch (Exception e) {
-            e.printStackTrace();
+        server.objects().executorForHttpProxing()
+                .execute(() -> {
+                    HttpProxyConnection connection = context.httpProxy();
+                    int numRead = -2;
+                    try {
+                        numRead = channel.read(connection.receiveBuffer());
+                    } catch (Exception e) {
+                        e.printStackTrace();
 
-            numRead = -2;
-        }
+                        numRead = -2;
+                    }
 
-        if (numRead == -2) {
-            Message.debug(connection, "read error from http proxy server.");
+                    if (numRead == -2) {
+                        Message.debug(connection, "read error from http proxy server.");
 
-            connection.changeState(HttpProxyState.Close);
-            context.bufferSender().sendCloseSignalForHttpServer(context);
-            return;
-        }
+                        connection.changeState(HttpProxyState.Close);
+                        bufferSender().sendCloseSignalForHttpServer(context);
+                        return;
+                    }
 
-        if (numRead > 0) {
-            setLastAccessTime(context, currentTime);
-        }
+                    if (numRead > 0) {
+                        setLastAccessTime(context, currentTime);
+                    }
 
-        switch (connection.state()) {
-            case ReceivingReply:
-                onReply(connection, context, AfterProcess.GotoSelf);
-                break;
-            case ReceivingReplyBody:
-                onReplyBody(connection, context, AfterProcess.GotoSelf);
-                break;
-        }
+                    switch (connection.state()) {
+                        case ReceivingReply:
+                            onReply(connection, context, AfterProcess.GotoSelf);
+                            break;
+                        case ReceivingReplyBody:
+                            onReplyBody(connection, context, AfterProcess.GotoSelf);
+                            break;
+                    }
+                });
     }
 
     private void onReply(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
@@ -224,8 +227,8 @@ public class HttpProxier extends AsyncSocketProcessor {
     private void onReplyEnd(HttpProxyConnection connection, Context context) {
         Message.debug(connection, "complete receive reply_body from http proxy server and send to client");
         if (context.reply().code().isError()) {
-            context.bufferSender().sendCloseSignalForHttpServer(context);
-            context.bufferSender().sendCloseSignalForClient(context);
+            bufferSender().sendCloseSignalForHttpServer(context);
+            bufferSender().sendCloseSignalForClient(context);
         } else {
             if (context.reply().hasKeepAlive()) {
                 Message.debug(context, "Persistent Connection");
@@ -237,7 +240,7 @@ public class HttpProxier extends AsyncSocketProcessor {
                 context.proxyId(-1)
                         .backendServerInfo(null);
 
-                context.bufferSender().sendCloseSignalForClient(context);
+                bufferSender().sendCloseSignalForClient(context);
             }
 
             context.resetForNextRequest();

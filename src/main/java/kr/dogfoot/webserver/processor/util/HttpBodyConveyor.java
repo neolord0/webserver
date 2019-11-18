@@ -41,9 +41,9 @@ public class HttpBodyConveyor {
                     writeBuffer.flip();
 
                     if (target.isClientConnection()) {
-                        target.context().bufferSender().sendBufferToClient(target.context(), writeBuffer, true);
+                        server.bufferSender().sendBufferToClient(target.context(), writeBuffer, true);
                     } else if (target.isHttpProxyConnection()) {
-                        target.context().bufferSender().sendBufferToHttpServer(target.context(), writeBuffer, true);
+                        server.bufferSender().sendBufferToHttpServer(target.context(), writeBuffer, true);
                     }
                 }
             }
@@ -121,9 +121,9 @@ public class HttpBodyConveyor {
         writeBuffer.flip();
 
         if (target.isClientConnection()) {
-            target.context().bufferSender().sendBufferToClient(target.context(), writeBuffer, true);
+            server.bufferSender().sendBufferToClient(target.context(), writeBuffer, true);
         } else if (target.isHttpProxyConnection()) {
-            target.context().bufferSender().sendBufferToHttpServer(target.context(), writeBuffer, true);
+            server.bufferSender().sendBufferToHttpServer(target.context(), writeBuffer, true);
         }
     }
 

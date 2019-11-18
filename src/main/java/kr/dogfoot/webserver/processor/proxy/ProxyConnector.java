@@ -25,9 +25,11 @@ public class ProxyConnector extends AsyncSocketProcessor {
 
     @Override
     protected void onNewContext(Context context) {
-        context.changeState(ContextState.ConnectingProxier);
-
-        tryToConnect(context);
+        server.objects().executorForProxyConnecting()
+                .execute(() -> {
+                    context.changeState(ContextState.ConnectingProxier);
+                    tryToConnect(context);
+                });
     }
 
     private void tryToConnect(Context context) {
@@ -105,6 +107,7 @@ public class ProxyConnector extends AsyncSocketProcessor {
     protected void onConnect(SocketChannel channel, Context context, long currentTime) {
         try {
             if (channel.finishConnect()) {
+                System.out.println("connect");
                 setLastAccessTime(context, currentTime);
 
                 if (context.backendServerInfo().isAjp()) {
@@ -124,7 +127,7 @@ public class ProxyConnector extends AsyncSocketProcessor {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();;
+            e.printStackTrace();
 
             releaseAndClose(context);
             sendErrorReplyToClient(context);

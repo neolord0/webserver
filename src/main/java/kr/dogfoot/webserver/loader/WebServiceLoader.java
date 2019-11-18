@@ -5,6 +5,7 @@ import kr.dogfoot.webserver.loader.resourcesetting.ResourceSetting;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.MediaTypeManager;
+import kr.dogfoot.webserver.server.object.PooledThreadCount;
 import kr.dogfoot.webserver.server.object.ServerProperties;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -51,21 +52,44 @@ public class WebServiceLoader {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
             if (SettingXML.Pooled_Thread_Count.equalsIgnoreCase(nodeName)) {
-                setPooledThreadCount(properties, (Element) node);
+                setPooledThreadCount(properties.pooledThreadCount(), (Element) node);
             } else if (SettingXML.Server_Header_Node.equalsIgnoreCase(nodeName)) {
                 setServerHeader(properties, (Element) node);
             } else if (SettingXML.Keep_Alive_Node.equalsIgnoreCase(nodeName)) {
                 setKeepAlive(properties, (Element) node);
-            } else if (SettingXML.Processor_Count_Node.equalsIgnoreCase(nodeName)) {
-                setCountOfProcessor(properties, (Element) node);
             }
         }
     }
 
-    private static void setPooledThreadCount(ServerProperties properties, Element element) {
-        String text = element.getTextContent();
-        if (text != null) {
-            properties.pooledThreadCount(Integer.parseInt(text));
+    private static void setPooledThreadCount(PooledThreadCount pooledThreadCount, Element element) {
+        NamedNodeMap attrMap = element.getAttributes();
+        int count = attrMap.getLength();
+        for (int index = 0; index < count; index++) {
+            Attr attr = (Attr) attrMap.item(index);
+            String attrName = attr.getName();
+
+
+            if (SettingXML.SSL_Handshaking_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.ssl_handshaking(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Request_Receiving_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.request_receiving(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Body_Receiving_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.body_receiving(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Request_Performing_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.request_performing(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Reply_Sending_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.reply_sending(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.File_Reading_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.file_reading(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Buffer_Sending_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.buffer_sending(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Proxy_Connecting_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.proxy_connecting(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Ajp_Proxing_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.ajp_proxing(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Http_Proxing_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.http_proxing(Integer.parseInt(attr.getValue()));
+            }
         }
     }
 
@@ -94,36 +118,6 @@ public class WebServiceLoader {
             }
         }
     }
-
-    private static void setCountOfProcessor(ServerProperties properties, Element element) {
-        NamedNodeMap attrMap = element.getAttributes();
-        int count = attrMap.getLength();
-        for (int index = 0; index < count; index++) {
-            Attr attr = (Attr) attrMap.item(index);
-            String attrName = attr.getName();
-
-            if (SettingXML.SSLHandshaker_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfSSLHandshaker(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.RequestReceiver_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfRequestReceiver(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.BodyReceiver_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfBodyReceiver(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.RequestPerformer_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfRequestPerformer(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.ReplySender_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfReplySender(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.BufferSender_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfBufferSender(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.ProxyConnector_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfProxyConnector(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.AjpProxier_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfAjpProxier(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.HttpProxier_Attr.equalsIgnoreCase(attrName)) {
-                properties.countOfHttpProxier(Integer.parseInt(attr.getValue()));
-            }
-        }
-    }
-
 
     private static void addHost(Server server, Element element) throws Exception {
         Host host = server.addNewHost();

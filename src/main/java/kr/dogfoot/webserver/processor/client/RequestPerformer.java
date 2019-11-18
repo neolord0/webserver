@@ -26,7 +26,7 @@ public class RequestPerformer extends GeneralProcessor {
 
     @Override
     protected void onNewContext(Context context) {
-        server.objects().ioExecutorService()
+        server.objects().executorForRequestPerforming()
                 .execute(() -> {
                     if (context.state() == ContextState.ReceivingRequest) {
                         onAfterReceivingRequest(context);

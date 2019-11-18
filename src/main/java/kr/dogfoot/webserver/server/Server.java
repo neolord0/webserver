@@ -31,16 +31,15 @@ public class Server implements Startable {
 
     private ClientListener listener;
 
-    private SSLHandshaker[] handshakers;
-    private RequestReceiver[] requestReceivers;
-    private BodyReceiver[] bodyReceivers;
-    private RequestPerformer[] performers;
-    private ReplySender[] senders;
-    private ProxyConnector[] proxyConnectors;
-    private AjpProxier[] ajpProxiers;
-    private HttpProxier[] httpProxiers;
-    private BufferSender[] bufferSender;
-    private AtomicInteger bufferSenderIndex;
+    private SSLHandshaker handshaker;
+    private RequestReceiver requestReceiver;
+    private BodyReceiver bodyReceiver;
+    private RequestPerformer performer;
+    private ReplySender sender;
+    private ProxyConnector proxyConnector;
+    private AjpProxier ajpProxier;
+    private HttpProxier httpProxier;
+    private BufferSender bufferSender;
 
     public Server() throws Exception {
         ConfigFileLoader.setConfigDirectory("/Users/neolord/WebServerHome/config");
@@ -93,109 +92,64 @@ public class Server implements Startable {
     }
 
     private void createAndStartHandshaker() throws Exception {
-        int count  = serverObjects.properties().countOfSSLHandshaker();
-
-        handshakers = new SSLHandshaker[count];
-        for (int index = 0; index < count; index++) {
-            handshakers[index] = new SSLHandshaker(this);
-            handshakers[index].start();
-        }
+        handshaker = new SSLHandshaker(this);
+        handshaker.start();
 
         Message.debug("start SSL Handshaker ...");
     }
 
     private void createAndStartRequestReceiver() throws Exception {
-        int count = serverObjects.properties().countOfRequestReceiver();
-
-        requestReceivers = new RequestReceiver[count];
-        for (int index = 0; index < count; index++) {
-            requestReceivers[index] = new RequestReceiver(this);
-            requestReceivers[index].start();
-        }
+        requestReceiver = new RequestReceiver(this);
+        requestReceiver.start();
 
         Message.debug("start Request Receiver ...");
     }
 
     private void createAndStartBodyReceiver() throws Exception {
-        int count = serverObjects.properties().countOfBodyReceiver();
-
-        bodyReceivers = new BodyReceiver[count];
-        for (int index = 0; index < count; index++) {
-            bodyReceivers[index] = new BodyReceiver(this);
-            bodyReceivers[index].start();
-        }
+        bodyReceiver = new BodyReceiver(this);
+        bodyReceiver.start();
 
         Message.debug("start Body Receiver ...");
     }
 
     private void createAndStartPerformer() throws Exception {
-        int count = serverObjects.properties().countOfRequestPerformer();
-
-        performers = new RequestPerformer[count];
-        for (int index = 0; index < count; index++) {
-            performers[index] = new RequestPerformer(this);
-            performers[index].start();
-        }
+        performer = new RequestPerformer(this);
+        performer.start();
 
         Message.debug("start Request Performer ...");
     }
 
     private void createAndStartSender() throws Exception {
-        int count = serverObjects.properties().countOfReplySender();
-
-        senders = new ReplySender[count];
-        for (int index = 0; index < count; index++) {
-            senders[index] = new ReplySender(this);
-            senders[index].start();
-        }
+        sender = new ReplySender(this);
+        sender.start();
 
         Message.debug("start Reply Sender ...");
     }
 
     private void createAndStartProxyConnector() throws Exception {
-        int count = serverObjects.properties().countOfProxyConnector();
-
-        proxyConnectors = new ProxyConnector[count];
-        for (int index = 0; index < count; index++) {
-            proxyConnectors[index] = new ProxyConnector(this);
-            proxyConnectors[index].start();
-        }
+        proxyConnector = new ProxyConnector(this);
+        proxyConnector.start();
 
         Message.debug("start Proxy Connector ...");
     }
 
     private void createAndStartAjpProxier() throws Exception {
-        int count = serverObjects.properties().countOfAjpProxier();
-
-        ajpProxiers = new AjpProxier[count];
-        for (int index = 0; index < count; index++) {
-            ajpProxiers[index] = new AjpProxier(this);
-            ajpProxiers[index].start();
-        }
+        ajpProxier = new AjpProxier(this);
+        ajpProxier.start();
 
         Message.debug("start Ajp Proxier ...");
     }
 
     private void createAndStartHttpProxier() throws Exception {
-        int count = serverObjects.properties().countOfHttpProxier();
-
-        httpProxiers = new HttpProxier[count];
-        for (int index = 0; index < count; index++) {
-            httpProxiers[index] = new HttpProxier(this);
-            httpProxiers[index].start();
-        }
+        httpProxier = new HttpProxier(this);
+        httpProxier.start();
 
         Message.debug("start Http Proxier ...");
     }
 
     private void createAndStartBuffeSender() throws Exception {
-        int count = serverObjects.properties().countOfBufferSender();
-        bufferSender = new BufferSender[count];
-        for (int index = 0; index < count; index++) {
-            bufferSender[index] = new BufferSender(this);
-            bufferSender[index].start();
-        }
-        bufferSenderIndex = new AtomicInteger(0);
+        bufferSender = new BufferSender(this);
+        bufferSender.start();
 
         Message.debug("start Buffer Sender ...");
     }
@@ -222,96 +176,71 @@ public class Server implements Startable {
 
     private void terminateListener() throws Exception {
         listener.terminate();
+        listener = null;
 
         Message.debug("terminate Client Listener ...");
     }
 
 
     private void terminateHandshaker() throws Exception {
-        int count = serverObjects.properties().countOfSSLHandshaker();
-        for (int index = 0; index < count; index++) {
-            handshakers[index].terminate();
-            handshakers[index] = null;
-        }
+        handshaker.terminate();
+        handshaker = null;
 
         Message.debug("terminate SSL Handshaker ...");
     }
 
     private void terminateRequestReceiver() throws Exception {
-        int count = serverObjects.properties().countOfRequestReceiver();
-        for (int index = 0; index < count; index++) {
-            requestReceivers[index].terminate();
-            requestReceivers[index] = null;
-        }
+        requestReceiver.terminate();
+        requestReceiver = null;
 
         Message.debug("terminate Request Receiver ...");
     }
 
     private void terminateBodyReceiver() throws Exception {
-        int count = serverObjects.properties().countOfBodyReceiver();
-        for (int index = 0; index < count; index++) {
-            bodyReceivers[index].terminate();
-            bodyReceivers[index] = null;
-        }
+        bodyReceiver.terminate();
+        bodyReceiver = null;
 
         Message.debug("terminate Body Receiver ...");
     }
 
     private void terminatePerformer() throws Exception {
-        int count = serverObjects.properties().countOfRequestPerformer();
-        for (int index = 0; index < count; index++) {
-            performers[index].terminate();
-            performers[index] = null;
-        }
+        performer.terminate();
+        performer = null;
 
         Message.debug("terminate Request Performer ...");
     }
 
     private void terminateSender() throws Exception {
-        int count = serverObjects.properties().countOfReplySender();
-        for (int index = 0; index < count; index++) {
-            senders[index].terminate();
-            senders[index] = null;
-        }
+        sender.terminate();
+        sender = null;
 
         Message.debug("terminate Reply Sender ...");
     }
 
     private void terminateProxyConnector() throws Exception {
-        int count = serverObjects.properties().countOfProxyConnector();
-        for (int index = 0; index < count; index++) {
-             proxyConnectors[index].terminate();
-        }
+        proxyConnector.terminate();
+        proxyConnector = null;
 
         Message.debug("terminate Proxy Connector ...");
     }
 
     private void terminateAjpProxier() throws Exception {
-        int count = serverObjects.properties().countOfAjpProxier();
-        for (int index = 0; index < count; index++) {
-            ajpProxiers[index].terminate();
-            ajpProxiers[index] = null;
-        }
+        ajpProxier.terminate();
+        ajpProxier = null;
 
         Message.debug("terminate Ajp Proxier ...");
     }
 
     private void terminateHttpProxier() throws Exception {
-        int count = serverObjects.properties().countOfHttpProxier();
-        for (int index = 0; index < count; index++) {
-            httpProxiers[index].terminate();
-            httpProxiers[index] = null;
-        }
+        httpProxier.terminate();
+        httpProxier = null;
 
         Message.debug("terminate Http Proxier ...");
     }
 
     private void terminateBufferSender() throws Exception {
-        int count = serverObjects.properties().countOfBufferSender();
-        for (int index = 0; index < count; index++) {
-            bufferSender[index].terminate();
-            bufferSender[index] = null;
-        }
+        bufferSender.terminate();
+        bufferSender = null;
 
         Message.debug("terminate Buffer Sender ...");
     }
@@ -356,59 +285,39 @@ public class Server implements Startable {
     }
 
     public void gotoSSLHandshaker(Context context) {
-        appropriateProccsser(handshakers).prepareContext(context);
-    }
-
-    private Processor appropriateProccsser(Processor[] processors) {
-        Processor p = processors[0];
-        for (Processor p2 : processors) {
-            if (p2.waitContextCount() == 0) {
-                return p2;
-            } else if (p.waitContextCount() > p2.waitContextCount()) {
-                p = p2;
-            }
-        }
-        return p;
+        handshaker.prepareContext(context);
     }
 
     public void gotoRequestReceiver(Context context) {
-        Processor p = appropriateProccsser(requestReceivers);
-        p.prepareContext(context);
+        requestReceiver.prepareContext(context);
     }
 
     public void gotoBodyReceiver(Context context) {
-        Processor p = appropriateProccsser(bodyReceivers);
-        p.prepareContext(context);
+        bodyReceiver.prepareContext(context);
     }
 
     public void gotoPerformer(Context context) {
-        Processor p = appropriateProccsser(performers);
-        p.prepareContext(context);
+        performer.prepareContext(context);
     }
 
     public void gotoSender(Context context) {
-        Processor p = appropriateProccsser(senders);
-        p.prepareContext(context);
-    }
-
-    public BufferSender bufferSender() {
-        if (bufferSenderIndex.compareAndSet(bufferSender.length - 1, 0)) {
-            return bufferSender[0];
-        } else {
-            return bufferSender[bufferSenderIndex.incrementAndGet()];
-        }
+        sender.prepareContext(context);
     }
 
     public void gotoProxyConnector(Context context) {
-        appropriateProccsser(proxyConnectors).prepareContext(context);
+        proxyConnector.prepareContext(context);
     }
 
     public void gotoAjpProxier(Context context) {
-        appropriateProccsser(ajpProxiers).prepareContext(context);
+        ajpProxier.prepareContext(context);
     }
 
     public void gotoHttpProxier(Context context) {
-        appropriateProccsser(httpProxiers).prepareContext(context);
+        httpProxier.prepareContext(context);
+    }
+
+    public BufferSender bufferSender() {
+        return bufferSender;
     }
 
     public ServerObjects objects() {

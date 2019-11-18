@@ -178,12 +178,4 @@ public class Context {
             httpProxyConnection.context(this);
         }
     }
-
-    public BufferSender bufferSender() {
-        return bufferSender;
-    }
-
-    public void bufferSender(BufferSender bufferSender) {
-        this.bufferSender = bufferSender;
-    }
 }

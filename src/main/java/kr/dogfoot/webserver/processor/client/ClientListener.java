@@ -103,7 +103,6 @@ public class ClientListener extends AsyncSocketProcessor {
             Context context = contextManager().pooledObject();
             context.clientConnection(conn);
 
-            context.bufferSender(server.bufferSender());
             if (info.adjustSSL) {
                 server.gotoSSLHandshaker(context);
             } else {

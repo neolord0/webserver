@@ -7,6 +7,7 @@ import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionMan
 import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
 import kr.dogfoot.webserver.server.buffersender.SendBufferStorage;
 import kr.dogfoot.webserver.server.timer.Timer;
+import kr.dogfoot.webserver.util.Message;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +22,16 @@ public class ServerObjects {
 
     private BufferManager bufferManager;
 
-    private ExecutorService ioExecutorService;
+    private ExecutorService executorForSSLHandshaking;
+    private ExecutorService executorForRequestReceiving;
+    private ExecutorService executorForBodyReceiving;
+    private ExecutorService executorForRequestPerforming;
+    private ExecutorService executorForReplySending;
+    private ExecutorService executorForFileReading;
+    private ExecutorService executorForBufferSending;
+    private ExecutorService executorForProxyConnecting;
+    private ExecutorService executorForAjpProxing;
+    private ExecutorService executorForHttpProxing;
 
     private DefinedMediaTypeManager defaultMediaTypeManager;
     private ReplyMaker replyMaker;
@@ -42,8 +52,18 @@ public class ServerObjects {
         defaultMediaTypeManager = new DefinedMediaTypeManager();
         replyMaker = new ReplyMaker(serverProperties);
     }
+
     public void initialize() {
-        ioExecutorService = Executors.newFixedThreadPool(serverProperties.pooledThreadCount());
+        executorForSSLHandshaking = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().ssl_handshaking());
+        executorForRequestReceiving = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().request_receiving());
+        executorForBodyReceiving = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().body_receiving());;
+        executorForRequestPerforming = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().request_performing());
+        executorForReplySending = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().reply_sending());
+        executorForFileReading = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().file_reading());
+        executorForBufferSending = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().buffer_sending());
+        executorForProxyConnecting = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().proxy_connecting());
+        executorForAjpProxing = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().ajp_proxing());
+        executorForHttpProxing = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().http_proxing());
     }
 
     public ServerProperties properties() {
@@ -70,13 +90,48 @@ public class ServerObjects {
         return httpProxyConnectionManager;
     }
 
-
     public BufferManager bufferManager() {
         return bufferManager;
     }
 
-    public ExecutorService ioExecutorService() {
-        return ioExecutorService;
+    public ExecutorService executorForSSLHandshaking() {
+        return executorForSSLHandshaking;
+    }
+
+    public ExecutorService executorForRequestReceiving() {
+        return executorForRequestReceiving;
+    }
+
+    public ExecutorService executorForBodyReceiving() {
+        return executorForBodyReceiving;
+    }
+
+    public ExecutorService executorForRequestPerforming() {
+        return executorForRequestPerforming;
+    }
+
+    public ExecutorService executorForReplySending() {
+        return executorForReplySending;
+    }
+
+    public ExecutorService executorForFileReading() {
+        return executorForFileReading;
+    }
+
+    public ExecutorService executorForBufferSending() {
+        return executorForBufferSending;
+    }
+
+    public ExecutorService executorForProxyConnecting() {
+        return executorForProxyConnecting;
+    }
+
+    public ExecutorService executorForAjpProxing() {
+        return executorForAjpProxing;
+    }
+
+    public ExecutorService executorForHttpProxing() {
+        return executorForHttpProxing;
     }
 
     public DefinedMediaTypeManager defaultMediaTypeManager() {

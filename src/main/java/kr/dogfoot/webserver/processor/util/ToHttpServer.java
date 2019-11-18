@@ -24,7 +24,7 @@ public class ToHttpServer {
         RequestToBuffer.forRequestLineAndHeaders(buffer, context.request());
         buffer.flip();
 
-        context.bufferSender().sendBufferToHttpServer(context, buffer, true);
+        server.bufferSender().sendBufferToHttpServer(context, buffer, true);
     }
 
     private static void changeRequestURI(Request request, BackendServerInfo backendServerInfo) {
