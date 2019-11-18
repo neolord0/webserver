@@ -8,10 +8,10 @@ public class SettingXML {
     public final static String Root_Node = "webserver";
     public final static String Properties_Node = "properties";
     public final static String Host_Node = "host";
-    public final static String IO_Thread_Pools_Node = "io_thread_pools";
+    public final static String Pooled_Thread_Count = "pooled_thread_count";
     public final static String Server_Header_Node = "server_header";
     public final static String Keep_Alive_Node = "keep_alive";
-    public final static String Count_Of_Processor_Node = "count_of_processor";
+    public final static String Processor_Count_Node = "processor_count";
     public final static String Root_Path_Node = "root_path";
     public final static String Custom_Media_Types_Node = "custom_media_types";
     public final static String SSL_Config_Node = "ssl_config";

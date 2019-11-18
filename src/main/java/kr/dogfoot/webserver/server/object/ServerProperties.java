@@ -7,7 +7,7 @@ public class ServerProperties {
         serverInfos = "My WebServer 1.0".getBytes();
     }
 
-    private int ioThreadCount;
+    private int pooledThreadCount;
     private boolean sendServerHeader;
     private int keepAlive_timeout;
     private int keepAlive_max;
@@ -23,7 +23,7 @@ public class ServerProperties {
     private int countOfHttpProxier;
 
     public ServerProperties() {
-        ioThreadCount = 100;
+        pooledThreadCount = 100;
 
         sendServerHeader = true;
 
@@ -40,12 +40,12 @@ public class ServerProperties {
         countOfHttpProxier = 1;
     }
 
-    public int ioThreadCount() {
-        return ioThreadCount;
+    public int pooledThreadCount() {
+        return pooledThreadCount;
     }
 
-    public void ioThreadCount(int ioThreadCount) {
-        this.ioThreadCount = ioThreadCount;
+    public void pooledThreadCount(int pooledThreadCount) {
+        this.pooledThreadCount = pooledThreadCount;
     }
 
     public boolean sendServerHeader() {

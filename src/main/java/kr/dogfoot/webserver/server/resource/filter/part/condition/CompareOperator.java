@@ -1,22 +1,22 @@
 package kr.dogfoot.webserver.server.resource.filter.part.condition;
 
 public enum CompareOperator {
-    Unknown("", ""),
-    IsExist("IsExist", "exist"),
-    IsInclude("IsInclude", "include"),
-    Equal("Equal", "=="),
-    NotEqual("NotEqual", "!="),
-    LessThan("LessThan", "<"),
-    GreaterThan("GreaterThan", ">"),
-    LessEqual("LessEqual", "<="),
-    GreaterEqual("GreaterEqual", ">=");
+    Unknown(""),
+    IsExist("IsExist" ),
+    IsNotExist("IsNotExist"),
+    IsInclude("IsInclude"),
+    IsNotInclude("IsNotInclude"),
+    Equal("Equal"),
+    NotEqual("NotEqual"),
+    LessThan("LessThan"),
+    GreaterThan("GreaterThan"),
+    LessEqual("LessEqual"),
+    GreaterEqual("GreaterEqual");
 
     private String str;
-    private String symbol;
 
-    CompareOperator(String str, String symbol) {
+    CompareOperator(String str) {
         this.str = str;
-        this.symbol = symbol;
     }
 
     public static CompareOperator fromString(String str) {
@@ -32,7 +32,7 @@ public enum CompareOperator {
 
     @Override
     public String toString() {
-        return this.symbol;
+        return this.str;
     }
 
     public boolean compareNumber(long value1, long value2) {

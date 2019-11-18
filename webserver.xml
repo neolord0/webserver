@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <webserver>
     <properties>
-        <io_thread_pools>1000</io_thread_pools>
+        <pooled_thread_count>1000</pooled_thread_count>
         <server_header send="true"/>
         <keep_alive timeout="3" max="10000"/>
-        <count_of_processor ssl_handshaker="1" request_receiver="10" body_receiver="1" request_performer="1" reply_sender="1" buffer_sender="1" proxy_connector="1" ajp_proxier="1" http_proxier="1"/>
+        <processor_count ssl_handshaker="1" request_receiver="10" body_receiver="1" request_performer="1" reply_sender="1" buffer_sender="1" proxy_connector="1" ajp_proxier="1" http_proxier="1"/>
     </properties>
     <!--
     <host name="host1" domain="" ip="192.168.10.29" port="8443" default_charset="utf-8" default_allowed_method="GET, HEAD">

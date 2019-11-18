@@ -43,7 +43,7 @@ public class ServerObjects {
         replyMaker = new ReplyMaker(serverProperties);
     }
     public void initialize() {
-        ioExecutorService = Executors.newFixedThreadPool(serverProperties.ioThreadCount());
+        ioExecutorService = Executors.newFixedThreadPool(serverProperties.pooledThreadCount());
     }
 
     public ServerProperties properties() {

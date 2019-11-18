@@ -50,22 +50,22 @@ public class WebServiceLoader {
         for (int index = 0; index < count; index++) {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
-            if (SettingXML.IO_Thread_Pools_Node.equalsIgnoreCase(nodeName)) {
-                setIOThreadPoolsCount(properties, (Element) node);
+            if (SettingXML.Pooled_Thread_Count.equalsIgnoreCase(nodeName)) {
+                setPooledThreadCount(properties, (Element) node);
             } else if (SettingXML.Server_Header_Node.equalsIgnoreCase(nodeName)) {
                 setServerHeader(properties, (Element) node);
             } else if (SettingXML.Keep_Alive_Node.equalsIgnoreCase(nodeName)) {
                 setKeepAlive(properties, (Element) node);
-            } else if (SettingXML.Count_Of_Processor_Node.equalsIgnoreCase(nodeName)) {
+            } else if (SettingXML.Processor_Count_Node.equalsIgnoreCase(nodeName)) {
                 setCountOfProcessor(properties, (Element) node);
             }
         }
     }
 
-    private static void setIOThreadPoolsCount(ServerProperties properties, Element element) {
+    private static void setPooledThreadCount(ServerProperties properties, Element element) {
         String text = element.getTextContent();
         if (text != null) {
-            properties.ioThreadCount(Integer.parseInt(text));
+            properties.pooledThreadCount(Integer.parseInt(text));
         }
     }
 
