@@ -30,3 +30,6 @@
         2. Basic 타입에 인증 만을 구현함
     * 캐시(Cache) : 캐시 검증 부분에서 조건부(Conditional) GET Method를 처리하는 기능 이외에 나머지 부분은 구현하지 않음
 
+* [프로그램에 대한 설명](https://github.com/neolord0/webserver/wiki/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8-%EC%84%A4%EB%AA%85)
+
+* [설정 파일에 대한 설명](https://github.com/neolord0/webserver/wiki/%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%5B%EB%A9%94%EC%9D%B8-%EB%B6%80%EB%B6%84%5D)
