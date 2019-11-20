@@ -9,11 +9,11 @@ import kr.dogfoot.webserver.server.Server;
 
 import java.util.ArrayList;
 
-public class FilterAllowedMethodChecking extends Filter {
+public class FilterAllowedMethodAdding extends Filter {
     private static final MethodType[] Zero_Array = new MethodType[0];
     private ArrayList<MethodType> allowedMethodList;
 
-    public FilterAllowedMethodChecking() {
+    public FilterAllowedMethodAdding() {
         allowedMethodList = new ArrayList<MethodType>();
     }
 
@@ -44,7 +44,7 @@ public class FilterAllowedMethodChecking extends Filter {
 
     @Override
     public FilterSort sort() {
-        return FilterSort.AllowedMethodChecking;
+        return FilterSort.AllowedMethodAdding;
     }
 
     public void addAllowedMethod(MethodType mt) {
@@ -65,5 +65,4 @@ public class FilterAllowedMethodChecking extends Filter {
     public MethodType[] allowedMethods() {
         return allowedMethodList.toArray(Zero_Array);
     }
-
 }

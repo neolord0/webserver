@@ -107,7 +107,6 @@ public class ProxyConnector extends AsyncSocketProcessor {
     protected void onConnect(SocketChannel channel, Context context, long currentTime) {
         try {
             if (channel.finishConnect()) {
-                System.out.println("connect");
                 setLastAccessTime(context, currentTime);
 
                 if (context.backendServerInfo().isAjp()) {

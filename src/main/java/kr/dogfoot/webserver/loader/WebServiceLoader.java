@@ -68,7 +68,6 @@ public class WebServiceLoader {
             Attr attr = (Attr) attrMap.item(index);
             String attrName = attr.getName();
 
-
             if (SettingXML.SSL_Handshaking_Attr.equalsIgnoreCase(attrName)) {
                 pooledThreadCount.ssl_handshaking(Integer.parseInt(attr.getValue()));
             } else if (SettingXML.Request_Receiving_Attr.equalsIgnoreCase(attrName)) {

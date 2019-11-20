@@ -18,11 +18,8 @@ public class SettingXML {
     public final static String Media_Type_Node = "media_type";
     public final static String Key_Store_Node = "key_store";
     public final static String Trust_Store_Node = "trust_store";
-    public final static String Path_Node = "path";
-    public final static String Password_Node = "password";
+    public final static String File_Path_Node = "file_path";
     public final static String Proxy_Info_Node = "proxy_info";
-    public final static String Applied_URL_Pattern_Node = "applied_url_pattern";
-    public final static String Backend_Servers_Node = "backend_servers";
     public final static String Backend_Server_Node = "backend_server";
     public final static String Resource_Setting_Node = "resource_setting";
     public final static String Directory_Node = "directory";
@@ -35,7 +32,7 @@ public class SettingXML {
     public final static String Source_Path_Node = "source_path";
     public final static String Basic_Authorization_Node = "basic_authorization";
     public final static String Expect_Checking_Node = "expect_checking";
-    public final static String Allowed_Method_Checking_Node = "allowed_method_checking";
+    public final static String Allowed_Method_Adding_Node = "allowed_method_adding";
     public final static String URL_Redirecting_Node = "url_redirecting";
     public final static String Header_Adding_Node = "header_adding";
     public final static String Charset_Encoding_Node = "charset_encoding";
@@ -44,7 +41,6 @@ public class SettingXML {
     public final static String Fail_Condition_List_Node = "fail_condition_list";
     public final static String Adding_Condition_Node = "adding_condition";
     public final static String Adding_Condition_List_Node = "adding_condition_list";
-    public final static String Header_List_Node = "header_list";
     public final static String Header_Node = "header";
     public final static String Apply_Condition_Node = "apply_condition";
     public final static String Apply_Condition_List_Node = "apply_condition_list";
@@ -75,10 +71,11 @@ public class SettingXML {
     public final static String Default_Allowed_Methods = "default_allowed_methods";
     public final static String EXT_Attr = "ext";
     public final static String Type_Attr = "type";
+    public final static String Verify_Client_Attr = "verify_client";
     public final static String Key_Alias_Attr = "key_alias";
-    public final static String Certificate_Verification_Attr = "certificate_verification";
     public final static String Provider_Attr = "provider";
     public final static String Balance_Attr = "balance";
+    public final static String Applied_URL_Pattern_Attr = "applied_url_pattern";
     public final static String Protocol_Attr = "protocol";
     public final static String IP_Or_Domain_Attr = "ip_or_domain";
     public final static String Keep_Alive_Timeout_Attr = "keep_alive_timeout";

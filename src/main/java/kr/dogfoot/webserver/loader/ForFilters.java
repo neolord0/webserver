@@ -21,8 +21,8 @@ public class ForFilters {
                 addFilter_BasicAuthorization(settingItem, (Element) node);
             } else if (SettingXML.Expect_Checking_Node.equalsIgnoreCase(nodeName)) {
                 addFilter_ExpectChecking(settingItem, (Element) node);
-            } else if (SettingXML.Allowed_Method_Checking_Node.equalsIgnoreCase(nodeName)) {
-                addFilter_AllowedMethodChecking(settingItem, (Element) node);
+            } else if (SettingXML.Allowed_Method_Adding_Node.equalsIgnoreCase(nodeName)) {
+                addFilter_AllowedMethodAdding(settingItem, (Element) node);
             } else if (SettingXML.URL_Redirecting_Node.equalsIgnoreCase(nodeName)) {
                 addFilter_URLRedirecting(settingItem, (Element) node);
             } else if (SettingXML.Header_Adding_Node.equalsIgnoreCase(nodeName)) {
@@ -70,8 +70,8 @@ public class ForFilters {
         settingItem.addFilter(ec);
     }
 
-    private static void addFilter_AllowedMethodChecking(SettingItem settingItem, Element element) {
-        FilterAllowedMethodChecking amc = new FilterAllowedMethodChecking();
+    private static void addFilter_AllowedMethodAdding(SettingItem settingItem, Element element) {
+        FilterAllowedMethodAdding amc = new FilterAllowedMethodAdding();
 
         NamedNodeMap attrMap = element.getAttributes();
         int count = attrMap.getLength();
@@ -85,7 +85,7 @@ public class ForFilters {
         settingItem.addFilter(amc);
     }
 
-    private static void setAllowedMethods(FilterAllowedMethodChecking fmc, String value) {
+    private static void setAllowedMethods(FilterAllowedMethodAdding fmc, String value) {
         String[] methods = value.split(SettingXML.Comma);
         for (String method : methods) {
             fmc.addAllowedMethod(MethodType.fromSting(method.trim()));
@@ -122,23 +122,11 @@ public class ForFilters {
                 ForCondition.set(ha.addingCondition().addNewHeaderCondition(), (Element) node);
             } else if (SettingXML.Adding_Condition_List_Node.equalsIgnoreCase(nodeName)) {
                 ForCondition.setList(ha.addingCondition(), (Element) node);
-            } else if (SettingXML.Header_List_Node.equalsIgnoreCase(nodeName)) {
-                setHeaderList(ha, (Element) node);
-            }
-        }
-        settingItem.addFilter(ha);
-    }
-
-    private static void setHeaderList(FilterHeaderAdding ha, Element element) {
-        NodeList nodeList = element.getChildNodes();
-        int count2 = nodeList.getLength();
-        for (int index = 0; index < count2; index++) {
-            Node node = nodeList.item(index);
-            String nodeName = node.getNodeName();
-            if (SettingXML.Header_Node.equalsIgnoreCase(nodeName)) {
+            } else if (SettingXML.Header_Node.equalsIgnoreCase(nodeName)) {
                 setHeaderSetting(ha.addNewHeaderSetting(), (Element) node);
             }
         }
+        settingItem.addFilter(ha);
     }
 
     private static void setHeaderSetting(HeaderSetting hs, Element element) {

@@ -3,7 +3,7 @@ package kr.dogfoot.webserver.server.resource.filter;
 public enum FilterSort {
     BasicAuthorization,
     ExpectChecking,
-    AllowedMethodChecking,
+    AllowedMethodAdding,
     URLRedirecting,
     HeaderAdding,
     CharsetEncoding,

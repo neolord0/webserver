@@ -12,8 +12,8 @@ public class ForSSLConfig {
             String attrName = attr.getName();
             if (SettingXML.Key_Alias_Attr.equalsIgnoreCase(attrName)) {
                 sslConfig.setKeyAlias(attr.getValue());
-            } else if (SettingXML.Certificate_Verification_Attr.equalsIgnoreCase(attrName)) {
-                sslConfig.setCertificateVerificationAsString(attr.getValue());
+            } else if (SettingXML.Verify_Client_Attr.equalsIgnoreCase(attrName)) {
+                sslConfig.setCertificateVerification(attr.getValue());
             }
         }
 
@@ -38,8 +38,10 @@ public class ForSSLConfig {
             String attrName = attr.getName();
             if (SettingXML.Type_Attr.equalsIgnoreCase(attrName)) {
                 sslConfig.setKeystoreType(attr.getValue());
-            } else if (SettingXML.Provider_Attr.equalsIgnoreCase(attrName)) {
+                } else if (SettingXML.Provider_Attr.equalsIgnoreCase(attrName)) {
                 sslConfig.setKeystoreProvider(attr.getValue());
+            } else if (SettingXML.Password_Attr.equalsIgnoreCase(attrName)) {
+                sslConfig.setKeystorePassword(attr.getValue());
             }
         }
 
@@ -48,10 +50,8 @@ public class ForSSLConfig {
         for (int index = 0; index < count2; index++) {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
-            if (SettingXML.Path_Node.equalsIgnoreCase(nodeName)) {
+            if (SettingXML.File_Path_Node.equalsIgnoreCase(nodeName)) {
                 sslConfig.setKeystoreFile(SettingXML.getCDATA((Element) node));
-            } else if (SettingXML.Password_Node.equalsIgnoreCase(nodeName)) {
-                sslConfig.setKeystorePassword(node.getTextContent());
             }
         }
     }
@@ -66,6 +66,8 @@ public class ForSSLConfig {
                 sslConfig.setTruststoreType(attr.getValue());
             } else if (SettingXML.Provider_Attr.equalsIgnoreCase(attrName)) {
                 sslConfig.setTruststoreProvider(attr.getValue());
+            } else if (SettingXML.Password_Attr.equalsIgnoreCase(attrName)) {
+                sslConfig.setTruststorePassword(attr.getValue());
             }
         }
 
@@ -74,10 +76,8 @@ public class ForSSLConfig {
         for (int index = 0; index < count2; index++) {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
-            if (SettingXML.Path_Node.equalsIgnoreCase(nodeName)) {
+            if (SettingXML.File_Path_Node.equalsIgnoreCase(nodeName)) {
                 sslConfig.setTruststoreFile(SettingXML.getCDATA((Element) node));
-            } else if (SettingXML.Password_Node.equalsIgnoreCase(nodeName)) {
-                sslConfig.setTruststorePassword(node.getTextContent());
             }
         }
     }

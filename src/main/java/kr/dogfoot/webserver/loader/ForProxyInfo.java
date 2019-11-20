@@ -12,28 +12,12 @@ public class ForProxyInfo {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
             if (SettingXML.Proxy_Info_Node.equalsIgnoreCase(nodeName)) {
-                addProxyInfo(host, (Element) node);
+                addProxyInfo(host.addNewProxyInfo(), (Element) node);
             }
         }
     }
 
-    private static void addProxyInfo(Host host, Element element) {
-        ProxyInfo proxyInfo = host.addNewProxyInfo();
-
-        NodeList nodeList = element.getChildNodes();
-        int count2 = nodeList.getLength();
-        for (int index = 0; index < count2; index++) {
-            Node node = nodeList.item(index);
-            String nodeName = node.getNodeName();
-            if (SettingXML.Applied_URL_Pattern_Node.equalsIgnoreCase(nodeName)) {
-                proxyInfo.appliedURLPattern(SettingXML.getCDATA((Element) node));
-            } else if (SettingXML.Backend_Servers_Node.equalsIgnoreCase(nodeName)) {
-                setBackends(proxyInfo, (Element) node);
-            }
-        }
-    }
-
-    private static void setBackends(ProxyInfo proxyInfo, Element element) {
+    private static void addProxyInfo(ProxyInfo proxyInfo, Element element) {
         NamedNodeMap attrMap = element.getAttributes();
         int count = attrMap.getLength();
         for (int index = 0; index < count; index++) {
@@ -41,10 +25,9 @@ public class ForProxyInfo {
             String attrName = attr.getName();
             if (SettingXML.Balance_Attr.equalsIgnoreCase(attrName)) {
                 createBackendServerManager(proxyInfo, attr.getValue());
+            } else if (SettingXML.Applied_URL_Pattern_Attr.equalsIgnoreCase(attrName)) {
+                proxyInfo.appliedURLPattern(attr.getValue());
             }
-        }
-        if (proxyInfo.backendServerManager() == null) {
-            proxyInfo.backendServerManager(new BackendServerManagerForRoundRobin());
         }
 
         NodeList nodeList = element.getChildNodes();
@@ -63,8 +46,6 @@ public class ForProxyInfo {
             proxyInfo.backendServerManager(new BackendServerManagerForRoundRobin());
         } else if (SettingXML.Least_Connection_Value.equalsIgnoreCase(balance)) {
             proxyInfo.backendServerManager(new BackendServerManagerForLeastConnection());
-        } else if (SettingXML.Least_Load_Value.equalsIgnoreCase(balance)) {
-            proxyInfo.backendServerManager(new BackendServerManagerForLeastLoad());
         }
     }
 

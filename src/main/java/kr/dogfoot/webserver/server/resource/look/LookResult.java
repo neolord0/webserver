@@ -15,7 +15,7 @@ public class LookResult {
     private Resource resource;
     private FilterBasicAuthorization basicAuthorization;
     private FilterExpectChecking expectChecking;
-    private FilterAllowedMethodChecking allowedMethodChecking;
+    private FilterAllowedMethodAdding allowedMethod;
     private FilterURLRedirecting urlRedirecting;
     private ArrayList<FilterHeaderAdding> headerAddingList;
     private FilterCharsetEncoding charsetEncoding;
@@ -29,9 +29,9 @@ public class LookResult {
     }
 
     private void setDefaultFilter(Host host) {
-        allowedMethodChecking = new FilterAllowedMethodChecking();
+        allowedMethod = new FilterAllowedMethodAdding();
         for (MethodType mt : host.hostObjects().defaultAllowedMethods()) {
-            allowedMethodChecking.addAllowedMethod(mt);
+            allowedMethod.addAllowedMethod(mt);
         }
     }
 
@@ -55,8 +55,8 @@ public class LookResult {
         if (expectChecking != null) {
             list.add(expectChecking);
         }
-        if (allowedMethodChecking != null) {
-            list.add(allowedMethodChecking);
+        if (allowedMethod != null) {
+            list.add(allowedMethod);
         }
         if (urlRedirecting != null) {
             list.add(urlRedirecting);
@@ -89,8 +89,8 @@ public class LookResult {
             case ExpectChecking:
                 setExpectChecking((FilterExpectChecking) filter);
                 break;
-            case AllowedMethodChecking:
-                setAllowedMethodChecking((FilterAllowedMethodChecking) filter);
+            case AllowedMethodAdding:
+                addAllowedMethod((FilterAllowedMethodAdding) filter);
                 break;
             case URLRedirecting:
                 setURLRedirecting((FilterURLRedirecting) filter);
@@ -115,10 +115,10 @@ public class LookResult {
         expectChecking = filter;
     }
 
-    private void setAllowedMethodChecking(FilterAllowedMethodChecking filter) {
+    private void addAllowedMethod(FilterAllowedMethodAdding filter) {
         for (MethodType mt : filter.allowedMethods()) {
             if (mt != null) {
-                allowedMethodChecking.addAllowedMethod(mt);
+                allowedMethod.addAllowedMethod(mt);
             }
         }
     }

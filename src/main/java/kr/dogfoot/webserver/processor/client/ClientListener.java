@@ -112,7 +112,7 @@ public class ClientListener extends AsyncSocketProcessor {
             acceptCount++;
             Message.debug(context, "accept " + acceptCount);
         } else {
-            System.out.println("fail to accept.");
+            Message.debug("fail to accept.");
         }
     }
 
