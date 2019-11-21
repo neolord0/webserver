@@ -55,12 +55,6 @@ public class HeaderValueRange extends HeaderValue {
         return ret;
     }
 
-
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     private void parseRanges(byte[] value, ParseState parentPS) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.prepare(parentPS);

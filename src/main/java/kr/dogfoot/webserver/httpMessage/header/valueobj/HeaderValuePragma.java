@@ -22,11 +22,6 @@ public class HeaderValuePragma extends HeaderValue {
         return value;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public byte[] value() {
         return value;
     }

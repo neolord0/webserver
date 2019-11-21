@@ -61,7 +61,6 @@ public class HeaderValueAcceptLanguage extends HeaderValue {
         float qvalue = -1;
 
         for (LanguageRange lr : languageRangeList) {
-
             if (lr.isMatch(compare)) {
                 float lr_qvalue = (lr.getQvalue() == null) ? 1 : lr.getQvalue();
                 qvalue = Math.max(lr_qvalue, qvalue);

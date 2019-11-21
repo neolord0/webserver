@@ -25,11 +25,6 @@ public class HeaderValueServer extends HeaderValue {
         return infos;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public byte[] infos() {
         return infos;
     }

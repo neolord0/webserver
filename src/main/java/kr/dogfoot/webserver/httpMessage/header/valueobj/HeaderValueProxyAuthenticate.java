@@ -25,11 +25,6 @@ public class HeaderValueProxyAuthenticate extends HeaderValue {
         return challenges;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public byte[] challenges() {
         return challenges;
     }

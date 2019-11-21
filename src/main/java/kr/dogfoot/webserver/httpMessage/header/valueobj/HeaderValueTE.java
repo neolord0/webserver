@@ -57,8 +57,22 @@ public class HeaderValueTE extends HeaderValue {
     }
 
     @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
+    public Float getQvalue(String compare){
+        if (compare == null) {
+            return (float) -1;
+        }
+
+        float qvalue = -1;
+
+        for (TransferEncoding te : transferEncodingList) {
+            float te_qvalue = (te.getQvalue() == null) ? 1 : te.getQvalue();
+
+            if (compare.equalsIgnoreCase(te.getSort().toString())) {
+                qvalue = Math.max(te_qvalue, qvalue);
+            }
+        }
+
+        return qvalue;
     }
 
     public TransferEncoding addNewTransferEncoding() {
@@ -69,19 +83,5 @@ public class HeaderValueTE extends HeaderValue {
 
     public TransferEncoding[] transferEncodings() {
         return transferEncodingList.toArray(Zero_Array);
-    }
-
-    public float getQvalue(TransferCodingSort coding) {
-        float qvalue = -1;
-
-        for (TransferEncoding te : transferEncodingList) {
-            String te_text = te.getSort().toString();
-            float te_qvalue = (te.getQvalue() == null) ? 1 : te.getQvalue();
-            if (te.getSort() == coding) {
-                qvalue = (te_qvalue > qvalue) ? te_qvalue : qvalue;
-            }
-        }
-
-        return qvalue;
     }
 }

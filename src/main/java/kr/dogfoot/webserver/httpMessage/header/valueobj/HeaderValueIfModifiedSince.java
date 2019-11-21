@@ -33,8 +33,8 @@ public class HeaderValueIfModifiedSince extends HeaderValue {
     }
 
     @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
+    public Long getDateValue() {
+        return date;
     }
 
     public Long date() {
@@ -44,4 +44,6 @@ public class HeaderValueIfModifiedSince extends HeaderValue {
     public void date(Long date) {
         this.date = date;
     }
+
+
 }

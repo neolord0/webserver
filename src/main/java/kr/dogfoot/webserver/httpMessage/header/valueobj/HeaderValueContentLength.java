@@ -41,9 +41,8 @@ public class HeaderValueContentLength extends HeaderValue {
     }
 
     @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        long value2 = Long.parseLong(value);
-        return compareOp.compareNumber(this.value, value2);
+    public Long getNumberValue() {
+        return Long.valueOf(value);
     }
 
     public int value() {

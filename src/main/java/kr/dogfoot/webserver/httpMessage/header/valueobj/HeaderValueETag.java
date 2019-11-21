@@ -25,11 +25,6 @@ public class HeaderValueETag extends HeaderValue {
         return etag;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public byte[] etag() {
         return etag;
     }

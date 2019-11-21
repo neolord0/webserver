@@ -34,9 +34,8 @@ public class HeaderValueMaxForwards extends HeaderValue {
         return ToBytes.fromInt(value);
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
+    public Long getNumberValue() {
+        return Long.valueOf(value);
     }
 
     public int value() {

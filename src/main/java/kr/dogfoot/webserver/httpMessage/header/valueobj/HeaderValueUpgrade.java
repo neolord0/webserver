@@ -50,11 +50,6 @@ public class HeaderValueUpgrade extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public void addProduct(String product) {
         productList.add(product);
     }

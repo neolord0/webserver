@@ -53,8 +53,8 @@ public class HeaderValueIfRange extends HeaderValue {
     }
 
     @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
+    public Long getDateValue() {
+        return date;
     }
 
     public Long date() {

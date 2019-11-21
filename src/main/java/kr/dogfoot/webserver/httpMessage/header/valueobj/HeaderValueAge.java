@@ -33,6 +33,11 @@ public class HeaderValueAge extends HeaderValue {
         return ret;
     }
 
+    @Override
+    public Long getNumberValue() {
+        return ageValue;
+    }
+
     public long ageValue() {
         return ageValue;
     }

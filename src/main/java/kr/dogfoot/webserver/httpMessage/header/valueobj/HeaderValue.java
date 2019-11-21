@@ -11,15 +11,19 @@ public abstract class HeaderValue {
 
     public abstract byte[] combineValue();
 
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public boolean hasQvalue() {
         return getQvalue(null) != null;
     }
 
     public Float getQvalue(String compare) {
+        return null;
+    }
+
+    public Long getNumberValue() {
+        return null;
+    }
+
+    public Long getDateValue() {
         return null;
     }
 }

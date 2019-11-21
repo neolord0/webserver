@@ -57,8 +57,13 @@ public class HeaderValueRetryAfter extends HeaderValue {
     }
 
     @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
+    public Long getNumberValue() {
+        return deltaSeconds;
+    }
+
+    @Override
+    public Long getDateValue() {
+        return date;
     }
 
     public Long date() {

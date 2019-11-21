@@ -3,6 +3,7 @@ package kr.dogfoot.webserver.httpMessage.header;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.FactoryForHeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.parser.util.ParserException;
+import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 public class HeaderItem {

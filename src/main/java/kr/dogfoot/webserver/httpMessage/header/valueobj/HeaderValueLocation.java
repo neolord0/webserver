@@ -27,11 +27,6 @@ public class HeaderValueLocation extends HeaderValue {
         return absoluteURI.getBytes();
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public String absoluteURI() {
         return absoluteURI;
     }

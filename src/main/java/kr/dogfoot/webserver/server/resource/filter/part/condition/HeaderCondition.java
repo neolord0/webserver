@@ -23,26 +23,7 @@ public class HeaderCondition implements HeaderConditionInterface {
 
     @Override
     public boolean isMatch(HeaderList headerList) {
-        HeaderItem headerItem = headerList.getHeader(this.header);
-
-        if (compareOperator == CompareOperator.IsExist) {
-            return compareExist(headerItem);
-        }
-
-        if (headerItem != null) {
-            HeaderValue headerValue;
-            try {
-                headerValue = headerItem.updateValueObj();
-            } catch (ParserException e) {
-                e.printStackTrace();;
-
-                headerValue = null;
-            }
-            if (headerValue != null) {
-                return headerValue.compare(compareOperator, value);
-            }
-        }
-        return false;
+        return headerList.compare(header, compareOperator, value);
     }
 
     private boolean compareExist(HeaderItem header) {

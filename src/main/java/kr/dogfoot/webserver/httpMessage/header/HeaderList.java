@@ -5,6 +5,7 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentLength;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueTransferEncoding;
 import kr.dogfoot.webserver.parser.util.ParserException;
+import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -181,6 +182,33 @@ public class HeaderList {
 
     public boolean hasBody() {
         return getContentLength() > 0 || isChunked();
+    }
+
+    public boolean compare(HeaderSort headerSort, CompareOperator operator, String value) {
+        HeaderItem item = getHeader(headerSort);
+        if (operator == CompareOperator.Exist) {
+            return (item != null);
+        } else if (operator == CompareOperator.NotExist) {
+            return (item == null);
+        }
+        if (operator.compareWithBytes()) {
+            return operator.compareπWithByte(item.valueBytes(), value.getBytes());
+        }
+
+        HeaderValue headerValue;
+        try {
+            headerValue = item.updateValueObj();
+        } catch (ParserException e) {
+            headerValue = null;
+        }
+        if (headerValue != null) {
+            if (headerValue.getNumberValue() != null) {
+                return operator.compareWithNumber(headerValue.getNumberValue(), Long.parseLong(value));
+            } else if (headerValue.getDateValue() != null) {
+                return operator.compareWithDate(headerValue.getDateValue(), value.getBytes());
+            }
+        }
+        return false;
     }
 }
 

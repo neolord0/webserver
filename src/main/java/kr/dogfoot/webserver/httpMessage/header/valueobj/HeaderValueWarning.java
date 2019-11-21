@@ -54,11 +54,6 @@ public class HeaderValueWarning extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public WarningValue addNewWarningValue() {
         WarningValue wv = new WarningValue();
         warningValueList.add(wv);

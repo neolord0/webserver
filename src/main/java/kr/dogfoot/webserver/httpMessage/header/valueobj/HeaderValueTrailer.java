@@ -50,11 +50,6 @@ public class HeaderValueTrailer extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public void addFieldName(HeaderSort fieldName) {
         fieldNameList.add(fieldName);
     }

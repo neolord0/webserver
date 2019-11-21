@@ -51,11 +51,6 @@ public class HeaderValueTransferEncoding extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public void addTransferCoding(TransferCodingSort transferCoding) {
         transferCodingSortList.add(transferCoding);
     }

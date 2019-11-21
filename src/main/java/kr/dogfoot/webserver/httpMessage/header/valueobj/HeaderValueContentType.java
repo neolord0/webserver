@@ -39,17 +39,6 @@ public class HeaderValueContentType extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        if (compareOp == CompareOperator.Equal) {
-            return mediaType.isMatch(value);
-        } else if (compareOp == CompareOperator.NotEqual) {
-            return !mediaType.isMatch(value);
-        } else {
-            return false;
-        }
-    }
-
     public MediaType mediaType() {
         return mediaType;
     }

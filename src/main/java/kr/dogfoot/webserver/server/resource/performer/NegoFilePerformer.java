@@ -2,6 +2,7 @@ package kr.dogfoot.webserver.server.resource.performer;
 
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
+import kr.dogfoot.webserver.httpMessage.header.HeaderList;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentType;
@@ -35,7 +36,7 @@ public class NegoFilePerformer {
         HeaderSort[] compareHeaders = negoInfo.compareHeaders();
         for (HeaderSort headerSort : compareHeaders) {
             if (variants != null) {
-                variants = getAvailableVariants(request.getHeaderValueObj(headerSort), variants);
+                variants = getAvailableVariants(request.headerList(), headerSort, variants);
             }
         }
 
@@ -46,12 +47,10 @@ public class NegoFilePerformer {
         }
     }
 
-    private static NegotiationVariant[] getAvailableVariants(HeaderValue headerValue, NegotiationVariant[] variants) {
-        if (headerValue == null) {
-            return variants;
-        }
+    private static NegotiationVariant[] getAvailableVariants(HeaderList headerList, HeaderSort sort, NegotiationVariant[] variants) {
         ArrayList<NegotiationVariant> result = new ArrayList<NegotiationVariant>();
-        if (headerValue.hasQvalue()) {
+        HeaderValue headerValue = headerList.getValueObj(sort);
+        if (headerValue != null && headerValue.hasQvalue()) {
             String bestValue = getBestAvailableValue(headerValue, variants);
             if (bestValue == null) {
                 return null;
@@ -60,7 +59,6 @@ public class NegoFilePerformer {
             } else {
                 for (NegotiationVariant variant : variants) {
                     HeaderCondition condition = variant.getCondition(headerValue.sort());
-
                     if (condition != null && bestValue.equalsIgnoreCase(condition.value())) {
                         result.add(variant);
                     }
@@ -69,7 +67,7 @@ public class NegoFilePerformer {
         } else {
             for (NegotiationVariant variant : variants) {
                 HeaderCondition condition = variant.getCondition(headerValue.sort());
-                if (condition != null && headerValue.compare(CompareOperator.IsInclude, condition.value())) {
+                if (condition != null && headerList.compare(sort, CompareOperator.Include, condition.value())) {
                     result.add(variant);
                 }
             }

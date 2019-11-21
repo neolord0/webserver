@@ -51,14 +51,6 @@ public class HeaderValueUserAgent extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        if (compareOp == CompareOperator.IsInclude) {
-            return BytesUtil.indexOf(combineValue(), value.getBytes()) > 0;
-        }
-        return true;
-    }
-
     public void addInfo(String info) {
         infoList.add(info);
     }

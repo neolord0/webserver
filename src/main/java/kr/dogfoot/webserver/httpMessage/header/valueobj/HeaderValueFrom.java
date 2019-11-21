@@ -26,9 +26,4 @@ public class HeaderValueFrom extends HeaderValue {
     public byte[] combineValue() {
         return mailbox.getBytes();
     }
-
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
 }

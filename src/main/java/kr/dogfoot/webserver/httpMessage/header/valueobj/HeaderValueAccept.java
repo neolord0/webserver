@@ -78,7 +78,6 @@ public class HeaderValueAccept extends HeaderValue {
     public MediaType[] mediaTypes() {
         return mediaTypeList.toArray(Zero_Array);
     }
-
 }
 
 

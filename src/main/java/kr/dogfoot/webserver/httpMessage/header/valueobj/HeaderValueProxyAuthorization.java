@@ -48,11 +48,6 @@ public class HeaderValueProxyAuthorization extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public String type() {
         return type;
     }

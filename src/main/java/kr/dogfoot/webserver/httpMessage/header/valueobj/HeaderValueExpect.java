@@ -28,11 +28,6 @@ public class HeaderValueExpect extends HeaderValue {
         return token.getBytes();
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public String token() {
         return token;
     }

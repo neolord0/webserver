@@ -56,11 +56,6 @@ public class HeaderValueHost extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public String ipOrDomain() {
         return ipOrDomain;
     }

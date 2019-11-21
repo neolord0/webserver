@@ -27,11 +27,6 @@ public class HeaderValueReferer extends HeaderValue {
         return uri.getBytes();
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public String uri() {
         return uri;
     }

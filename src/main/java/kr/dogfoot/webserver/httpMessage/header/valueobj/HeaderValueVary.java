@@ -62,11 +62,6 @@ public class HeaderValueVary extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public boolean isAsterisk() {
         return isAsterisk;
     }

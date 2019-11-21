@@ -71,11 +71,6 @@ public class HeaderValueKeepAlive extends HeaderValue {
 
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public int timeout() {
         return timeout;
     }

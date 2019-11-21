@@ -50,11 +50,6 @@ public class HeaderValueVia extends HeaderValue {
         return ret;
     }
 
-    @Override
-    public boolean compare(CompareOperator compareOp, String value) {
-        return false;
-    }
-
     public RecipientInfo addNewRecipientInfo() {
         RecipientInfo ri = new RecipientInfo();
         recipientInfoList.add(ri);
