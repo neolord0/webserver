@@ -55,6 +55,7 @@ public class RequestReceiver extends AsyncSocketProcessor {
         if (willUnregister == true) {
             unregister(context.clientConnection().selectionKey());
         }
+
         closeAllConnectionFor(context);
     }
 

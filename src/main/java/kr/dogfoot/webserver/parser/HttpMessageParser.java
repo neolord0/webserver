@@ -16,8 +16,8 @@ public class HttpMessageParser {
             while (r.hasData() && r.peekIsSP() == true) {
                 r.pollAndReadAndCache();
             }
-            if (r.peekIsEnd() == false && r.peekIsSP() == false) {
-                ps.skippingSpace(false);
+                if (r.peekIsEnd() == false && r.peekIsSP() == false) {
+                    ps.skippingSpace(false);
             }
             return true;
         }

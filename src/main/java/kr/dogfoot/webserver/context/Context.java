@@ -8,6 +8,7 @@ import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
+import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
 import kr.dogfoot.webserver.server.resource.Resource;
 import kr.dogfoot.webserver.server.resource.filter.Filter;
 
@@ -23,7 +24,7 @@ public class Context {
 
     private HttpClientConnection clientConnection;
 
-    private int proxyId;
+    private ProxyInfo proxyInfo;
     private BackendServerInfo backendServerInfo;
     private AjpProxyConnection ajpProxyConnection;
     private HttpProxyConnection httpProxyConnection;
@@ -42,7 +43,7 @@ public class Context {
 
         clientConnection = null;
 
-        proxyId = -1;
+        proxyInfo = null;
         backendServerInfo = null;
         ajpProxyConnection = null;
         httpProxyConnection = null;
@@ -60,7 +61,7 @@ public class Context {
 
         clientConnection = null;
 
-        proxyId = -1;
+        proxyInfo = null;
         backendServerInfo = null;
         ajpProxyConnection = null;
         httpProxyConnection = null;
@@ -139,13 +140,12 @@ public class Context {
         }
     }
 
-
-    public int proxyId() {
-        return proxyId;
+    public ProxyInfo proxyInfo() {
+        return proxyInfo;
     }
 
-    public Context proxyId(int proxyId) {
-        this.proxyId = proxyId;
+    public Context proxyInfo(ProxyInfo proxyInfo) {
+        this.proxyInfo = proxyInfo;
         return this;
     }
 
@@ -172,10 +172,11 @@ public class Context {
         return httpProxyConnection;
     }
 
-    public void httpProxy(HttpProxyConnection httpProxy) {
+    public Context httpProxy(HttpProxyConnection httpProxy) {
         this.httpProxyConnection = httpProxy;
         if (httpProxyConnection != null) {
             httpProxyConnection.context(this);
         }
+        return this;
     }
 }

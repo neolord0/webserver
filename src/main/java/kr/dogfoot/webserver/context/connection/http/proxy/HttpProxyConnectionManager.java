@@ -34,24 +34,28 @@ public class HttpProxyConnectionManager {
 
     public void releaseAndClose(Context context) {
         Message.debug(context.httpProxy(), "release and close http proxy connection");
-        _releaseAndClose(context);
-    }
-
-    private void _releaseAndClose(Context context) {
         HttpProxyConnection conn = context.httpProxy();
         if (conn != null) {
-            if (conn.channel() != null) {
-                try {
-                    conn.channel().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                conn.channel(null);
-            }
-            context.httpProxy(null);
+            _releaseAndClose(conn);
 
-            addToPool(conn);
+            context.httpProxy(null);
         }
+        context
+                .proxyInfo(null)
+                .backendServerInfo(null);
+    }
+
+    private void _releaseAndClose(HttpProxyConnection conn) {
+        if (conn.channel() != null) {
+            try {
+                conn.channel().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            conn.channel(null);
+        }
+
+        addToPool(conn);
     }
 
     private void addToPool(HttpProxyConnection connection) {

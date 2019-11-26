@@ -89,21 +89,21 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
 
             context.ajpProxy(null);
         }
-        context.proxyId(-1).backendServerInfo(null);
+        context
+                .proxyInfo(null)
+                .backendServerInfo(null);
     }
 
     private void _releaseAndClose(AjpProxyConnection conn) {
-        if (conn != null) {
-            if (conn.channel() != null) {
-                try {
-                    conn.channel().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                conn.channel(null);
+        if (conn.channel() != null) {
+            try {
+                conn.channel().close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            addToPool(conn);
+            conn.channel(null);
         }
+        addToPool(conn);
     }
 
     private void addToPool(AjpProxyConnection connection) {

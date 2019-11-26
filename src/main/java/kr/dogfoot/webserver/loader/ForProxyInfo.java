@@ -37,6 +37,8 @@ public class ForProxyInfo {
             String nodeName = node.getNodeName();
             if (SettingXML.Backend_Server_Node.equalsIgnoreCase(nodeName)) {
                 addBackend(proxyInfo, (Element) node);
+            } else if (SettingXML.Proxy_Filters_Node.equalsIgnoreCase(nodeName)) {
+                ForProxyFilters.set(proxyInfo, (Element) node);
             }
         }
     }

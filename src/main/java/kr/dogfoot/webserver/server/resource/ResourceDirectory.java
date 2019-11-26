@@ -1,5 +1,7 @@
 package kr.dogfoot.webserver.server.resource;
 
+import kr.dogfoot.webserver.server.resource.look.LookResult;
+import kr.dogfoot.webserver.server.resource.look.LookState;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 import java.io.File;
@@ -63,11 +65,28 @@ public class ResourceDirectory extends ResourceContainer {
     }
 
     @Override
-    protected Resource look(String path) {
-        if (path.equals("")) {
-            return super.look(defaultFilename);
+    public boolean look(LookState ls, LookResult lr) {
+        lr.appendFilter(filters());
+
+        if (ls.isLastPathItem()) {
+            if (defaultFilename != null) {
+                Resource defaultFile = look(defaultFilename);
+                if (defaultFile != null) {
+                    return defaultFile.look(ls, lr);
+                } else {
+                    return false;
+                }
+            } else {
+                lr.resource(this);
+                return true;
+            }
+        } else {
+            Resource found = look(ls.getNextPathItem());
+            if (found != null) {
+                return found.look(ls, lr);
+            }
         }
-        return super.look(path);
+        return false;
     }
 
     @Override

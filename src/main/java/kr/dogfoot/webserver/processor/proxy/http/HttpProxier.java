@@ -237,10 +237,10 @@ public class HttpProxier extends AsyncSocketProcessor {
                 connection.resetForNextRequest();
             } else {
                 connection.changeState(HttpProxyState.Close);
-                context.proxyId(-1)
+                context.proxyInfo(null)
                         .backendServerInfo(null);
 
-                bufferSender().sendCloseSignalForClient(context);
+                bufferSender().sendCloseSignalForHttpServer(context);
             }
 
             context.resetForNextRequest();

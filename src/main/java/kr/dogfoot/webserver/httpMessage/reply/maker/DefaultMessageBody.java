@@ -37,32 +37,6 @@ public class DefaultMessageBody {
                 .bodyFile(null);
     }
 
-    public static void make_404NotFound(Reply reply, Request request) {
-        HeaderValueHost host = (HeaderValueHost) request.getHeaderValueObj(HeaderSort.Host);
-        OutputBuffer buffer = OutputBuffer.pooledObject();
-        buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
-                .append("<html><head>\n")
-                .append("<title>404 Not Found</title>\n")
-                .append("</head><body>\n")
-                .append("<h1>Not Found</h1>\n")
-                .append("<p>The requested URL ");
-        if (host != null) {
-            buffer
-                    .append(host.ipOrDomain());
-            if (host.port() != -1) {
-                buffer.append(HttpString.Colon)
-                        .appendInt(host.port());
-
-            }
-        }
-        buffer
-                .append(request.requestURI().toString())
-                .append(" was not found on this timer.</p>\n")
-                .append("</body></html>\n");
-        setReplyBody(buffer, reply);
-        OutputBuffer.release(buffer);
-    }
-
     public static void makeForPostReply(Reply reply, Request request) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer
@@ -112,6 +86,32 @@ public class DefaultMessageBody {
         buffer.append("<p>The requested URL was Unauthorized.</p>\n");
         buffer.append("</body></html>\n");
 
+        setReplyBody(buffer, reply);
+        OutputBuffer.release(buffer);
+    }
+
+    public static void make_404NotFound(Reply reply, Request request) {
+        HeaderValueHost host = (HeaderValueHost) request.getHeaderValueObj(HeaderSort.Host);
+        OutputBuffer buffer = OutputBuffer.pooledObject();
+        buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
+                .append("<html><head>\n")
+                .append("<title>404 Not Found</title>\n")
+                .append("</head><body>\n")
+                .append("<h1>Not Found</h1>\n")
+                .append("<p>The requested URL ");
+        if (host != null) {
+            buffer
+                    .append(host.ipOrDomain());
+            if (host.port() != -1) {
+                buffer.append(HttpString.Colon)
+                        .appendInt(host.port());
+
+            }
+        }
+        buffer
+                .append(request.requestURI().toString())
+                .append(" was not found on this timer.</p>\n")
+                .append("</body></html>\n");
         setReplyBody(buffer, reply);
         OutputBuffer.release(buffer);
     }
@@ -169,6 +169,20 @@ public class DefaultMessageBody {
 
         buffer.append("</ul>\r\n");
         buffer.append("</body></html>\r\n");
+
+        setReplyBody(buffer, reply);
+        OutputBuffer.release(buffer);
+    }
+
+    public static void make_407ProxyUnauthorized(Reply reply) {
+        OutputBuffer buffer = OutputBuffer.pooledObject();
+        buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+        buffer.append("<html><head>\n");
+        buffer.append("<title>407 Proxy Unauthorized</title>\n");
+        buffer.append("</head><body>\n");
+        buffer.append("<h1>407 Proxy Unauthorized</h1>\n");
+        buffer.append("<p>The requested URL was proxy unauthorized.</p>\n");
+        buffer.append("</body></html>\n");
 
         setReplyBody(buffer, reply);
         OutputBuffer.release(buffer);

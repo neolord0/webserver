@@ -13,9 +13,11 @@ import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
+import kr.dogfoot.webserver.server.host.proxy_info.filter.ProxyFilter;
 import kr.dogfoot.webserver.server.resource.filter.Filter;
 import kr.dogfoot.webserver.server.resource.look.LookResult;
 import kr.dogfoot.webserver.util.Message;
+import sun.tools.tree.OrExpression;
 
 public class RequestPerformer extends GeneralProcessor {
     private static int RequestPerformerID = 0;
@@ -87,31 +89,52 @@ public class RequestPerformer extends GeneralProcessor {
         BackendServerInfo backendServer = proxyInfo.backendServerManager().appropriateBackendServer();
         long currentTime = System.currentTimeMillis();
 
-        context.proxyId(proxyInfo.id())
-                .backendServerInfo(backendServer);
-        if (backendServer.isAjp()) {
-            context.ajpProxy(ajpProxyConnectionManager().pooledbject(context));
-            if (context.ajpProxy().stateIsNoConnect()) {
-                server.gotoProxyConnector(context);
-                return true;
-            } else {
-                context.ajpProxy().lastAccessTime(currentTime);
+        context.backendServerInfo(backendServer);
 
-                server.gotoAjpProxier(context);
-                return true;
-            }
-        } else if (backendServer.isHttp()) {
-            if (context.httpProxy() != null && context.proxyId() == proxyInfo.id()) {
-                context.httpProxy().lastAccessTime(currentTime);
-                server.gotoHttpProxier(context);
-                return true;
-            } else {
-                context.httpProxy(httpProxyConnectionManager().pooledObject(context));
-                server.gotoProxyConnector(context);
-                return true;
+        boolean continuePerform = inboundProxyFilter(context, proxyInfo);
+        if (continuePerform == true) {
+            if (backendServer.isAjp()) {
+                context.ajpProxy(ajpProxyConnectionManager().pooledbject(context));
+                if (context.ajpProxy().stateIsNoConnect()) {
+
+                    server.gotoProxyConnector(context);
+                    return true;
+                } else {
+                    context.ajpProxy().lastAccessTime(currentTime);
+
+                    server.gotoAjpProxier(context);
+                    return true;
+                }
+            } else if (backendServer.isHttp()) {
+                if (httpProxyIsNoConnect(context, proxyInfo)) {
+                    context
+                            .httpProxy(httpProxyConnectionManager().pooledObject(context))
+                            .proxyInfo(proxyInfo);
+
+                    server.gotoProxyConnector(context);
+                    return true;
+                } else {
+                    context.httpProxy().lastAccessTime(currentTime);
+
+                    server.gotoHttpProxier(context);
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    private boolean inboundProxyFilter(Context context, ProxyInfo proxyInfo) {
+        for (ProxyFilter f : proxyInfo.filters()) {
+            if (f != null && f.inboundProcess(context, server) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean httpProxyIsNoConnect(Context context, ProxyInfo newProxyInfo) {
+        return context.httpProxy() == null || context.proxyInfo().id() != newProxyInfo.id();
     }
 
     private void perform(Context context) {

@@ -21,6 +21,7 @@ public class SettingXML {
     public final static String File_Path_Node = "file_path";
     public final static String Proxy_Info_Node = "proxy_info";
     public final static String Backend_Server_Node = "backend_server";
+    public final static String Proxy_Filters_Node = "proxy_filters";
     public final static String Resource_Setting_Node = "resource_setting";
     public final static String Directory_Node = "directory";
     public final static String Virtual_Directory_Node = "virtual_directory";
