@@ -25,8 +25,7 @@
     * 요청(Request)
         1. Multi-Part 요청의 본문은 파싱(Parsing) 하지 않음.
         1. GET, HEAD Method에 대한 기능만을 구현함.
-    * 인증(Authorization)
-        1. Basic 타입에 인증 만을 구현함
+    * 인증(Authorization) : Basic 타입에 인증 만을 구현함
     * 캐시(Cache) : 캐시 검증 부분에서 조건부(Conditional) GET Method를 처리하는 기능 이외에 나머지 부분은 구현하지 않음
 
 * [프로그램에 대한 설명](https://github.com/neolord0/webserver/wiki/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8-%EC%84%A4%EB%AA%85)
