@@ -93,7 +93,7 @@ public class HttpProxier extends AsyncSocketProcessor {
     @Override
     protected boolean isOverTimeoutForKeepAlive(Context context, long currentTime) {
         long interval = currentTime - context.httpProxy().lastAccessTime();
-        return interval > context.backendServerInfo().keepAlive_timeout() * 1000;
+        return interval > context.httpProxy().backendServerInfo().keepAlive_timeout() * 1000;
     }
 
     @Override
@@ -237,9 +237,7 @@ public class HttpProxier extends AsyncSocketProcessor {
                 connection.resetForNextRequest();
             } else {
                 connection.changeState(HttpProxyState.Close);
-                context.proxyInfo(null)
-                        .backendServerInfo(null);
-
+                
                 bufferSender().sendCloseSignalForHttpServer(context);
             }
 

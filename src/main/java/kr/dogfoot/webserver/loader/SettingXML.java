@@ -103,7 +103,6 @@ public class SettingXML {
     public final static String True_Value = "true";
     public final static String Round_Robin_Value = "round_robin";
     public final static String Least_Connection_Value = "least_connection";
-    public final static String Least_Load_Value = "least_load";
 
     public final static String Comma = ",";
 

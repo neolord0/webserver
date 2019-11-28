@@ -45,9 +45,9 @@ public class ForProxyInfo {
 
     private static void createBackendServerManager(ProxyInfo proxyInfo, String balance) {
         if (SettingXML.Round_Robin_Value.equalsIgnoreCase(balance)) {
-            proxyInfo.backendServerManager(new BackendServerManagerForRoundRobin());
+            proxyInfo.backendServerManager(new BackendServerManagerForRoundRobin(proxyInfo));
         } else if (SettingXML.Least_Connection_Value.equalsIgnoreCase(balance)) {
-            proxyInfo.backendServerManager(new BackendServerManagerForLeastConnection());
+            proxyInfo.backendServerManager(new BackendServerManagerForLeastConnection(proxyInfo));
         }
     }
 

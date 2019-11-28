@@ -1,6 +1,11 @@
 package kr.dogfoot.webserver.server.host.proxy_info;
 
 public class BackendServerManagerForLeastConnection extends BackendServerManager {
+    public BackendServerManagerForLeastConnection(ProxyInfo proxyInfo) {
+        super(proxyInfo);
+
+    }
+
     @Override
     public BalanceMethod balanceMethod() {
         return BalanceMethod.LeastConnection;
@@ -8,7 +13,16 @@ public class BackendServerManagerForLeastConnection extends BackendServerManager
 
     @Override
     public synchronized BackendServerInfo appropriateBackendServer() {
-        // not complete
-        return null;
+        BackendServerInfo result = null;
+        for (BackendServerInfo bsi : backendServers) {
+            if (bsi != null && bsi.connectCount() == 0) {
+                return bsi;
+            }
+            if (result == null ||
+                    (bsi != null && result.connectCount() > bsi.connectCount())) {
+                result = bsi;
+            }
+        }
+        return result;
     }
 }

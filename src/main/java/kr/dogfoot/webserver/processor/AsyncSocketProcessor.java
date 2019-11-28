@@ -9,17 +9,24 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AsyncSocketProcessor extends Processor {
-    private static final int One_Second = 1000;
+    private int selectDelayTime = 1000;
     protected ConcurrentHashMap<SocketChannel, Context> contextMap;
     protected Selector nioSelector;
 
     protected volatile boolean running;
     protected Thread thread;
 
-    public AsyncSocketProcessor(Server server, int id) {
+    protected AsyncSocketProcessor(Server server, int id) {
         super(server, id);
+        selectDelayTime = 1000;
 
         contextMap = new ConcurrentHashMap<SocketChannel, Context>();
+    }
+
+    protected AsyncSocketProcessor(Server server, int id, int selectDelayTime) {
+        this(server, id);
+
+        this.selectDelayTime = selectDelayTime;
     }
 
     public void start() throws Exception {
@@ -32,7 +39,11 @@ public abstract class AsyncSocketProcessor extends Processor {
         thread = new Thread(() -> {
             while (running) {
                 try {
-                    nioSelector.select(One_Second);
+                    if (selectDelayTime == 0) {
+                        nioSelector.select();
+                    } else {
+                        nioSelector.select(selectDelayTime);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -101,6 +112,8 @@ public abstract class AsyncSocketProcessor extends Processor {
     }
 
     protected void checkNewContexts(long currentTime) {
+        nioSelector.wakeup();
+
         Context context;
         while ((context = waitingContextQueue.poll()) != null) {
             if (isOverTimeoutForKeepAlive(context, currentTime)) {

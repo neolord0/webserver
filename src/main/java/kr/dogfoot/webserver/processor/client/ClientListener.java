@@ -28,7 +28,7 @@ public class ClientListener extends AsyncSocketProcessor {
 
 
     public ClientListener(Server server) {
-        super(server, ClientListenerID++);
+        super(server, ClientListenerID++, 0);
 
         usedPorts = new Vector<Integer>();
         serverSocketInfos = new HashMap<ServerSocketChannel, ServerSocketInfo>();

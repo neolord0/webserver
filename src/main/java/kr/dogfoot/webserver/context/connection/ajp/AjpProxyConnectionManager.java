@@ -2,6 +2,7 @@ package kr.dogfoot.webserver.context.connection.ajp;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
+import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
 import kr.dogfoot.webserver.server.timer.Timer;
 import kr.dogfoot.webserver.server.timer.TimerEventHandler;
 import kr.dogfoot.webserver.util.Message;
@@ -29,20 +30,21 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
         staticId = 0;
     }
 
-    public AjpProxyConnection pooledbject(Context context) {
-        AjpProxyConnection conn = getIdleConnection(context.backendServerInfo());
+    public AjpProxyConnection pooledbject(Context context, BackendServerInfo backendServerInfo) {
+        AjpProxyConnection conn = getIdleConnection(backendServerInfo);
         if (conn == null) {
             conn = connectionPool.poll();
             if (conn == null) {
                 conn = new AjpProxyConnection(staticId++);
             }
             conn.resetForPooled();
+            conn.backendServerInfo(backendServerInfo);
         } else {
             conn.killTimerForIdle(timer);
             conn.resetForIdled();
         }
 
-        addAssignedConnection(conn, context.backendServerInfo());
+        addAssignedConnection(conn);
         return conn;
     }
 
@@ -53,23 +55,23 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
     }
 
     private synchronized ConcurrentLinkedQueue<AjpProxyConnection> getIdleConnectionQueue(BackendServerInfo backendServer) {
-        String wasAddress2 = backendServer.socketAddress().toString();
-        ConcurrentLinkedQueue<AjpProxyConnection> queue = idleConnectionMaps.get(wasAddress2);
+        String wasAddress = backendServer.address();
+        ConcurrentLinkedQueue<AjpProxyConnection> queue = idleConnectionMaps.get(wasAddress);
         if (queue == null) {
             queue = new ConcurrentLinkedQueue<AjpProxyConnection>();
-            idleConnectionMaps.put(wasAddress2, queue);
+            idleConnectionMaps.put(wasAddress, queue);
         }
         return queue;
     }
 
-    private void addAssignedConnection(AjpProxyConnection connection, BackendServerInfo backendServer) {
+    private void addAssignedConnection(AjpProxyConnection connection) {
         ConcurrentLinkedQueue<AjpProxyConnection> queue
-                = getAssignedConnectionQueue(backendServer);
+                = getAssignedConnectionQueue(connection.backendServerInfo());
         queue.offer(connection);
     }
 
     private synchronized ConcurrentLinkedQueue<AjpProxyConnection> getAssignedConnectionQueue(BackendServerInfo backendServer) {
-        String wasAddress = backendServer.socketAddress().toString();
+        String wasAddress = backendServer.address();
         ConcurrentLinkedQueue<AjpProxyConnection> queue = assignedConnectionMaps.get(wasAddress);
         if (queue == null) {
             queue = new ConcurrentLinkedQueue<AjpProxyConnection>();
@@ -83,15 +85,11 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
         if (conn != null) {
             Message.debug(conn, "release and close ajp proxy connection");
 
-            conn.killTimerForIdle(timer);
             _releaseAndClose(conn);
-            removeFromAssigned(conn, context.backendServerInfo());
 
+            removeFromAssigned(conn);
             context.ajpProxy(null);
         }
-        context
-                .proxyInfo(null)
-                .backendServerInfo(null);
     }
 
     private void _releaseAndClose(AjpProxyConnection conn) {
@@ -101,6 +99,9 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            conn.killTimerForIdle(timer);
+            conn.backendServerInfo().decreaseConnectCount();;
             conn.channel(null);
         }
         addToPool(conn);
@@ -110,9 +111,9 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
         connectionPool.offer(connection);
     }
 
-    private void removeFromAssigned(AjpProxyConnection connection, BackendServerInfo backendServer) {
+    private void removeFromAssigned(AjpProxyConnection connection) {
         ConcurrentLinkedQueue<AjpProxyConnection> assignedConnectionQueue
-                = assignedConnectionMaps.get(backendServer.socketAddress().toString());
+                = assignedConnectionMaps.get(connection.backendServerInfo().socketAddress().toString());
         if (assignedConnectionQueue != null) {
             assignedConnectionQueue.remove(connection);
         }
@@ -121,17 +122,17 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
     public void idle(Context context) {
         Message.debug(context.ajpProxy(), "idle ajp proxy connection");
 
-        removeFromAssigned(context.ajpProxy(), context.backendServerInfo());
-        addToIdle(context.ajpProxy(), context.backendServerInfo());
-        context.ajpProxy().setTimerForIdle(timer, context.backendServerInfo().idle_timeout(), this);
+        removeFromAssigned(context.ajpProxy());
+        addToIdle(context.ajpProxy());
+        context.ajpProxy().setTimerForIdle(timer, context.ajpProxy().backendServerInfo().idle_timeout(), this);
 
         context.ajpProxy(null);
     }
 
 
-    private void addToIdle(AjpProxyConnection connection, BackendServerInfo backendServer) {
+    private void addToIdle(AjpProxyConnection connection) {
         ConcurrentLinkedQueue<AjpProxyConnection> queue
-                = getIdleConnectionQueue(backendServer);
+                = getIdleConnectionQueue(connection.backendServerInfo());
         queue.offer(connection);
     }
 

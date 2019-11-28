@@ -9,6 +9,7 @@ import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
 import kr.dogfoot.webserver.httpMessage.reply.maker.DefaultMessageBody;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.server.object.ServerProperties;
 import kr.dogfoot.webserver.server.resource.ResourceFile;
 import kr.dogfoot.webserver.server.resource.ResourceNegotiatedFile;
@@ -226,6 +227,15 @@ public class ReplyMaker {
         return reply;
     }
 
+    public Reply new_500NotSupportedProxyProtocol(Protocol protocol) {
+        Reply reply = new Reply().code(ReplyCode.Code500);
+        addHeader_Date(reply);
+        addHeader_Server(reply);
+
+        DefaultMessageBody.make_500NotSupportedProxyProtocol(reply, protocol);
+        return reply;
+    }
+
     public Reply new_500CannotChangeCharset(String sourceCharset, String targetCharset) {
         Reply reply = new Reply().code(ReplyCode.Code500);
         addHeader_Date(reply);
@@ -255,3 +265,4 @@ public class ReplyMaker {
         return _500TooManyFileOpen;
     }
 }
+

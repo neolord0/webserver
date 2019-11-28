@@ -98,7 +98,7 @@ public class AjpProxier extends AsyncSocketProcessor {
     @Override
     protected boolean isOverTimeoutForKeepAlive(Context context, long currentTime) {
         long interval = currentTime - context.ajpProxy().lastAccessTime();
-        return interval > context.backendServerInfo().keepAlive_timeout() * 1000;
+        return interval > context.ajpProxy().backendServerInfo().keepAlive_timeout() * 1000;
     }
 
     @Override

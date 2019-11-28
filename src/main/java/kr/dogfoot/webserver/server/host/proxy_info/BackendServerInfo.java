@@ -3,12 +3,32 @@ package kr.dogfoot.webserver.server.host.proxy_info;
 import java.net.InetSocketAddress;
 
 public class BackendServerInfo {
+    private ProxyInfo proxyInfo;
+    private int index;
+
     private Protocol protocol;
     private String ipOrDomain;
     private int port;
     private InetSocketAddress socketAddress;
     private int keepAlive_timeout;
     private int idle_timeout;
+
+    private volatile int connectCount;
+
+    public BackendServerInfo(ProxyInfo proxyInfo, int index) {
+        this.proxyInfo = proxyInfo;
+        this.index = index;
+
+        connectCount = 0;
+    }
+
+    public int index() {
+        return index;
+    }
+
+    public ProxyInfo proxyInfo() {
+        return proxyInfo;
+    }
 
     public Protocol protocol() {
         return protocol;
@@ -48,6 +68,10 @@ public class BackendServerInfo {
         return socketAddress;
     }
 
+    public String address() {
+        return socketAddress.toString();
+    }
+
     public int keepAlive_timeout() {
         return keepAlive_timeout;
     }
@@ -62,5 +86,17 @@ public class BackendServerInfo {
 
     public void idle_timeout(int idle_timeout) {
         this.idle_timeout = idle_timeout;
+    }
+
+    public int connectCount() {
+        return connectCount;
+    }
+
+    public synchronized void increaseConnectCount() {
+        connectCount++;
+    }
+
+    public synchronized void decreaseConnectCount() {
+        connectCount--;
     }
 }

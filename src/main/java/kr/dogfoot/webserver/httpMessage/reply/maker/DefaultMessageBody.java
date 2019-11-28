@@ -8,6 +8,7 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
 import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.server.resource.ResourceNegotiatedFile;
 import kr.dogfoot.webserver.server.resource.filter.part.condition.HeaderCondition;
 import kr.dogfoot.webserver.server.resource.negotiation.NegotiationVariant;
@@ -200,6 +201,20 @@ public class DefaultMessageBody {
         setReplyBody(buffer, reply);
         OutputBuffer.release(buffer);
     }
+
+    public static void make_500NotSupportedProxyProtocol(Reply reply, Protocol protocol) {
+        OutputBuffer buffer = OutputBuffer.pooledObject();
+        buffer.append("<html>\r\n");
+        buffer.append("<head><title>500 Internal Server Error</title></head>\r\n");
+        buffer.append("<body>\r\n");
+        buffer.append("<h1>Not Supported Proxy Protocol</h1>\r\n");
+        buffer.append(protocol.toString()).append(" is not supported proxy protocol.");
+        buffer.append("</body></html>\r\n");
+
+        setReplyBody(buffer, reply);
+        OutputBuffer.release(buffer);
+    }
+
 
     public static void make_500CannotChangeCharset(Reply reply, String sourceCharset, String targetCharset) {
         OutputBuffer buffer = OutputBuffer.pooledObject();

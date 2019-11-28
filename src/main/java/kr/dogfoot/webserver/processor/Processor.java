@@ -20,7 +20,7 @@ public abstract class Processor implements Startable {
     protected ConcurrentLinkedQueue<Context> waitingContextQueue;
     protected int id = 0;
 
-    public Processor(Server server, int id) {
+    protected Processor(Server server, int id) {
         this.server = server;
         this.id = id;
         waitingContextQueue = new ConcurrentLinkedQueue<Context>();

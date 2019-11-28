@@ -8,6 +8,7 @@ import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
+import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
 import kr.dogfoot.webserver.server.resource.Resource;
 import kr.dogfoot.webserver.server.resource.filter.Filter;
@@ -24,8 +25,7 @@ public class Context {
 
     private HttpClientConnection clientConnection;
 
-    private ProxyInfo proxyInfo;
-    private BackendServerInfo backendServerInfo;
+    private Protocol proxyProtocol;
     private AjpProxyConnection ajpProxyConnection;
     private HttpProxyConnection httpProxyConnection;
 
@@ -43,8 +43,6 @@ public class Context {
 
         clientConnection = null;
 
-        proxyInfo = null;
-        backendServerInfo = null;
         ajpProxyConnection = null;
         httpProxyConnection = null;
     }
@@ -61,8 +59,6 @@ public class Context {
 
         clientConnection = null;
 
-        proxyInfo = null;
-        backendServerInfo = null;
         ajpProxyConnection = null;
         httpProxyConnection = null;
 
@@ -140,21 +136,28 @@ public class Context {
         }
     }
 
-    public ProxyInfo proxyInfo() {
-        return proxyInfo;
+    public Protocol proxyProtocol() {
+        return proxyProtocol;
     }
 
-    public Context proxyInfo(ProxyInfo proxyInfo) {
-        this.proxyInfo = proxyInfo;
-        return this;
+    public void proxyProtocol(Protocol proxyProtocol) {
+        this.proxyProtocol = proxyProtocol;
     }
 
-    public BackendServerInfo backendServerInfo() {
-        return backendServerInfo;
-    }
-
-    public void backendServerInfo(BackendServerInfo backendServerInfo) {
-        this.backendServerInfo = backendServerInfo;
+    public BackendServerInfo proxyBackendServerInfo() {
+        switch (proxyProtocol) {
+            case Ajp13:
+                if (ajpProxy() != null) {
+                    return ajpProxy().backendServerInfo();
+                }
+                break;
+            case Http:
+                if (httpProxy() != null) {
+                    return httpProxy().backendServerInfo();
+                }
+                break;
+        }
+        return null;
     }
 
     public AjpProxyConnection ajpProxy() {

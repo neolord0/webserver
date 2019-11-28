@@ -3,7 +3,9 @@ package kr.dogfoot.webserver.server.host.proxy_info;
 public class BackendServerManagerForRoundRobin extends BackendServerManager {
     private volatile int roundingIndex;
 
-    public BackendServerManagerForRoundRobin() {
+    public BackendServerManagerForRoundRobin(ProxyInfo proxyInfo) {
+        super(proxyInfo);
+
         roundingIndex = 0;
     }
 

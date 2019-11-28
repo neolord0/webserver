@@ -9,18 +9,21 @@ import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.processor.Processor;
 import kr.dogfoot.webserver.server.Server;
+import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.util.Message;
 
 import java.io.IOException;
+import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Date;
 
 public class ProxyConnector extends AsyncSocketProcessor {
     private static int ProxyConnectorID = 0;
 
     public ProxyConnector(Server server) {
-        super(server, ProxyConnectorID++);
+        super(server, ProxyConnectorID++, 0);
     }
 
     @Override
@@ -38,9 +41,13 @@ public class ProxyConnector extends AsyncSocketProcessor {
         try {
             channel = SocketChannel.open();
             channel.configureBlocking(false);
+            channel.setOption(StandardSocketOptions.TCP_NODELAY, true)
+                    .setOption(StandardSocketOptions.SO_LINGER, 0)
+                    .setOption(StandardSocketOptions.SO_REUSEADDR, true);
 
             if (register(channel, context, SelectionKey.OP_CONNECT)) {
-                channel.connect(context.backendServerInfo().socketAddress());
+                BackendServerInfo proxyBackendServerInfo  = context.proxyBackendServerInfo();
+                channel.connect(proxyBackendServerInfo.socketAddress());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,28 +59,27 @@ public class ProxyConnector extends AsyncSocketProcessor {
     }
 
     private Connection getConnection(Context context) {
-        if (context.backendServerInfo().isAjp()) {
+        if (context.proxyProtocol() == Protocol.Ajp13) {
             return context.ajpProxy();
-        } else if (context.backendServerInfo().isHttp()) {
+        } else if (context.proxyProtocol() == Protocol.Http) {
             return context.httpProxy();
         }
         return null;
     }
 
-
     private void releaseAndClose(Context context) {
-        if (context.backendServerInfo().isAjp()) {
+        if (context.proxyProtocol() == Protocol.Ajp13) {
             ajpProxyConnectionManager().releaseAndClose(context);
-        } else if (context.backendServerInfo().isHttp()) {
+        } else if (context.proxyProtocol() == Protocol.Http) {
             httpProxyConnectionManager().releaseAndClose(context);
         }
     }
 
     @Override
     protected void setSelectionKey(SelectionKey key, Context context) {
-        if (context.backendServerInfo().isAjp()) {
+        if (context.proxyProtocol() == Protocol.Ajp13) {
             context.ajpProxy().selectionKey(key);
-        } else if (context.backendServerInfo().isHttp()) {
+        } else if (context.proxyProtocol() == Protocol.Http) {
             context.httpProxy().selectionKey(key);
         }
     }
@@ -85,7 +91,7 @@ public class ProxyConnector extends AsyncSocketProcessor {
     }
 
     private void sendErrorReplyToClient(Context context) {
-        if (context.backendServerInfo().protocol() == Protocol.Ajp13) {
+        if (context.proxyProtocol() == Protocol.Ajp13) {
             context.reply(replyMaker().get_500CannotConnectWAS());
         } else {
             context.reply(replyMaker().get_500CannotConnectWS());
@@ -96,9 +102,9 @@ public class ProxyConnector extends AsyncSocketProcessor {
 
     @Override
     protected void setLastAccessTime(Context context, long currentTime) {
-        if (context.backendServerInfo().isAjp()) {
+        if (context.proxyProtocol() == Protocol.Ajp13) {
             context.ajpProxy().lastAccessTime(currentTime);
-        } else {
+        } else if (context.proxyProtocol() == Protocol.Http) {
             context.httpProxy().lastAccessTime(currentTime);
         }
     }
@@ -109,14 +115,16 @@ public class ProxyConnector extends AsyncSocketProcessor {
             if (channel.finishConnect()) {
                 setLastAccessTime(context, currentTime);
 
-                if (context.backendServerInfo().isAjp()) {
+                context.proxyBackendServerInfo().increaseConnectCount();
+
+                if (context.proxyProtocol() == Protocol.Ajp13) {
                     Message.debug(context.ajpProxy(), "connect Ajp Proxier.");
 
                     context.ajpProxy().channel(channel);
                     context.ajpProxy().changeState(AjpProxyState.Idle);
 
                     server.gotoAjpProxier(context);
-                } else {
+                } else if (context.proxyProtocol() == Protocol.Http) {
                     Message.debug(context.httpProxy(), "connect Http Proxier.");
 
                     context.httpProxy().channel(channel);

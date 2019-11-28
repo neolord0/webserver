@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 public class ToHttpServer {
     public static void sendRequest(Context context, Server server) {
         ByteBuffer buffer = server.objects().bufferManager().pooledNormalBuffer();
-        changeRequestURI(context.request(), context.backendServerInfo());
+        changeRequestURI(context.request(), context.httpProxy().backendServerInfo());
         changeMaxForwards(context.request(), context);
         addVia(context, server);
 

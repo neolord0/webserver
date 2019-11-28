@@ -1,6 +1,7 @@
 package kr.dogfoot.webserver.context.connection.http.proxy;
 
 import kr.dogfoot.webserver.context.Context;
+import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.timer.Timer;
 import kr.dogfoot.webserver.util.Message;
 
@@ -22,27 +23,26 @@ public class HttpProxyConnectionManager {
         staticId = 0;
     }
 
-    public HttpProxyConnection pooledObject(Context context) {
+    public HttpProxyConnection pooledObject(Context context, BackendServerInfo backendServerInfo) {
         HttpProxyConnection conn = connectionPool.poll();
         if (conn == null) {
             conn = new HttpProxyConnection(staticId++);
-        } else {
-            conn.resetForPooled();
         }
+        conn.resetForPooled();
+        conn.backendServerInfo(backendServerInfo);
+
         return conn;
     }
 
     public void releaseAndClose(Context context) {
-        Message.debug(context.httpProxy(), "release and close http proxy connection");
         HttpProxyConnection conn = context.httpProxy();
         if (conn != null) {
+            Message.debug(context.httpProxy(), "release and close http proxy connection");
+
             _releaseAndClose(conn);
 
             context.httpProxy(null);
         }
-        context
-                .proxyInfo(null)
-                .backendServerInfo(null);
     }
 
     private void _releaseAndClose(HttpProxyConnection conn) {
@@ -52,6 +52,8 @@ public class HttpProxyConnectionManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            conn.backendServerInfo().decreaseConnectCount();
             conn.channel(null);
         }
 
@@ -61,13 +63,4 @@ public class HttpProxyConnectionManager {
     private void addToPool(HttpProxyConnection connection) {
         connectionPool.offer(connection);
     }
-
-    public void release(Context context) {
-        HttpProxyConnection conn = context.httpProxy();
-        if (conn != null) {
-            context.httpProxy(null);
-            addToPool(conn);
-        }
-    }
-
 }
