@@ -94,7 +94,6 @@ public class RequestPerformer extends GeneralProcessor {
         boolean proxied = false;
         if (continuePerform == true) {
             BackendServerInfo backendServer = proxyInfo.backendServerManager().appropriateBackendServer();
-            System.out.println("backend server( " + backendServer.index()+ " ) connection count : " + backendServer.connectCount());
 
             context.proxyProtocol(backendServer.protocol());
             switch(context.proxyProtocol()) {
