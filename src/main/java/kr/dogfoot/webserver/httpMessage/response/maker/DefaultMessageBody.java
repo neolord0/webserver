@@ -1,11 +1,11 @@
-package kr.dogfoot.webserver.httpMessage.reply.maker;
+package kr.dogfoot.webserver.httpMessage.response.maker;
 
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueHost;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
@@ -17,35 +17,35 @@ import kr.dogfoot.webserver.util.bytes.ToBytes;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 public class DefaultMessageBody {
-    public static void make(Reply reply, String message) {
+    public static void make(Response response, String message) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
                 .append("<html><head>\n")
-                .append("<title>").append(reply.code().getCodeByte()).append(" ").append(reply.code().getDefaultReason()).append("</title>\n")
+                .append("<title>").append(response.code().getCodeByte()).append(" ").append(response.code().getDefaultReason()).append("</title>\n")
                 .append("</head><body>\n")
-                .append("<h1>").append(reply.code().getCodeByte()).append(" ").append(reply.code().getDefaultReason()).append("</h1>\n")
+                .append("<h1>").append(response.code().getCodeByte()).append(" ").append(response.code().getDefaultReason()).append("</h1>\n")
                 .append("<p>").append(message).append("</p>\n")
                 .append("</body></html>\n");
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    private static void setReplyBody(OutputBuffer bodyBuffer, Reply reply) {
-        reply
+    private static void setResponseBody(OutputBuffer bodyBuffer, Response response) {
+        response
                 .addHeader(HeaderSort.Content_Length, ToBytes.fromInt(bodyBuffer.getLength()))
                 .addHeader(HeaderSort.Content_Type, HttpString.Text_Html)
                 .bodyBytes(bodyBuffer.getBytes())
                 .bodyFile(null);
     }
 
-    public static void makeForPostReply(Reply reply, Request request) {
+    public static void makeForPostResponse(Response response, Request request) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer
                 .append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
                 .append("<html><head>\n")
-                .append("<title>Default Post Reply</title>\n")
+                .append("<title>Default Post Response</title>\n")
                 .append("</head><body>\n")
-                .append("<h1>Default Post Reply</h1>\n")
+                .append("<h1>Default Post Response</h1>\n")
                 .append("<br>\n")
                 .append("<h2>URL : ").append(request.requestURI().toString()).append("</h2>\n")
                 .append("<br>\n")
@@ -72,12 +72,12 @@ public class DefaultMessageBody {
                 .append("</textarea>\n")
                 .append("</body></html>\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
 
-    public static void make_401Unauthorized(Reply reply) {
+    public static void make_401Unauthorized(Response response) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
         buffer.append("<html><head>\n");
@@ -87,11 +87,11 @@ public class DefaultMessageBody {
         buffer.append("<p>The requested URL was Unauthorized.</p>\n");
         buffer.append("</body></html>\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    public static void make_404NotFound(Reply reply, Request request) {
+    public static void make_404NotFound(Response response, Request request) {
         HeaderValueHost host = (HeaderValueHost) request.getHeaderValueObj(HeaderSort.Host);
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
@@ -113,11 +113,11 @@ public class DefaultMessageBody {
                 .append(request.requestURI().toString())
                 .append(" was not found on this timer.</p>\n")
                 .append("</body></html>\n");
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    public static void make_405MethodNotAllowed(Reply reply, Request request, MethodType[] allowedMethods) {
+    public static void make_405MethodNotAllowed(Response response, Request request, MethodType[] allowedMethods) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
         buffer.append("<html><head>\n");
@@ -138,11 +138,11 @@ public class DefaultMessageBody {
         buffer.append("</p>\n");
         buffer.append("</body></html>\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    public static void make_406NotAcceptable(Reply reply, ResourceNegotiatedFile resource) {
+    public static void make_406NotAcceptable(Response response, ResourceNegotiatedFile resource) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<html>\r\n");
         buffer.append("<head><title>406 Not Acceptable</title></head>\r\n");
@@ -171,11 +171,11 @@ public class DefaultMessageBody {
         buffer.append("</ul>\r\n");
         buffer.append("</body></html>\r\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    public static void make_407ProxyUnauthorized(Reply reply) {
+    public static void make_407ProxyUnauthorized(Response response) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
         buffer.append("<html><head>\n");
@@ -185,11 +185,11 @@ public class DefaultMessageBody {
         buffer.append("<p>The requested URL was proxy unauthorized.</p>\n");
         buffer.append("</body></html>\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    public static void make_500NotSupportedEncoding(Reply reply, ContentCodingSort coding) {
+    public static void make_500NotSupportedEncoding(Response response, ContentCodingSort coding) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<html>\r\n");
         buffer.append("<head><title>500 Internal Server Error</title></head>\r\n");
@@ -198,11 +198,11 @@ public class DefaultMessageBody {
         buffer.append(coding.toString()).append(" is not supported encoding.");
         buffer.append("</body></html>\r\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
-    public static void make_500NotSupportedProxyProtocol(Reply reply, Protocol protocol) {
+    public static void make_500NotSupportedProxyProtocol(Response response, Protocol protocol) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<html>\r\n");
         buffer.append("<head><title>500 Internal Server Error</title></head>\r\n");
@@ -211,12 +211,12 @@ public class DefaultMessageBody {
         buffer.append(protocol.toString()).append(" is not supported proxy protocol.");
         buffer.append("</body></html>\r\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 
 
-    public static void make_500CannotChangeCharset(Reply reply, String sourceCharset, String targetCharset) {
+    public static void make_500CannotChangeCharset(Response response, String sourceCharset, String targetCharset) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<html>\r\n");
         buffer.append("<head><title>500 Internal Server Error</title></head>\r\n");
@@ -225,7 +225,7 @@ public class DefaultMessageBody {
         buffer.append("cannot change charset from ").append(sourceCharset).append(" to ").append(targetCharset).append(".");
         buffer.append("</body></html>\r\n");
 
-        setReplyBody(buffer, reply);
+        setResponseBody(buffer, response);
         OutputBuffer.release(buffer);
     }
 }

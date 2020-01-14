@@ -6,9 +6,9 @@ import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnection;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyState;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.BodyParsingType;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ChunkParsingState;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.parser.AjpReplyParser;
+import kr.dogfoot.webserver.parser.AjpResponseParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
+import kr.dogfoot.webserver.processor.util.RequestSaver;
 import kr.dogfoot.webserver.processor.util.ToAjpServer;
 import kr.dogfoot.webserver.processor.util.ToClient;
 import kr.dogfoot.webserver.processor.util.ToClientCommon;
@@ -23,8 +23,11 @@ import java.nio.channels.SocketChannel;
 
 public class AjpProxier extends AsyncSocketProcessor {
     private static int AjpProxierID = 0;
+    private RequestSaver requestSaver;
+
     public AjpProxier(Server server) {
         super(server, AjpProxierID++);
+        requestSaver = new RequestSaver();
     }
 
     @Override
@@ -48,6 +51,8 @@ public class AjpProxier extends AsyncSocketProcessor {
     private void onIdle(AjpProxyConnection connection, Context context) {
         Message.debug(connection, "send FORWARD_REQUEST message");
         ToAjpServer.sendForwardRequest(context, server);
+
+        requestSaver.save(connection.channel(), context.request());
 
         if (context.request().hasBody()) {
             context.clientConnection().parserStatus()
@@ -80,12 +85,12 @@ public class AjpProxier extends AsyncSocketProcessor {
 
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
-        sendErrorReplyToClient(context);
+        sendErrorResponseToClient(context);
         bufferSender().sendCloseSignalForAjpServer(context);
     }
 
-    private void sendErrorReplyToClient(Context context) {
-        context.reply(replyMaker().get_500DisconnectWAS());
+    private void sendErrorResponseToClient(Context context) {
+        context.response(responseMaker().get_500DisconnectWAS());
         context.clientConnection().senderStatus().reset();
         server.gotoSender(context);
     }
@@ -127,7 +132,7 @@ public class AjpProxier extends AsyncSocketProcessor {
                     if (numRead == -2) {
                         Message.debug(connection, "read error from ajp proxy server.");
 
-                        sendErrorReplyToClient(context);
+                        sendErrorResponseToClient(context);
                         bufferSender().sendCloseSignalForAjpServer(context);
                         return;
                     }
@@ -225,10 +230,11 @@ public class AjpProxier extends AsyncSocketProcessor {
     private void onSendHeaders(Context context) {
         AjpProxyConnection connection = context.ajpProxy();
 
-        Reply reply = AjpReplyParser.sendHeadersToReply(connection.receiveBuffer(), replyMaker());
-        connection.replyHasContentLength(reply.hasContentLength());
+        context.response(AjpResponseParser.sendHeadersToResponse(connection.receiveBuffer(), responseMaker()));
+        connection.responseHasContentLength(context.response().hasContentLength());
 
-        ToClientCommon.sendStatusLine_Headers(context, reply, server);
+        ToClientCommon.sendStatusLine_Headers(context, server);
+        context.response().request(requestSaver.get(connection.channel()));
 
         connection.changeState(AjpProxyState.ReceivePacketHeader);
     }
@@ -236,8 +242,8 @@ public class AjpProxier extends AsyncSocketProcessor {
     private void onSendBodyChunk(Context context) {
         AjpProxyConnection connection = context.ajpProxy();
 
-        short chunkSize = AjpReplyParser.readInt(connection.receiveBuffer());
-        if (connection.replyHasContentLength() == false) {
+        short chunkSize = AjpResponseParser.readInt(connection.receiveBuffer());
+        if (connection.responseHasContentLength() == false) {
             ToClient.sendBodyChunkSize(context, chunkSize, server);
         }
 
@@ -248,7 +254,7 @@ public class AjpProxier extends AsyncSocketProcessor {
     private ProcessResult onGetBodyChunk(Context context) {
         AjpProxyConnection connection = context.ajpProxy();
 
-        short requestedLength = AjpReplyParser.readInt(connection.receiveBuffer());
+        short requestedLength = AjpResponseParser.readInt(connection.receiveBuffer());
 
         if (isOverBody(context)) {
             ToAjpServer.sendEmptyBodyChunk(context, server);
@@ -262,11 +268,13 @@ public class AjpProxier extends AsyncSocketProcessor {
     private ProcessResult onEndResponse(Context context) {
         AjpProxyConnection connection = context.ajpProxy();
 
-        if (connection.replyHasContentLength() == false) {
+        if (connection.responseHasContentLength() == false) {
             ToClient.sendLastBodyChunk(context, server);
         }
 
-        boolean reuse = AjpReplyParser.readBool(connection.receiveBuffer());
+        context.response().setResponseTimeToNow();
+
+        boolean reuse = AjpResponseParser.readBool(connection.receiveBuffer());
         if (reuse) {
             return ProcessResult.EndResponseAndReuse;
         } else {

@@ -20,7 +20,7 @@ public class FilterBasicAuthorization extends Filter {
     @Override
     public boolean inboundProcess(Context context, Server server) {
         if (isAuthenticated(context.request()) == false) {
-            context.reply(server.objects().replyMaker().new_401Unauthorized(HttpString.Basic_Auth, realmDescription));
+            context.response(server.objects().responseMaker().new_401Unauthorized(HttpString.Basic_Auth, realmDescription));
             return false;
         }
         return true;

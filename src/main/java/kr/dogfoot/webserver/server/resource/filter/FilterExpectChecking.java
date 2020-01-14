@@ -21,7 +21,7 @@ public class FilterExpectChecking extends Filter {
         Request request = context.request();
         if (request.hasExpect100Continue()) {
             if (failCondition.isMatch(request.headerList())) {
-                context.reply(server.objects().replyMaker().get_417ExpectationFail());
+                context.response(server.objects().responseMaker().get_417ExpectationFail());
                 continuePerform = false;
             } else {
                 send100Continue(context, server);
@@ -42,7 +42,7 @@ public class FilterExpectChecking extends Filter {
 
 
     private void send100Continue(Context context, Server server) {
-        ByteBuffer temp = ByteBuffer.wrap(HttpString.Reply100Continue);
+        ByteBuffer temp = ByteBuffer.wrap(HttpString.Response100Continue);
 
         server.bufferSender().sendBufferToClient(context, temp, false);
     }

@@ -17,7 +17,7 @@ public class AjpProxyConnection extends Connection {
 
     private short packetSize;
     private int bodyChunkSize;
-    private boolean replyHasContentLength;
+    private boolean responseHasContentLength;
 
     private Object timerEventForIdle;
 
@@ -46,7 +46,7 @@ public class AjpProxyConnection extends Connection {
 
         packetSize = 0;
         bodyChunkSize = 0;
-        replyHasContentLength = false;
+        responseHasContentLength = false;
 
         timerEventForIdle = null;
     }
@@ -60,7 +60,7 @@ public class AjpProxyConnection extends Connection {
 
         bodyBuffer = null;
         bodyChunkSize = 0;
-        replyHasContentLength = false;
+        responseHasContentLength = false;
 
         return this;
     }
@@ -105,12 +105,12 @@ public class AjpProxyConnection extends Connection {
         bodyChunkSize += size;
     }
 
-    public boolean replyHasContentLength() {
-        return replyHasContentLength;
+    public boolean responseHasContentLength() {
+        return responseHasContentLength;
     }
 
-    public void replyHasContentLength(boolean replyHasContentLength) {
-        this.replyHasContentLength = replyHasContentLength;
+    public void responseHasContentLength(boolean responseHasContentLength) {
+        this.responseHasContentLength = responseHasContentLength;
     }
 
     public void setTimerForIdle(Timer timer, int timeout, TimerEventHandler handler) {

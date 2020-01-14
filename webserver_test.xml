@@ -4,7 +4,7 @@
         <pooled_thread_count>1000</pooled_thread_count>
         <server_header send="true"/>
         <keep_alive timeout="3"/>
-        <processor_count ssl_handshaker="1" request_receiver="10" body_receiver="1" request_performer="1" reply_sender="1" buffer_sender="1" proxy_connector="1" ajp_proxier="1" http_proxier="1"/>
+        <processor_count ssl_handshaker="1" request_receiver="10" body_receiver="1" request_performer="1" response_sender="1" buffer_sender="1" proxy_connector="1" ajp_proxier="1" http_proxier="1"/>
     </properties>
     <host name="host1" domain="" ip="192.168.10.29" port="8443" default_charset="utf-8">
         <root_path><![CDATA[/Users/neolord/WebServerHome/Host1]]></root_path>
@@ -28,7 +28,7 @@
                         </fail_condition_list>
                     </expect_checking>
                     <forbidden_method_checking forbidden_methods="OPTIONS, POST"/>
-                    <url_redirecting source_rest_url="redirecting_test1" reply_code="307" target_url="target1"/>
+                    <url_redirecting source_rest_url="redirecting_test1" status_code="307" target_url="target1"/>
                     <header_adding>
                         <adding_condition header="Content-Length" compare_op="LessThen" value="32" />
                         <header_list>

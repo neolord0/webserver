@@ -4,10 +4,8 @@ import kr.dogfoot.webserver.context.ContextManager;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.client.ClientConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionManager;
-import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
-import kr.dogfoot.webserver.server.buffersender.SendBufferStorage;
+import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
 import kr.dogfoot.webserver.server.timer.Timer;
-import kr.dogfoot.webserver.util.Message;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,7 +24,7 @@ public class ServerObjects {
     private ExecutorService executorForRequestReceiving;
     private ExecutorService executorForBodyReceiving;
     private ExecutorService executorForRequestPerforming;
-    private ExecutorService executorForReplySending;
+    private ExecutorService executorForResponseSending;
     private ExecutorService executorForFileReading;
     private ExecutorService executorForBufferSending;
     private ExecutorService executorForProxyConnecting;
@@ -34,7 +32,7 @@ public class ServerObjects {
     private ExecutorService executorForHttpProxing;
 
     private DefinedMediaTypeManager defaultMediaTypeManager;
-    private ReplyMaker replyMaker;
+    private ResponseMaker responseMaker;
     private Timer timer;
 
     public ServerObjects() {
@@ -50,7 +48,7 @@ public class ServerObjects {
         bufferManager = new BufferManager();
 
         defaultMediaTypeManager = new DefinedMediaTypeManager();
-        replyMaker = new ReplyMaker(serverProperties);
+        responseMaker = new ResponseMaker(serverProperties);
     }
 
     public void initialize() {
@@ -58,7 +56,7 @@ public class ServerObjects {
         executorForRequestReceiving = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().request_receiving());
         executorForBodyReceiving = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().body_receiving());;
         executorForRequestPerforming = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().request_performing());
-        executorForReplySending = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().reply_sending());
+        executorForResponseSending = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().response_sending());
         executorForFileReading = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().file_reading());
         executorForBufferSending = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().buffer_sending());
         executorForProxyConnecting = Executors.newFixedThreadPool(serverProperties.pooledThreadCount().proxy_connecting());
@@ -110,8 +108,8 @@ public class ServerObjects {
         return executorForRequestPerforming;
     }
 
-    public ExecutorService executorForReplySending() {
-        return executorForReplySending;
+    public ExecutorService executorForResponseSending() {
+        return executorForResponseSending;
     }
 
     public ExecutorService executorForFileReading() {
@@ -138,8 +136,8 @@ public class ServerObjects {
         return defaultMediaTypeManager;
     }
 
-    public ReplyMaker replyMaker() {
-        return replyMaker;
+    public ResponseMaker responseMaker() {
+        return responseMaker;
     }
 }
 

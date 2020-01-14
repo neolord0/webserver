@@ -1,6 +1,6 @@
 package kr.dogfoot.webserver.server.resource;
 
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.host.HostObjects;
 import kr.dogfoot.webserver.server.resource.filter.Filter;
@@ -57,7 +57,7 @@ public abstract class Resource {
         return null;
     }
 
-    public Reply perform(Request request, HostObjects hostObjects) {
+    public Response perform(Request request, HostObjects hostObjects) {
         return null;
     }
 }

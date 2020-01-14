@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
 import kr.dogfoot.webserver.parser.HttpRequestParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.server.Server;

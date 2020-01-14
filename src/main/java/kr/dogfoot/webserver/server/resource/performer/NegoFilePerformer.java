@@ -7,7 +7,7 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentType;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueVary;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.server.host.HostObjects;
@@ -20,14 +20,14 @@ import kr.dogfoot.webserver.server.resource.negotiation.NegotiationVariant;
 import java.util.ArrayList;
 
 public class NegoFilePerformer {
-    public static Reply perform(Request request, ResourceNegotiatedFile resource, HostObjects hostObjects) {
+    public static Response perform(Request request, ResourceNegotiatedFile resource, HostObjects hostObjects) {
         NegotiationVariant variant = getBestAvailableVariant(request, resource.negoInfo());
         if (variant != null) {
-            Reply reply = variant.perform(request, hostObjects);
-            appendHeader(reply, variant, resource.negoInfo());
-            return reply;
+            Response response = variant.perform(request, hostObjects);
+            appendHeader(response, variant, resource.negoInfo());
+            return response;
         } else {
-            return hostObjects.replyMaker().new_406NotAcceptable(resource);
+            return hostObjects.responseMaker().new_406NotAcceptable(resource);
         }
     }
 
@@ -98,41 +98,41 @@ public class NegoFilePerformer {
     }
 
 
-    private static void appendHeader(Reply reply, NegotiationVariant variant, NegotiationInfo negoInfo) {
+    private static void appendHeader(Response response, NegotiationVariant variant, NegotiationInfo negoInfo) {
         HeaderValueVary vary = new HeaderValueVary();
 
         for (HeaderSort headerSort : negoInfo.compareHeaders()) {
             HeaderCondition condition = variant.getCondition(headerSort);
             if (condition != null) {
-                setCorrespondingHeader(reply, headerSort, condition.value());
+                setCorrespondingHeader(response, headerSort, condition.value());
             }
             vary.addFieldName(headerSort);
         }
-        reply.addHeader(HeaderSort.Vary, vary.combineValue());
-        reply.addHeader(HeaderSort.Content_Location, variant.pathFromRoot().getBytes());
+        response.addHeader(HeaderSort.Vary, vary.combineValue());
+        response.addHeader(HeaderSort.Content_Location, variant.pathFromRoot().getBytes());
     }
 
 
-    private static void setCorrespondingHeader(Reply reply, HeaderSort headerSort, String value) {
+    private static void setCorrespondingHeader(Response response, HeaderSort headerSort, String value) {
         switch (headerSort) {
             case Accept:
-                setContentType(reply, value);
+                setContentType(response, value);
                 break;
             case Accept_Charset:
-                setCharset(reply, value);
+                setCharset(response, value);
                 break;
             case Accept_Encoding:
-                reply.setHeader(HeaderSort.Content_Encoding, value.getBytes());
+                response.setHeader(HeaderSort.Content_Encoding, value.getBytes());
                 break;
             case Accept_Language:
-                reply.setHeader(HeaderSort.Content_Language, value.getBytes());
+                response.setHeader(HeaderSort.Content_Language, value.getBytes());
                 break;
         }
     }
 
-    private static void setCharset(Reply reply, String value) {
-        if (reply.hasHeader(HeaderSort.Content_Type)) {
-            HeaderItem headerItem = reply.getHeaderItem(HeaderSort.Content_Type);
+    private static void setCharset(Response response, String value) {
+        if (response.hasHeader(HeaderSort.Content_Type)) {
+            HeaderItem headerItem = response.getHeaderItem(HeaderSort.Content_Type);
             HeaderValueContentType contentType = null;
             try {
                 contentType = (HeaderValueContentType) headerItem.updateValueObj();
@@ -143,9 +143,9 @@ public class NegoFilePerformer {
         }
     }
 
-    private static void setContentType(Reply reply, String value) {
-        if (reply.hasHeader(HeaderSort.Content_Type)) {
-            HeaderItem headerItem = reply.getHeaderItem(HeaderSort.Content_Type);
+    private static void setContentType(Response response, String value) {
+        if (response.hasHeader(HeaderSort.Content_Type)) {
+            HeaderItem headerItem = response.getHeaderItem(HeaderSort.Content_Type);
             HeaderValueContentType contentType = null;
             try {
                 contentType = (HeaderValueContentType) headerItem.updateValueObj();
@@ -156,7 +156,7 @@ public class NegoFilePerformer {
                 e.printStackTrace();
             }
         } else {
-            reply.addHeader(HeaderSort.Content_Type, value.getBytes());
+            response.addHeader(HeaderSort.Content_Type, value.getBytes());
         }
     }
 

@@ -4,8 +4,8 @@ import kr.dogfoot.webserver.context.connection.http.HttpConnection;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParserStatus;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingBuffer;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.CachedReader;
 import kr.dogfoot.webserver.parser.util.ParseState;
@@ -13,7 +13,7 @@ import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.http.HttpString;
 
-public class HttpReplyParser extends HttpMessageParser {
+public class HttpResponseParser extends HttpMessageParser {
     public static void parse(HttpConnection connection) {
         if (skipSpace(connection)) {
             return;
@@ -65,7 +65,7 @@ public class HttpReplyParser extends HttpMessageParser {
     }
 
     private static void setVersion(HttpConnection connection) {
-        Reply reply = connection.context().reply();
+        Response response = connection.context().response();
         ParsingBuffer buffer = connection.parserStatus().buffer();
         if (buffer.length() >= 8) {
             if (BytesUtil.compare(HttpString.Version_Prefix, 0, HttpString.Version_Prefix.length, buffer.data(), 0, HttpString.Version_Prefix.length) == 0) {
@@ -74,18 +74,18 @@ public class HttpReplyParser extends HttpMessageParser {
                 ps.bufend = buffer.length();
                 ps.separator = '.';
                 try {
-                    reply.majorVersion((short) ByteParser.parseInt(buffer.data(), ps));
+                    response.majorVersion((short) ByteParser.parseInt(buffer.data(), ps));
                     ps.prepare();
-                    reply.minorVersion((short) ByteParser.parseInt(buffer.data(), ps));
+                    response.minorVersion((short) ByteParser.parseInt(buffer.data(), ps));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    reply.majorVersion((short) 0);
-                    reply.minorVersion((short) 9);
+                    response.majorVersion((short) 0);
+                    response.minorVersion((short) 9);
                 }
                 ParseState.release(ps);
             } else {
-                reply.majorVersion((short) 0);
-                reply.minorVersion((short) 9);
+                response.majorVersion((short) 0);
+                response.minorVersion((short) 9);
             }
         }
     }
@@ -99,13 +99,13 @@ public class HttpReplyParser extends HttpMessageParser {
             ps.buffer().into((byte) r.pollAndReadAndCache());
         }
         if (ps.buffer().length() > 0 && r.peekIsSP()) {
-            setReplyCode(connection.context().reply(), ps.buffer());
+            setStatusCode(connection.context().response(), ps.buffer());
 
             ps.changeState(ParsingState.Reason);
         }
     }
 
-    private static void setReplyCode(Reply reply, ParsingBuffer buffer) {
+    private static void setStatusCode(Response response, ParsingBuffer buffer) {
         short code = -1;
 
         ParseState ps = ParseState.pooledObject();
@@ -120,7 +120,7 @@ public class HttpReplyParser extends HttpMessageParser {
         ParseState.release(ps);
 
         if (code != -1) {
-            reply.code(ReplyCode.fromCode(code));
+            response.code(StatusCode.fromCode(code));
         }
     }
 
@@ -133,7 +133,7 @@ public class HttpReplyParser extends HttpMessageParser {
             ps.buffer().into((byte) r.pollAndReadAndCache());
         }
         if (r.peekIsCRLF() == true) {
-            connection.context().reply().reason(ps.buffer().newBytes());
+            connection.context().response().reason(ps.buffer().newBytes());
 
             ps.changeState(ParsingState.CRLF);
         }
@@ -156,7 +156,7 @@ public class HttpReplyParser extends HttpMessageParser {
 
     protected static void appendHeader(HttpConnection connection) {
         byte[] value = connection.parserStatus().buffer().newBytes();
-        connection.context().reply().headerList()
+        connection.context().response().headerList()
                 .addHeaderFromBytes(connection.parserStatus().parsingHeaderSort(), value);
     }
 
@@ -170,7 +170,7 @@ public class HttpReplyParser extends HttpMessageParser {
             ps.buffer().into((byte) r.pollAndReadAndCache());
         }
         if (r.peekIsCRLF() == true) {
-            connection.context().reply()
+            connection.context().response()
                     .headerList().continueBytes(connection.parserStatus().parsingHeaderSort(), ps.buffer());
             ps.changeState(ParsingState.CRLF);
         }

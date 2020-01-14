@@ -53,7 +53,7 @@ public class SettingXML {
     public final static String Request_Receiving_Attr = "request_receiving";
     public final static String Body_Receiving_Attr = "body_receiving";
     public final static String Request_Performing_Attr = "request_performing";
-    public final static String Reply_Sending_Attr = "reply_sending";
+    public final static String Response_Sending_Attr = "response_sending";
     public final static String File_Reading_Attr = "file_reading";
     public final static String Buffer_Sending_Attr = "buffer_sending";
     public final static String Proxy_Connecting_Attr = "proxy_connecting";
@@ -89,7 +89,7 @@ public class SettingXML {
     public final static String Password_Attr = "password";
     public final static String Methods_Attr = "methods";
     public final static String Rest_Source_URL_Pattern_Attr = "rest_source_url_pattern";
-    public final static String Reply_Code_Attr = "reply_code";
+    public final static String Response_Code_Attr = "response_code";
     public final static String Target_URL_Attr = "target_url";
     public final static String Sort_Attr = "sort";
     public final static String Value_Attr = "value";

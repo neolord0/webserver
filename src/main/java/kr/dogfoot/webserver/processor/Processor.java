@@ -5,13 +5,12 @@ import kr.dogfoot.webserver.context.ContextManager;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.client.ClientConnectionManager;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionManager;
-import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.Startable;
 import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.object.BufferManager;
 import kr.dogfoot.webserver.server.object.ServerProperties;
-import kr.dogfoot.webserver.server.timer.Timer;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -73,8 +72,8 @@ public abstract class Processor implements Startable {
         return server.objects().bufferManager();
     }
 
-    protected ReplyMaker replyMaker() {
-        return server.objects().replyMaker();
+    protected ResponseMaker responseMaker() {
+        return server.objects().responseMaker();
     }
 
     protected void closeAllConnectionFor(Context context) {

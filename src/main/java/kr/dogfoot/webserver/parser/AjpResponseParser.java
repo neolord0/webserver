@@ -3,17 +3,17 @@ package kr.dogfoot.webserver.parser;
 import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.TransferCodingSort;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
-import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
+import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 
 import java.nio.ByteBuffer;
 
-public class AjpReplyParser {
-    public static Reply sendHeadersToReply(ByteBuffer buffer, ReplyMaker replyMaker) {
-        Reply reply = new Reply()
-                .code(ReplyCode.fromCode(readInt(buffer)))
+public class AjpResponseParser {
+    public static Response sendHeadersToResponse(ByteBuffer buffer, ResponseMaker responseMaker) {
+        Response response = new Response()
+                .code(StatusCode.fromCode(readInt(buffer)))
                 .reason(readBytesInString(buffer));
 
         int headerCount = readInt(buffer);
@@ -21,23 +21,23 @@ public class AjpReplyParser {
             HeaderSort headerSort = readHeaderSort(buffer);
             byte[] value = readBytesInString(buffer);
 
-            reply.addHeader(headerSort, value);
+            response.addHeader(headerSort, value);
         }
-        return adjustHeader(reply, replyMaker);
+        return adjustHeader(response, responseMaker);
     }
 
-    private static Reply adjustHeader(Reply reply, ReplyMaker replyMaker) {
-        if (reply.getHeaderItem(HeaderSort.Date) == null) {
-            replyMaker.addHeader_Date(reply);
+    private static Response adjustHeader(Response response, ResponseMaker responseMaker) {
+        if (response.getHeaderItem(HeaderSort.Date) == null) {
+            responseMaker.addHeader_Date(response);
         }
-        if (reply.getHeaderItem(HeaderSort.Server) == null) {
-            replyMaker.addHeader_Server(reply);
+        if (response.getHeaderItem(HeaderSort.Server) == null) {
+            responseMaker.addHeader_Server(response);
         }
 
-        if (reply.hasContentLength() == false) {
-            HeaderItem transferEncoding = reply.getHeaderItem(HeaderSort.Transfer_Encoding);
+        if (response.hasContentLength() == false) {
+            HeaderItem transferEncoding = response.getHeaderItem(HeaderSort.Transfer_Encoding);
             if (transferEncoding == null) {
-                reply.addHeader(HeaderSort.Transfer_Encoding,
+                response.addHeader(HeaderSort.Transfer_Encoding,
                         TransferCodingSort.Chunked.toString().getBytes());
             } else {
                 OutputBuffer buffer = OutputBuffer.pooledObject();
@@ -49,7 +49,7 @@ public class AjpReplyParser {
                 OutputBuffer.release(buffer);
             }
         }
-        return reply;
+        return response;
     }
 
     private static HeaderSort readHeaderSort(ByteBuffer buffer) {

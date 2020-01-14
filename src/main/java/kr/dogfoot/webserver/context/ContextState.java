@@ -6,7 +6,7 @@ public enum ContextState {
     ReceivingRequest,
     PerformingRequest,
     ReceivingBody,
-    SendingReply,
+    SendingResponse,
     ConnectingProxier,
     ProxyingAjp,
     ProxyingHttp,

@@ -16,6 +16,8 @@ public class Request {
     private HeaderList headerList;
     private OutputBuffer bodyBuffer;
 
+    private long requestTime;
+
     public Request() {
         method = MethodType.Unknown;
         requestURI = new URI();
@@ -24,6 +26,8 @@ public class Request {
 
         headerList = new HeaderList();
         bodyBuffer = OutputBuffer.pooledObject();
+
+        requestTime = 0;
     }
 
     public void reset() {
@@ -34,6 +38,8 @@ public class Request {
 
         headerList.reset();
         bodyBuffer.reset();
+
+        requestTime = 0;
     }
 
     public boolean valid() {
@@ -133,5 +139,13 @@ public class Request {
 
     public void appendBodyBytes(byte[] bytes, int position, int length) {
         bodyBuffer.append(bytes, position, length);
+    }
+
+    public long requestTime() {
+        return requestTime;
+    }
+
+    public void requestTime(long requestTime) {
+        this.requestTime = requestTime;
     }
 }

@@ -1,4 +1,4 @@
-package kr.dogfoot.webserver.httpMessage.reply;
+package kr.dogfoot.webserver.httpMessage.response;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderList;

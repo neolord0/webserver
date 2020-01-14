@@ -6,7 +6,7 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAcceptEncodin
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentRange;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueVary;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.object.BufferManager;
@@ -34,17 +34,17 @@ public class FilterContentEncoding extends Filter {
         }
         switch (coding) {
             case GZip:
-                compressBody(ContentCodingSort.GZip, context.reply(), server.objects().bufferManager());
+                compressBody(ContentCodingSort.GZip, context.response(), server.objects().bufferManager());
                 break;
             case Deflate:
-                compressBody(ContentCodingSort.Deflate, context.reply(), server.objects().bufferManager());
+                compressBody(ContentCodingSort.Deflate, context.response(), server.objects().bufferManager());
                 break;
             case Unknown:
             case Compress:
             case Identity:
             case BR:
             case Asterisk:
-                context.reply(server.objects().replyMaker().new_500NotSupportedEncoding(coding));
+                context.response(server.objects().responseMaker().new_500NotSupportedEncoding(coding));
                 break;
         }
 
@@ -60,56 +60,56 @@ public class FilterContentEncoding extends Filter {
         }
     }
 
-    private void compressBody(ContentCodingSort contentCoding, Reply reply, BufferManager bufferManager) {
+    private void compressBody(ContentCodingSort contentCoding, Response response, BufferManager bufferManager) {
         byte[] compressed = null;
-        if (reply.bodyFile() != null) {
-            compressed = Compressor.compress(contentCoding, reply.bodyFile(), bufferManager);
-        } else if (reply.bodyBytes() != null) {
-            compressed = Compressor.compress(contentCoding, reply.bodyBytes());
+        if (response.bodyFile() != null) {
+            compressed = Compressor.compress(contentCoding, response.bodyFile(), bufferManager);
+        } else if (response.bodyBytes() != null) {
+            compressed = Compressor.compress(contentCoding, response.bodyBytes());
         }
 
         if (compressed != null && compressed.length > 0) {
-            reply.bodyBytes(compressed);
-            reply.bodyFile(null);
-            if (reply.isPartial()) {
-                setContentRange(reply, compressed.length);
-                if (reply.rangePartCount() != 0) {
-                    reply.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(reply.calculateContextLength()));
+            response.bodyBytes(compressed);
+            response.bodyFile(null);
+            if (response.isPartial()) {
+                setContentRange(response, compressed.length);
+                if (response.rangePartCount() != 0) {
+                    response.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(response.calculateContextLength()));
                 }
             } else {
-                reply.range().lastPos(compressed.length - 1);
-                reply.changeHeader(HeaderSort.Content_Length, ToBytes.fromInt(compressed.length));
+                response.range().lastPos(compressed.length - 1);
+                response.changeHeader(HeaderSort.Content_Length, ToBytes.fromInt(compressed.length));
             }
-            reply.setHeader(HeaderSort.Content_Encoding, contentCoding.toString().getBytes());
+            response.setHeader(HeaderSort.Content_Encoding, contentCoding.toString().getBytes());
 
-            appendVaryHeader(reply);
+            appendVaryHeader(response);
         }
     }
 
-    private void setContentRange(Reply reply, int length) {
-        HeaderValueContentRange contentRange = (HeaderValueContentRange) reply.getHeaderValueObj(HeaderSort.Content_Range);
+    private void setContentRange(Response response, int length) {
+        HeaderValueContentRange contentRange = (HeaderValueContentRange) response.getHeaderValueObj(HeaderSort.Content_Range);
         if (contentRange != null) {
             contentRange.instanceLength().setLength(length);
-            reply.changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
+            response.changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
         }
 
-        for (int index = 0; index < reply.rangePartCount(); index++) {
-            contentRange = (HeaderValueContentRange) reply.rangePart(index).getHeaderValueObj(HeaderSort.Content_Range);
+        for (int index = 0; index < response.rangePartCount(); index++) {
+            contentRange = (HeaderValueContentRange) response.rangePart(index).getHeaderValueObj(HeaderSort.Content_Range);
             if (contentRange != null) {
                 contentRange.instanceLength().setLength(length);
-                reply.rangePart(index).changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
+                response.rangePart(index).changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
             }
         }
     }
 
-    private void appendVaryHeader(Reply reply) {
-        HeaderValueVary vary = (HeaderValueVary) reply.getHeaderValueObj(HeaderSort.Vary);
+    private void appendVaryHeader(Response response) {
+        HeaderValueVary vary = (HeaderValueVary) response.getHeaderValueObj(HeaderSort.Vary);
         if (vary == null) {
             vary = new HeaderValueVary();
         }
         vary.addFieldName(HeaderSort.Accept_Encoding);
 
-        reply.setHeader(HeaderSort.Vary, vary.combineValue());
+        response.setHeader(HeaderSort.Vary, vary.combineValue());
     }
 
     @Override

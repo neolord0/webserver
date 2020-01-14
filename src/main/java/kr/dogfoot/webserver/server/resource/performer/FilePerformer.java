@@ -3,9 +3,9 @@ package kr.dogfoot.webserver.server.resource.performer;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueConnection;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueRange;
-import kr.dogfoot.webserver.httpMessage.reply.EachRangePart;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
+import kr.dogfoot.webserver.httpMessage.response.EachRangePart;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.host.HostObjects;
 import kr.dogfoot.webserver.server.resource.ResourceFile;
@@ -18,7 +18,7 @@ import kr.dogfoot.webserver.util.http.HttpDateMaker;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 public class FilePerformer {
-    public static Reply perform(Request request, ResourceFile resource, HostObjects hostObjects) {
+    public static Response perform(Request request, ResourceFile resource, HostObjects hostObjects) {
         switch (request.method()) {
             case OPTIONS:
                 return options(request, resource, hostObjects);
@@ -40,15 +40,15 @@ public class FilePerformer {
         return null;
     }
 
-    private static Reply options(Request request, ResourceFile resource, HostObjects hostObjects) {
+    private static Response options(Request request, ResourceFile resource, HostObjects hostObjects) {
         return null;
     }
 
-    public static Reply get(Request request, ResourceFile resource, HostObjects hostObjects) {
-        Reply reply = ConditonalGetPerformer.perform(request, resource, hostObjects);
+    public static Response get(Request request, ResourceFile resource, HostObjects hostObjects) {
+        Response response = ConditonalGetPerformer.perform(request, resource, hostObjects);
 
-        if (reply == null) {
-            reply = hostObjects.replyMaker().new_200OK()
+        if (response == null) {
+            response = hostObjects.responseMaker().new_200OK()
                     .addHeader(HeaderSort.Last_Modified, HttpDateMaker.makeBytes(resource.lastModified()))
                     .addHeader(HeaderSort.ETag, resource.etag())
                     .addHeader(HeaderSort.Content_Length, ToBytes.fromLong(resource.length()))
@@ -56,10 +56,10 @@ public class FilePerformer {
                     .bodyFile(resource.file())
                     .bodyBytes(null);
 
-            range(request, reply, resource);
-            connection(request, reply, hostObjects);
+            range(request, response, resource);
+            connection(request, response, hostObjects);
         }
-        return reply;
+        return response;
     }
 
     private static byte[] contentType(byte[] mediaType, String defaultCharset) {
@@ -73,62 +73,62 @@ public class FilePerformer {
         return bytes;
     }
 
-    private static void range(Request request, Reply reply, ResourceFile resource) {
+    private static void range(Request request, Response response, ResourceFile resource) {
         HeaderValueRange range = (HeaderValueRange) request.getHeaderValueObj(HeaderSort.Range);
         if (range != null) {
             ContentRangeInfo cri = ContentRangeInfoMaker.make(range, resource.length());
             if (cri.invalid()) {
-                reply.isPartial(false);
-                reply.range(new ContentRange(0, resource.length() - 1));
+                response.isPartial(false);
+                response.range(new ContentRange(0, resource.length() - 1));
             } else {
-                reply.isPartial(true);
+                response.isPartial(true);
                 if (cri.rangeCount() == 1) {
                     ContentRange cr = cri.range(0);
-                    reply
-                            .code(ReplyCode.Code206)
+                    response
+                            .code(StatusCode.Code206)
                             .addHeader(HeaderSort.Accept_Ranges, HttpString.Bytes)
                             .changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(cr.length()))
                             .addHeader(HeaderSort.Content_Range, cri.toBytes(0))
                             .range(cr);
                 } else {
                     byte[] boundary = HttpString.newBoundary();
-                    reply
-                            .code(ReplyCode.Code206)
+                    response
+                            .code(StatusCode.Code206)
                             .addHeader(HeaderSort.Accept_Ranges, HttpString.Bytes)
                             .boundary(boundary)
                             .changeHeader(HeaderSort.Content_Type, HttpString.mulitPart_Byteranges(boundary))
                             .range(null);
                     for (int index = 0; index < cri.rangeCount(); index++) {
                         ContentRange cr = cri.range(index);
-                        EachRangePart rangePart = reply.addNewRangePart()
+                        EachRangePart rangePart = response.addNewRangePart()
                                 .addHeader(HeaderSort.Content_Type, resource.mediaType())
                                 .addHeader(HeaderSort.Content_Range, cri.toBytes(index))
                                 .range(cr);
                     }
 
-                    reply.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(reply.calculateContextLength()));
+                    response.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(response.calculateContextLength()));
                 }
             }
         } else {
-            reply.isPartial(false);
-            reply.range(new ContentRange(0, resource.length() - 1));
+            response.isPartial(false);
+            response.range(new ContentRange(0, resource.length() - 1));
         }
     }
 
-    public static void connection(Request request, Reply reply, HostObjects hostObjects) {
+    public static void connection(Request request, Response response, HostObjects hostObjects) {
         HeaderValueConnection connection = (HeaderValueConnection) request.getHeaderValueObj(HeaderSort.Connection);
         if (connection != null && connection.isKeepAlive()) {
-            reply.addHeader(HeaderSort.Keep_Alive, HttpString.keepAliveValue(hostObjects.serverProperties().keepAlive_timeout(),
+            response.addHeader(HeaderSort.Keep_Alive, HttpString.keepAliveValue(hostObjects.serverProperties().keepAlive_timeout(),
                     hostObjects.serverProperties().keepAlive_max()));
-            reply.addHeader(HeaderSort.Connection, HttpString.Keep_Alive);
+            response.addHeader(HeaderSort.Connection, HttpString.Keep_Alive);
         } else if (request.isPersistentConnection() == false) {
-            reply.addHeader(HeaderSort.Connection, HttpString.Close);
+            response.addHeader(HeaderSort.Connection, HttpString.Close);
         }
     }
 
 
-    public static Reply head(Request request, ResourceFile resource, HostObjects hostObjects) {
-        Reply reply = hostObjects.replyMaker().new_200OK()
+    public static Response head(Request request, ResourceFile resource, HostObjects hostObjects) {
+        Response response = hostObjects.responseMaker().new_200OK()
                 .addHeader(HeaderSort.Last_Modified, ToBytes.fromLong(resource.lastModified()))
                 .addHeader(HeaderSort.ETag, resource.etag())
                 .addHeader(HeaderSort.Content_Length, ToBytes.fromLong(resource.length()))
@@ -136,28 +136,28 @@ public class FilePerformer {
                 .bodyFile(null)
                 .bodyBytes(null);
 
-        range(request, reply, resource);
-        connection(request, reply, hostObjects);
-        return reply;
+        range(request, response, resource);
+        connection(request, response, hostObjects);
+        return response;
     }
 
-    public static Reply post(Request request, ResourceFile resource, HostObjects hostObjects) {
-        return hostObjects.replyMaker().new_DefalutPostReply(request);
+    public static Response post(Request request, ResourceFile resource, HostObjects hostObjects) {
+        return hostObjects.responseMaker().new_DefalutPost(request);
     }
 
-    public static Reply put(Request request, ResourceFile resource, HostObjects hostObjects) {
+    public static Response put(Request request, ResourceFile resource, HostObjects hostObjects) {
         return null;
     }
 
-    public static Reply delete(Request request, ResourceFile resource, HostObjects hostObjects) {
+    public static Response delete(Request request, ResourceFile resource, HostObjects hostObjects) {
         return null;
     }
 
-    public static Reply trace(Request request, ResourceFile resource, HostObjects hostObjects) {
+    public static Response trace(Request request, ResourceFile resource, HostObjects hostObjects) {
         return null;
     }
 
-    public static Reply connect(Request request, ResourceFile resource, HostObjects hostObjects) {
+    public static Response connect(Request request, ResourceFile resource, HostObjects hostObjects) {
         return null;
     }
 }

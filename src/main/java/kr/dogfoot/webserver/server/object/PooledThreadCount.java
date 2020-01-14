@@ -5,7 +5,7 @@ public class PooledThreadCount {
     private int request_receiving;
     private int body_receiving;
     private int request_performing;
-    private int reply_sending;
+    private int response_sending;
     private int file_reading;
     private int buffer_sending;
     private int proxy_connecting;
@@ -17,7 +17,7 @@ public class PooledThreadCount {
         request_receiving = 1;
         body_receiving = 1;
         request_performing = 1;
-        reply_sending = 1;
+        response_sending = 1;
         file_reading = 1;
         buffer_sending = 1;
         proxy_connecting = 1;
@@ -57,12 +57,12 @@ public class PooledThreadCount {
         this.request_performing =  request_performing;
     }
 
-    public int reply_sending() {
-        return reply_sending;
+    public int response_sending() {
+        return response_sending;
     }
 
-    public void reply_sending(int reply_sending) {
-        this.reply_sending = reply_sending;
+    public void response_sending(int response_sending) {
+        this.response_sending = response_sending;
     }
 
     public int file_reading() {

@@ -1,6 +1,6 @@
-package kr.dogfoot.webserver.httpMessage.reply;
+package kr.dogfoot.webserver.httpMessage.response;
 
-public enum ReplyCode {
+public enum StatusCode {
     Code100(100, "100", "Continue"),
     Code101(101, "101", "Switching Protocols"),
     Code200(200, "200", "OK"),
@@ -48,14 +48,14 @@ public enum ReplyCode {
     private byte[] codeByte;
     private byte[] defaultReason;
 
-    ReplyCode(int code, String code2, String defaultReason) {
+    StatusCode(int code, String code2, String defaultReason) {
         this.code = (short) code;
         this.codeByte = code2.getBytes();
         this.defaultReason = defaultReason.getBytes();
     }
 
-    public static ReplyCode fromCode(short code) {
-        for (ReplyCode rc : values()) {
+    public static StatusCode fromCode(short code) {
+        for (StatusCode rc : values()) {
             if (rc.code == code) {
                 return rc;
             }
@@ -63,8 +63,8 @@ public enum ReplyCode {
         return getExtensionCode(code);
     }
 
-    private static ReplyCode getExtensionCode(Short code) {
-        ReplyCode extension = ReplyCode.ExtensionCode;
+    private static StatusCode getExtensionCode(Short code) {
+        StatusCode extension = StatusCode.ExtensionCode;
         extension.code = code;
         extension.codeByte = code.toString().getBytes();
         extension.defaultReason = extension.codeByte;

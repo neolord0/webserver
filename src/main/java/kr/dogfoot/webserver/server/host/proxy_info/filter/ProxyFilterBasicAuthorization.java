@@ -17,7 +17,7 @@ public class ProxyFilterBasicAuthorization extends ProxyFilter {
     @Override
     public boolean inboundProcess(Context context, Server server) {
         if (isAuthenticated(context.request()) == false) {
-            context.reply(server.objects().replyMaker().new_407Unauthorized(HttpString.Basic_Auth, realmDescription));
+            context.response(server.objects().responseMaker().new_407Unauthorized(HttpString.Basic_Auth, realmDescription));
             return false;
         }
         return true;

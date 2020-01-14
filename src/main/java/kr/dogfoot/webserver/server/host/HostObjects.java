@@ -1,6 +1,6 @@
 package kr.dogfoot.webserver.server.host;
 
-import kr.dogfoot.webserver.httpMessage.reply.maker.ReplyMaker;
+import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.server.object.ServerObjects;
 import kr.dogfoot.webserver.server.object.ServerProperties;
@@ -19,8 +19,8 @@ public class HostObjects {
         defaultAllowedMethods = new MethodType[]{MethodType.GET, MethodType.HEAD};
     }
 
-    public ReplyMaker replyMaker() {
-        return serverObjects.replyMaker();
+    public ResponseMaker responseMaker() {
+        return serverObjects.responseMaker();
     }
 
     public ServerProperties serverProperties() {

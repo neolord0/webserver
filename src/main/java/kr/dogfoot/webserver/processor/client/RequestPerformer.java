@@ -5,22 +5,18 @@ import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.http.parserstatus.BodyParsingType;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueHost;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.httpMessage.request.URIType;
 import kr.dogfoot.webserver.processor.GeneralProcessor;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
-import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
 import kr.dogfoot.webserver.server.host.proxy_info.filter.ProxyFilter;
 import kr.dogfoot.webserver.server.resource.filter.Filter;
 import kr.dogfoot.webserver.server.resource.look.LookResult;
 import kr.dogfoot.webserver.util.Message;
-import sun.tools.tree.OrExpression;
-
-import static kr.dogfoot.webserver.server.host.proxy_info.Protocol.*;
 
 public class RequestPerformer extends GeneralProcessor {
     private static int RequestPerformerID = 0;
@@ -57,10 +53,10 @@ public class RequestPerformer extends GeneralProcessor {
                 perform(context);
             }
         } else {
-            context.reply(replyMaker().new_400BadRequest("no host header"));
+            context.response(responseMaker().new_400BadRequest("no host header"));
         }
 
-        if (proxied == false && context.reply() != null) {
+        if (proxied == false && context.response() != null) {
            context.clientConnection().senderStatus().reset();
            server.gotoSender(context);
         }
@@ -126,7 +122,7 @@ public class RequestPerformer extends GeneralProcessor {
                     }
                     break;
                 default: {
-                        context.reply(replyMaker().new_500NotSupportedProxyProtocol(context.proxyProtocol()));
+                        context.response(responseMaker().new_500NotSupportedProxyProtocol(context.proxyProtocol()));
                         proxied = false;
                     }
                     break;
@@ -164,10 +160,10 @@ public class RequestPerformer extends GeneralProcessor {
                 server.gotoBodyReceiver(context);
             } else {
                 if (context.resource() != null) {
-                    Reply reply = context.resource().perform(context.request(), context.host().hostObjects());
-                    context.reply(reply);
+                    Response response = context.resource().perform(context.request(), context.host().hostObjects());
+                    context.response(response);
                 } else {
-                    context.reply(replyMaker().new_404NotFound(context.request()));
+                    context.response(responseMaker().new_404NotFound(context.request()));
                 }
                 outboundFilter(context);
             }
@@ -195,15 +191,15 @@ public class RequestPerformer extends GeneralProcessor {
 
     private void onAfterReceivingBody(Context context) {
         if (context.resource() != null) {
-            Reply reply = context.resource().perform(context.request(), context.host().hostObjects());
-            context.reply(reply);
+            Response response = context.resource().perform(context.request(), context.host().hostObjects());
+            context.response(response);
         } else {
-            context.reply(replyMaker().new_404NotFound(context.request()));
+            context.response(responseMaker().new_404NotFound(context.request()));
         }
 
         outboundFilter(context);
 
-        if (context.reply() != null) {
+        if (context.response() != null) {
             context.clientConnection().senderStatus().reset();
             server.gotoSender(context);
         }

@@ -3,7 +3,7 @@ package kr.dogfoot.webserver.server.resource.filter;
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAllow;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.server.Server;
 
@@ -20,7 +20,7 @@ public class FilterAllowedMethodAdding extends Filter {
     @Override
     public boolean inboundProcess(Context context, Server server) {
         if (includedAllowedMethod(context.request().method()) == false) {
-            context.reply(server.objects().replyMaker().new_405MethodNotAllowed(context.request(), allowedMethods()));
+            context.response(server.objects().responseMaker().new_405MethodNotAllowed(context.request(), allowedMethods()));
             return false;
         }
         return true;
@@ -28,8 +28,8 @@ public class FilterAllowedMethodAdding extends Filter {
 
     @Override
     public boolean outboundProcess(Context context, Server server) {
-        if (context.request().method() == MethodType.HEAD && context.reply().code() == ReplyCode.Code200) {
-            context.reply().addHeader(HeaderSort.Allow, allowHeaderValue());
+        if (context.request().method() == MethodType.HEAD && context.response().code() == StatusCode.Code200) {
+            context.response().addHeader(HeaderSort.Allow, allowHeaderValue());
         }
         return true;
     }

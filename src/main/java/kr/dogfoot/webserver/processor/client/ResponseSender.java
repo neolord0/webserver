@@ -4,42 +4,42 @@ import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.SenderStatus;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.SendingState;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.processor.GeneralProcessor;
 import kr.dogfoot.webserver.processor.util.ToClientCommon;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.resource.performer.util.ContentRange;
 import kr.dogfoot.webserver.util.Message;
 import kr.dogfoot.webserver.util.http.HttpString;
-import kr.dogfoot.webserver.util.message.http.ReplyToBuffer;
+import kr.dogfoot.webserver.util.message.http.ResponseToBuffer;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class ReplySender extends GeneralProcessor {
-    private static int ReplySenderID = 0;
+public class ResponseSender extends GeneralProcessor {
+    private static int ResponseSenderID = 0;
     private static final String Error_TooManyFielsOpen = "(Too many open files)";
 
-    public ReplySender(Server server) {
-        super(server, ReplySenderID++);
+    public ResponseSender(Server server) {
+        super(server, ResponseSenderID++);
     }
 
     @Override
     protected void onNewContext(Context context) {
-        server.objects().executorForReplySending()
+        server.objects().executorForResponseSending()
                 .execute(() -> {
-                    context.changeState(ContextState.SendingReply);
-                    sendReply(context);
+                    context.changeState(ContextState.SendingResponse);
+                    sendResponse(context);
                 });
     }
 
-    void sendReply(Context context) {
+    void sendResponse(Context context) {
         if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
-            Message.debug(context, "Send reply");
+            Message.debug(context, "Send response");
 
-            ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
+            ToClientCommon.sendStatusLine_Headers(context, server);
 
             SenderStatus ss = context.clientConnection().senderStatus();
             ss.changeState(SendingState.Body);
@@ -50,12 +50,12 @@ public class ReplySender extends GeneralProcessor {
 
     private void sendBodyBlock(Context context) {
         SenderStatus ss = context.clientConnection().senderStatus();
-        if (context.reply().isBodyFile() && ss.openedResourceFile() == false) {
+        if (context.response().isBodyFile() && ss.openedResourceFile() == false) {
             openResourceFile(context);
         }
-        if (context.reply().isBodyFile()) {
+        if (context.response().isBodyFile()) {
             sendBodyBlockFile(context);
-        } else if (context.reply().bodyBytes() != null) {
+        } else if (context.response().bodyBytes() != null) {
             sendBodyBytes(context);
         } else {
             onEndRequest(context);
@@ -64,32 +64,32 @@ public class ReplySender extends GeneralProcessor {
 
     private void openResourceFile(Context context) {
         try {
-            FileInputStream is = new FileInputStream(context.reply().bodyFile());
+            FileInputStream is = new FileInputStream(context.response().bodyFile());
             context.clientConnection().senderStatus().resourceFileCh(is.getChannel());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
 
             context.clientConnection().senderStatus().resourceFileCh(null);
             if (e.getMessage().endsWith(Error_TooManyFielsOpen)) {
-                context.reply(replyMaker().get_500TooManyFileOpen());
+                context.response(responseMaker().get_500TooManyFileOpen());
             } else {
-                context.reply(replyMaker().new_404NotFound(context.request()));
+                context.response(responseMaker().new_404NotFound(context.request()));
             }
         }
     }
 
     private void sendBodyBytes(Context context) {
-        if (context.reply().isPartial() == false || context.reply().rangePartCount() < 2) {
-            sendBodyBytesRange(context, context.reply().bodyBytes(), context.reply().range());
+        if (context.response().isPartial() == false || context.response().rangePartCount() < 2) {
+            sendBodyBytesRange(context, context.response().bodyBytes(), context.response().range());
             sendBodyCRLF(context);
         } else {
             SenderStatus ss = context.clientConnection().senderStatus();
-            ss.rangeCount(context.reply().rangePartCount());
+            ss.rangeCount(context.response().rangePartCount());
 
-            for (int index = 0; index < context.reply().rangePartCount(); index++) {
-                ss.range(context.reply().rangePart(index).range());
+            for (int index = 0; index < context.response().rangePartCount(); index++) {
+                ss.range(context.response().rangePart(index).range());
                 sendBoundaryAndPartHeader(context);
-                sendBodyBytesRange(context, context.reply().bodyBytes(), context.reply().rangePart(index).range());
+                sendBodyBytesRange(context, context.response().bodyBytes(), context.response().rangePart(index).range());
             }
 
             sendEndBoundary(context);
@@ -114,10 +114,10 @@ public class ReplySender extends GeneralProcessor {
     }
 
     private void onEndRequest(Context context) {
-        if (context.reply().code().isError()) {
+        if (context.response().code().isError()) {
             bufferSender().sendCloseSignalForClient(context);
         } else {
-            if (context.reply().hasKeepAlive() == true) {
+            if (context.response().hasKeepAlive() == true) {
                 Message.debug(context, "Persistent Connection");
 
                 context.resetForNextRequest();
@@ -132,7 +132,7 @@ public class ReplySender extends GeneralProcessor {
         SenderStatus ss = context.clientConnection().senderStatus();
 
         if (ss.isStartRange()) {
-            setRange(ss, context.reply());
+            setRange(ss, context.response());
 
             if (ss.isMultipart()) {
                 sendBoundaryAndPartHeader(context);
@@ -142,20 +142,20 @@ public class ReplySender extends GeneralProcessor {
         sendResourceFileBlock(context);
     }
 
-    private void setRange(SenderStatus ss, Reply reply) {
-        ss.rangeCount(reply.rangePartCount());
+    private void setRange(SenderStatus ss, Response response) {
+        ss.rangeCount(response.rangePartCount());
 
         if (ss.isMultipart()) {
-            ss.range(reply.rangePart(ss.rangeIndex()).range());
+            ss.range(response.rangePart(ss.rangeIndex()).range());
         } else {
-            ss.range(reply.range());
+            ss.range(response.range());
         }
     }
 
     private void sendBoundaryAndPartHeader(Context context) {
         ByteBuffer buffer = bufferManager().pooledSmallBuffer();
-        ReplyToBuffer.forPartBoundary(buffer, context.reply());
-        ReplyToBuffer.forPartHeader(buffer, context.clientConnection().senderStatus(), context.reply());
+        ResponseToBuffer.forPartBoundary(buffer, context.response());
+        ResponseToBuffer.forPartHeader(buffer, context.clientConnection().senderStatus(), context.response());
         buffer.flip();
 
         bufferSender().sendBufferToClient(context, buffer, true);
@@ -238,7 +238,7 @@ public class ReplySender extends GeneralProcessor {
 
     private void sendEndBoundary(Context context) {
         ByteBuffer buffer = bufferManager().pooledVarySmallBuffer();
-        ReplyToBuffer.forEndBoundary(buffer, context.reply());
+        ResponseToBuffer.forEndBoundary(buffer, context.response());
         buffer.flip();
 
         bufferSender().sendBufferToClient(context, buffer, true);

@@ -3,13 +3,12 @@ package kr.dogfoot.webserver.context;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnection;
 import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
-import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
 import kr.dogfoot.webserver.server.resource.Resource;
 import kr.dogfoot.webserver.server.resource.filter.Filter;
 
@@ -17,7 +16,7 @@ public class Context {
     private ContextState state;
 
     private Request request;
-    private Reply reply;
+    private Response response;
 
     private Host host;
     private Resource resource;
@@ -35,7 +34,7 @@ public class Context {
         state = ContextState.Waiting;
 
         request = new Request();
-        reply = null;
+        response = null;
 
         host = null;
         resource = null;
@@ -51,7 +50,7 @@ public class Context {
         state = ContextState.Waiting;
 
         request.reset();
-        reply = null;
+        response = null;
 
         host = null;
         resource = null;
@@ -69,7 +68,7 @@ public class Context {
         state = ContextState.Waiting;
 
         request.reset();
-        reply = null;
+        response = null;
 
         host = null;
         resource = null;
@@ -92,12 +91,12 @@ public class Context {
         return request;
     }
 
-    public Reply reply() {
-        return reply;
+    public Response response() {
+        return response;
     }
 
-    public void reply(Reply reply) {
-        this.reply = reply;
+    public void response(Response response) {
+        this.response = response;
     }
 
     public Host host() {

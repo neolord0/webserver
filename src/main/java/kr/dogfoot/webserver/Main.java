@@ -8,7 +8,7 @@ public class Main {
     private static final String Default_Config_File = "webserver.xml";
 
     public static void main(String[] args) throws Exception {
-        Message.enableDebug(false);
+        Message.enableDebug(true);
 
         Server s = new Server();
         if (args.length > 1) {

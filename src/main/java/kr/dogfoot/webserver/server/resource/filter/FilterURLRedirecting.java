@@ -1,7 +1,7 @@
 package kr.dogfoot.webserver.server.resource.filter;
 
 import kr.dogfoot.webserver.context.Context;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.util.http.HttpString;
 import org.apache.commons.io.FilenameUtils;
@@ -9,12 +9,12 @@ import org.apache.commons.io.IOCase;
 
 public class FilterURLRedirecting extends Filter {
     private String restSourceURLPattern = "";
-    private ReplyCode replyCode;
+    private StatusCode statusCode;
     private String targetURL = "";
 
     public FilterURLRedirecting() {
         restSourceURLPattern = "";
-        replyCode = ReplyCode.Code301;
+        statusCode = StatusCode.Code301;
         targetURL = "";
     }
 
@@ -22,7 +22,7 @@ public class FilterURLRedirecting extends Filter {
     public boolean inboundProcess(Context context, Server server) {
         String sourceURLPattern = getSourceURLPattern();
         if (isMatchURL(context.request().requestURI().toString(), sourceURLPattern)) {
-            context.reply(server.objects().replyMaker().new_RedirectReply(replyCode, targetURL));
+            context.response(server.objects().responseMaker().new_Redirect(statusCode, targetURL));
             return false;
         }
         return true;
@@ -64,12 +64,12 @@ public class FilterURLRedirecting extends Filter {
         this.restSourceURLPattern = restSourceURLPattern;
     }
 
-    public ReplyCode replyCode() {
-        return replyCode;
+    public StatusCode statusCode() {
+        return statusCode;
     }
 
-    public void replyCode(ReplyCode replyCode) {
-        this.replyCode = replyCode;
+    public void statusCode(StatusCode statusCode) {
+        this.statusCode = statusCode;
     }
 
     public String targetURL() {

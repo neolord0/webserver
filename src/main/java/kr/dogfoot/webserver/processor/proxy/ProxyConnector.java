@@ -4,10 +4,8 @@ import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextState;
 import kr.dogfoot.webserver.context.connection.Connection;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyState;
-import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
-import kr.dogfoot.webserver.processor.Processor;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
@@ -17,7 +15,6 @@ import java.io.IOException;
 import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.Date;
 
 public class ProxyConnector extends AsyncSocketProcessor {
     private static int ProxyConnectorID = 0;
@@ -54,7 +51,7 @@ public class ProxyConnector extends AsyncSocketProcessor {
 
             unregister(getConnection(context).selectionKey());
             releaseAndClose(context);
-            sendErrorReplyToClient(context);
+            sendErrorResponseToClient(context);
         }
     }
 
@@ -87,14 +84,14 @@ public class ProxyConnector extends AsyncSocketProcessor {
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
         releaseAndClose(context);
-        sendErrorReplyToClient(context);
+        sendErrorResponseToClient(context);
     }
 
-    private void sendErrorReplyToClient(Context context) {
+    private void sendErrorResponseToClient(Context context) {
         if (context.proxyProtocol() == Protocol.Ajp13) {
-            context.reply(replyMaker().get_500CannotConnectWAS());
+            context.response(responseMaker().get_500CannotConnectWAS());
         } else {
-            context.reply(replyMaker().get_500CannotConnectWS());
+            context.response(responseMaker().get_500CannotConnectWS());
         }
         context.clientConnection().senderStatus().reset();
         server.gotoSender(context);
@@ -137,7 +134,7 @@ public class ProxyConnector extends AsyncSocketProcessor {
             e.printStackTrace();
 
             releaseAndClose(context);
-            sendErrorReplyToClient(context);
+            sendErrorResponseToClient(context);
         }
     }
 }

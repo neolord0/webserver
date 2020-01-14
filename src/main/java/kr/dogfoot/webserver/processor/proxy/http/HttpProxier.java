@@ -8,11 +8,12 @@ import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.ChunkedBodySendState;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
-import kr.dogfoot.webserver.parser.HttpReplyParser;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
+import kr.dogfoot.webserver.parser.HttpResponseParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.processor.util.HttpBodyConveyor;
+import kr.dogfoot.webserver.processor.util.RequestSaver;
 import kr.dogfoot.webserver.processor.util.ToClientCommon;
 import kr.dogfoot.webserver.processor.util.ToHttpServer;
 import kr.dogfoot.webserver.server.Server;
@@ -23,9 +24,11 @@ import java.nio.channels.SocketChannel;
 
 public class HttpProxier extends AsyncSocketProcessor {
     private static int HttpProxierID = 0;
+    private RequestSaver requestSaver;
 
     public HttpProxier(Server server) {
         super(server, HttpProxierID++);
+        requestSaver = new RequestSaver();
     }
 
     @Override
@@ -37,25 +40,27 @@ public class HttpProxier extends AsyncSocketProcessor {
             case Idle:
                 onIdle(connection, context);
                 break;
-            case ReceivingReply:
-                onReply(connection, context, AfterProcess.Register);
+            case ReceivingResponse:
+                onResponse(connection, context, AfterProcess.Register);
                 break;
-            case ReceivingReplyBody:
-                onReplyBody(connection, context, AfterProcess.Register);
+            case ReceivingResponseBody:
+                onResponseBody(connection, context, AfterProcess.Register);
                 break;
         }
     }
 
     private void onIdle(HttpProxyConnection connection, Context context) {
-        context.reply(new Reply());
+        context.response(new Response());
 
         Message.debug(connection, "send request to http proxy server");
         ToHttpServer.sendRequest(context, server);
 
+        requestSaver.save(connection.channel(), context.request());
+
         if (context.request().hasBody() && context.request().hasExpect100Continue() == false)  {
             sendRequestBodyByReceiver(context);
         } else {
-            connection.changeState(HttpProxyState.ReceivingReply);
+            connection.changeState(HttpProxyState.ReceivingResponse);
 
             register(connection.channel(), context, SelectionKey.OP_READ);
         }
@@ -75,12 +80,12 @@ public class HttpProxier extends AsyncSocketProcessor {
 
     @Override
     protected void onErrorInRegister(SocketChannel channel, Context context) {
-        sendErrorReplyToClient(context);
+        sendErrorResponseToClient(context);
         bufferSender().sendCloseSignalForHttpServer(context);
     }
 
-    private void sendErrorReplyToClient(Context context) {
-        context.reply(replyMaker().get_500DisconnectWS());
+    private void sendErrorResponseToClient(Context context) {
+        context.response(responseMaker().get_500DisconnectWS());
         context.clientConnection().senderStatus().reset();
         server.gotoSender(context);
     }
@@ -131,27 +136,28 @@ public class HttpProxier extends AsyncSocketProcessor {
                     }
 
                     switch (connection.state()) {
-                        case ReceivingReply:
-                            onReply(connection, context, AfterProcess.GotoSelf);
+                        case ReceivingResponse:
+                            onResponse(connection, context, AfterProcess.GotoSelf);
                             break;
-                        case ReceivingReplyBody:
-                            onReplyBody(connection, context, AfterProcess.GotoSelf);
+                        case ReceivingResponseBody:
+                            onResponseBody(connection, context, AfterProcess.GotoSelf);
                             break;
                     }
                 });
     }
 
-    private void onReply(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
+    private void onResponse(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
         connection.prepareReading();
         if (connection.readBuffer().hasRemaining()) {
-            parseReply(context);
+            parseResponse(context);
         }
         connection.prepareReceiving();
 
         if (connection.parserStatus().state() == ParsingState.BodyStart) {
-            ToClientCommon.sendStatusLine_Headers(context, context.reply(), server);
+            ToClientCommon.sendStatusLine_Headers(context, server);
+            context.response().request(requestSaver.get(connection.channel()));
 
-            if (context.reply().code() == ReplyCode.Code100 && context.request().hasBody()) {
+            if (context.response().code() == StatusCode.Code100 && context.request().hasBody()) {
                 sendRequestBodyByReceiver(context);
                 connection.resetForNextRequest();
                 return;
@@ -159,17 +165,17 @@ public class HttpProxier extends AsyncSocketProcessor {
 
             connection.senderStatus().reset();
 
-            if (context.reply().hasBody()) {
-                connection.changeState(HttpProxyState.ReceivingReplyBody);
+            if (context.response().hasBody()) {
+                connection.changeState(HttpProxyState.ReceivingResponseBody);
 
                 context.clientConnection().senderStatus()
                         .changeChunkedBodySendState(ChunkedBodySendState.ChunkSize);
                 connection.parserStatus()
-                        .prepareBodyParsing(BodyParsingType.ForHttpProxy, context.reply().contentLength());
+                        .prepareBodyParsing(BodyParsingType.ForHttpProxy, context.response().contentLength());
 
                 gotoSelf(context);
             } else {
-                onReplyEnd(connection, context);
+                onResponseEnd(connection, context);
             }
             } else {
             if (afterProcess == AfterProcess.Register) {
@@ -180,28 +186,28 @@ public class HttpProxier extends AsyncSocketProcessor {
         }
     }
 
-    private void parseReply(Context context) {
+    private void parseResponse(Context context) {
         HttpProxyConnection connection = context.httpProxy();
 
         while (connection.reader().hasData() &&
                 connection.parserStatus().state() != ParsingState.BodyStart) {
-            HttpReplyParser.parse(connection);
+            HttpResponseParser.parse(connection);
         }
     }
 
-    private void onReplyBody(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
+    private void onResponseBody(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
         boolean continueSend = false;
         boolean hasParsed = false;
 
         connection.prepareReading();
         if (connection.readBuffer().hasRemaining()) {
             hasParsed = true;
-            continueSend = parseAndSendReplyBody(connection, context);
+            continueSend = parseAndSendResponseBody(connection, context);
         }
         connection.prepareReceiving();
 
         if (hasParsed && continueSend == false) {
-            onReplyEnd(connection, context);
+            onResponseEnd(connection, context);
         } else {
             if (hasParsed == false || continueSend == true) {
                 if (afterProcess == AfterProcess.Register) {
@@ -213,24 +219,28 @@ public class HttpProxier extends AsyncSocketProcessor {
         }
     }
 
-    private boolean parseAndSendReplyBody(HttpProxyConnection connection, Context context) {
-        if (context.reply().hasContentLength()) {
+    private boolean parseAndSendResponseBody(HttpProxyConnection connection, Context context) {
+        if (context.response().hasContentLength()) {
             HttpBodyConveyor.conveyAsMuchContentLength(context.httpProxy(), context.clientConnection(), server);
             return connection.parserStatus().hasRemainingReadBodySize();
-        } else if (context.reply().isChunked()) {
+        } else if (context.response().isChunked()) {
             HttpBodyConveyor.conveyUtilChunkEnd(context.httpProxy(), context.clientConnection(), server);
             return connection.parserStatus().chunkState() != ChunkParsingState.ChunkEnd;
         }
         return false;
     }
 
-    private void onReplyEnd(HttpProxyConnection connection, Context context) {
-        Message.debug(connection, "complete receive reply_body from http proxy server and send to client");
-        if (context.reply().code().isError()) {
+    private void onResponseEnd(HttpProxyConnection connection, Context context) {
+        Message.debug(connection, "complete receive response_body from http proxy server and send to client");
+
+        context.response().setResponseTimeToNow();
+        System.out.println("response delay : " + context.response().response_delay());
+
+        if (context.response().code().isError()) {
             bufferSender().sendCloseSignalForHttpServer(context);
             bufferSender().sendCloseSignalForClient(context);
         } else {
-            if (context.reply().hasKeepAlive()) {
+            if (context.response().hasKeepAlive()) {
                 Message.debug(context, "Persistent Connection");
 
                 connection.changeState(HttpProxyState.Idle);

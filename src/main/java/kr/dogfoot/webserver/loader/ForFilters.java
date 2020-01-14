@@ -2,7 +2,7 @@ package kr.dogfoot.webserver.loader;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.reply.ReplyCode;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.loader.resourcesetting.SettingItem;
 import kr.dogfoot.webserver.server.resource.filter.*;
@@ -101,8 +101,8 @@ public class ForFilters {
             String attrName = attr.getName();
             if (SettingXML.Rest_Source_URL_Pattern_Attr.equalsIgnoreCase(attrName)) {
                 ur.restSourceURLPattern(attr.getValue());
-            } else if (SettingXML.Reply_Code_Attr.equalsIgnoreCase(attrName)) {
-                ur.replyCode(ReplyCode.fromCode((short) Integer.parseInt(attr.getValue())));
+            } else if (SettingXML.Response_Code_Attr.equalsIgnoreCase(attrName)) {
+                ur.statusCode(StatusCode.fromCode((short) Integer.parseInt(attr.getValue())));
             } else if (SettingXML.Target_URL_Attr.equalsIgnoreCase(attrName)) {
                 ur.targetURL(attr.getValue());
             }

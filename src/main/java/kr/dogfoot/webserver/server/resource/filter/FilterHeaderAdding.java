@@ -24,9 +24,9 @@ public class FilterHeaderAdding extends Filter {
 
     @Override
     public boolean outboundProcess(Context context, Server server) {
-        if (addingCondition.isMatch(context.reply().headerList())) {
+        if (addingCondition.isMatch(context.response().headerList())) {
             for (HeaderSetting setting : headerSettings) {
-                context.reply().addHeader(setting.sort(), setting.value().getBytes());
+                context.response().addHeader(setting.sort(), setting.value().getBytes());
             }
         }
         return true;

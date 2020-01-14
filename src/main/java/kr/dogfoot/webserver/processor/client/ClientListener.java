@@ -94,6 +94,7 @@ public class ClientListener extends AsyncSocketProcessor {
     @Override
     protected void onAccept(ServerSocketChannel serverChannel, long currentTime) {
         SocketChannel channel = accept(serverChannel);
+        System.out.println("AAAA");
         if (channel != null) {
             ServerSocketInfo info = serverSocketInfos.get(serverChannel);
 

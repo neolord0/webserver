@@ -1,6 +1,6 @@
 package kr.dogfoot.webserver.server.resource;
 
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.host.HostObjects;
 import kr.dogfoot.webserver.server.resource.look.LookResult;
@@ -56,7 +56,7 @@ public class ResourceNegotiatedFile extends Resource {
     }
 
     @Override
-    public Reply perform(Request request, HostObjects hostObjects) {
+    public Response perform(Request request, HostObjects hostObjects) {
         return NegoFilePerformer.perform(request, this, hostObjects);
     }
 

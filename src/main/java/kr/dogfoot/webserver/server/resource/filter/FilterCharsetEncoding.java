@@ -3,7 +3,7 @@ package kr.dogfoot.webserver.server.resource.filter;
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.*;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.util.bytes.ToBytes;
@@ -27,11 +27,11 @@ public class FilterCharsetEncoding extends Filter {
 
     @Override
     public boolean outboundProcess(Context context, Server server) {
-        if (isAcceptTargetCharset(context.request()) && isNormalText(context.reply())) {
-            if (changeCharset(context.reply())) {
-                appendVaryHeader(context.reply());
+        if (isAcceptTargetCharset(context.request()) && isNormalText(context.response())) {
+            if (changeCharset(context.response())) {
+                appendVaryHeader(context.response());
             } else {
-                context.reply(server.objects().replyMaker().new_500CannotChangeCharset(sourceCharset, targetCharset));
+                context.response(server.objects().responseMaker().new_500CannotChangeCharset(sourceCharset, targetCharset));
             }
         }
         return true;
@@ -45,21 +45,21 @@ public class FilterCharsetEncoding extends Filter {
         return false;
     }
 
-    private boolean isNormalText(Reply reply) {
-        HeaderValueContentType contentType = (HeaderValueContentType) reply.getHeaderValueObj(HeaderSort.Content_Type);
+    private boolean isNormalText(Response response) {
+        HeaderValueContentType contentType = (HeaderValueContentType) response.getHeaderValueObj(HeaderSort.Content_Type);
         if (contentType != null && contentType.isText()) {
-            HeaderValueContentEncoding contentEncoding = (HeaderValueContentEncoding) reply.getHeaderValueObj(HeaderSort.Content_Encoding);
+            HeaderValueContentEncoding contentEncoding = (HeaderValueContentEncoding) response.getHeaderValueObj(HeaderSort.Content_Encoding);
             return contentEncoding == null || contentEncoding.isIdentity();
         }
         return false;
     }
 
-    private boolean changeCharset(Reply reply) {
+    private boolean changeCharset(Response response) {
         byte[] sourceBody = null;
-        if (reply.bodyFile() != null) {
-            sourceBody = readBodyFile(reply.bodyFile());
-        } else if (reply.bodyBytes() != null) {
-            sourceBody = reply.bodyBytes();
+        if (response.bodyFile() != null) {
+            sourceBody = readBodyFile(response.bodyFile());
+        } else if (response.bodyBytes() != null) {
+            sourceBody = response.bodyBytes();
         }
 
         if (sourceBody == null) {
@@ -77,32 +77,32 @@ public class FilterCharsetEncoding extends Filter {
             return false;
         }
 
-        reply.bodyBytes(targetBody);
-        reply.bodyFile(null);
-        if (reply.isPartial()) {
-            setContentRange(reply, targetBody.length);
-            reply.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(reply.calculateContextLength()));
+        response.bodyBytes(targetBody);
+        response.bodyFile(null);
+        if (response.isPartial()) {
+            setContentRange(response, targetBody.length);
+            response.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(response.calculateContextLength()));
         } else {
-            reply.changeHeader(HeaderSort.Content_Length, ToBytes.fromInt(targetBody.length));
+            response.changeHeader(HeaderSort.Content_Length, ToBytes.fromInt(targetBody.length));
         }
-        HeaderValueContentType contentType = (HeaderValueContentType) reply.getHeaderValueObj(HeaderSort.Content_Type);
+        HeaderValueContentType contentType = (HeaderValueContentType) response.getHeaderValueObj(HeaderSort.Content_Type);
         contentType.mediaType().setCharset(targetCharset);
-        reply.changeHeader(HeaderSort.Content_Type, contentType.combineValue());
+        response.changeHeader(HeaderSort.Content_Type, contentType.combineValue());
         return true;
     }
 
-    private void setContentRange(Reply reply, int length) {
-        HeaderValueContentRange contentRange = (HeaderValueContentRange) reply.getHeaderValueObj(HeaderSort.Content_Range);
+    private void setContentRange(Response response, int length) {
+        HeaderValueContentRange contentRange = (HeaderValueContentRange) response.getHeaderValueObj(HeaderSort.Content_Range);
         if (contentRange != null) {
             contentRange.instanceLength().setLength(length);
-            reply.changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
+            response.changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
         }
 
-        for (int index = 0; index < reply.rangePartCount(); index++) {
-            contentRange = (HeaderValueContentRange) reply.rangePart(index).getHeaderValueObj(HeaderSort.Content_Range);
+        for (int index = 0; index < response.rangePartCount(); index++) {
+            contentRange = (HeaderValueContentRange) response.rangePart(index).getHeaderValueObj(HeaderSort.Content_Range);
             if (contentRange != null) {
                 contentRange.instanceLength().setLength(length);
-                reply.rangePart(index).changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
+                response.rangePart(index).changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
             }
         }
     }
@@ -120,14 +120,14 @@ public class FilterCharsetEncoding extends Filter {
     }
 
 
-    private void appendVaryHeader(Reply reply) {
-        HeaderValueVary vary = (HeaderValueVary) reply.getHeaderValueObj(HeaderSort.Vary);
+    private void appendVaryHeader(Response Response) {
+        HeaderValueVary vary = (HeaderValueVary) Response.getHeaderValueObj(HeaderSort.Vary);
         if (vary == null) {
             vary = new HeaderValueVary();
         }
         vary.addFieldName(HeaderSort.Accept_Charset);
 
-        reply.setHeader(HeaderSort.Vary, vary.combineValue());
+        Response.setHeader(HeaderSort.Vary, vary.combineValue());
     }
 
 

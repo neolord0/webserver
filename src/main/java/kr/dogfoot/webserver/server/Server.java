@@ -2,9 +2,6 @@ package kr.dogfoot.webserver.server;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.ContextManager;
-import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
-import kr.dogfoot.webserver.httpMessage.reply.Reply;
-import kr.dogfoot.webserver.processor.Processor;
 import kr.dogfoot.webserver.processor.client.*;
 import kr.dogfoot.webserver.processor.proxy.ProxyConnector;
 import kr.dogfoot.webserver.processor.proxy.ajp.AjpProxier;
@@ -15,11 +12,6 @@ import kr.dogfoot.webserver.server.object.ServerObjects;
 import kr.dogfoot.webserver.server.timer.Timer;
 import kr.dogfoot.webserver.util.ConfigFileLoader;
 import kr.dogfoot.webserver.util.Message;
-
-import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements Startable {
     private static final int DEFAULT_HOST_COUNT = 5;
@@ -35,7 +27,7 @@ public class Server implements Startable {
     private RequestReceiver requestReceiver;
     private BodyReceiver bodyReceiver;
     private RequestPerformer performer;
-    private ReplySender sender;
+    private ResponseSender sender;
     private ProxyConnector proxyConnector;
     private AjpProxier ajpProxier;
     private HttpProxier httpProxier;
@@ -120,10 +112,10 @@ public class Server implements Startable {
     }
 
     private void createAndStartSender() throws Exception {
-        sender = new ReplySender(this);
+        sender = new ResponseSender(this);
         sender.start();
 
-        Message.debug("start Reply Sender ...");
+        Message.debug("start Response Sender ...");
     }
 
     private void createAndStartProxyConnector() throws Exception {
@@ -214,7 +206,7 @@ public class Server implements Startable {
         sender.terminate();
         sender = null;
 
-        Message.debug("terminate Reply Sender ...");
+        Message.debug("terminate Response Sender ...");
     }
 
     private void terminateProxyConnector() throws Exception {

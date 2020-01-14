@@ -183,7 +183,7 @@ public class BodyReceiver extends AsyncSocketProcessor {
                 gotoSelf(context);
             }
         } else {
-            context.httpProxy().changeState(HttpProxyState.ReceivingReply);
+            context.httpProxy().changeState(HttpProxyState.ReceivingResponse);
             server.gotoHttpProxier(context);
         }
     }

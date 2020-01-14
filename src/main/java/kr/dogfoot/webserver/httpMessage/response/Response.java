@@ -1,18 +1,20 @@
-package kr.dogfoot.webserver.httpMessage.reply;
+package kr.dogfoot.webserver.httpMessage.response;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
+import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.resource.performer.util.ContentRange;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 import java.io.File;
+import java.util.Date;
 
-public class Reply extends EachRangePart {
+public class Response extends EachRangePart {
     private static final int Default_RangePart_Count = 3;
     public boolean isPartial;
     private short majorVersion;
     private short minorVersion;
-    private ReplyCode code;
+    private StatusCode code;
     private byte[] reason;
     private byte[] bodyBytes;
     private File bodyFile;
@@ -20,7 +22,10 @@ public class Reply extends EachRangePart {
     private EachRangePart[] rangeParts;
     private int rangePartCount;
 
-    public Reply() {
+    private Request request;
+    private long responseTime;
+
+    public Response() {
         super();
 
         majorVersion = 1;
@@ -35,9 +40,12 @@ public class Reply extends EachRangePart {
         boundary = null;
         rangeParts = new EachRangePart[Default_RangePart_Count];
         rangePartCount = 0;
+
+        request = null;
+        responseTime = 0;
     }
 
-    public Reply setHeader(HeaderSort sort, byte[] value) {
+    public Response setHeader(HeaderSort sort, byte[] value) {
         if (hasHeader(sort)) {
             changeHeader(sort, value);
         } else {
@@ -50,12 +58,12 @@ public class Reply extends EachRangePart {
         return headerList.has(sort);
     }
 
-    public Reply addHeader(HeaderSort sort, byte[] value) {
+    public Response addHeader(HeaderSort sort, byte[] value) {
         super.addHeader(sort, value);
         return this;
     }
 
-    public Reply changeHeader(HeaderSort sort, byte[] value) {
+    public Response changeHeader(HeaderSort sort, byte[] value) {
         super.changeHeader(sort, value);
         return this;
     }
@@ -64,12 +72,12 @@ public class Reply extends EachRangePart {
         return headerList.getValueObj(sort);
     }
 
-    public Reply removeHeader(HeaderSort sort) {
+    public Response removeHeader(HeaderSort sort) {
         super.removeHeader(sort);
         return this;
     }
 
-    public Reply range(ContentRange range) {
+    public Response range(ContentRange range) {
         super.range(range);
         return this;
     }
@@ -78,7 +86,7 @@ public class Reply extends EachRangePart {
         return majorVersion;
     }
 
-    public Reply majorVersion(short majorVersion) {
+    public Response majorVersion(short majorVersion) {
         this.majorVersion = majorVersion;
         return this;
     }
@@ -87,16 +95,16 @@ public class Reply extends EachRangePart {
         return minorVersion;
     }
 
-    public Reply minorVersion(short minorVersion) {
+    public Response minorVersion(short minorVersion) {
         this.minorVersion = minorVersion;
         return this;
     }
 
-    public ReplyCode code() {
+    public StatusCode code() {
         return code;
     }
 
-    public Reply code(ReplyCode code) {
+    public Response code(StatusCode code) {
         this.code = code;
         return this;
     }
@@ -105,7 +113,7 @@ public class Reply extends EachRangePart {
         return reason;
     }
 
-    public Reply reason(byte[] reason) {
+    public Response reason(byte[] reason) {
         this.reason = reason;
         return this;
     }
@@ -114,7 +122,7 @@ public class Reply extends EachRangePart {
         return bodyBytes;
     }
 
-    public Reply bodyBytes(byte[] bodyBytes) {
+    public Response bodyBytes(byte[] bodyBytes) {
         this.bodyBytes = bodyBytes;
         return this;
     }
@@ -123,7 +131,7 @@ public class Reply extends EachRangePart {
         return bodyFile;
     }
 
-    public Reply bodyFile(File bodyFile) {
+    public Response bodyFile(File bodyFile) {
         this.bodyFile = bodyFile;
         return this;
     }
@@ -144,7 +152,7 @@ public class Reply extends EachRangePart {
         return boundary;
     }
 
-    public Reply boundary(byte[] boundary) {
+    public Response boundary(byte[] boundary) {
         this.boundary = boundary;
         return this;
     }
@@ -210,5 +218,24 @@ public class Reply extends EachRangePart {
                 + HttpString.BoundaryPrefix.length
                 + boundary.length
                 + HttpString.BoundaryPrefix.length;
+    }
+
+    public Request request() {
+        return request;
+    }
+
+    public void request(Request request) {
+        this.request = request;
+    }
+
+    public void setResponseTimeToNow() {
+        responseTime = new Date().getTime();
+    }
+
+    public long response_delay() {
+        if (request != null) {
+            return responseTime - request.requestTime();
+        }
+        return -1;
     }
 }

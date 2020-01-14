@@ -76,8 +76,8 @@ public class WebServiceLoader {
                 pooledThreadCount.body_receiving(Integer.parseInt(attr.getValue()));
             } else if (SettingXML.Request_Performing_Attr.equalsIgnoreCase(attrName)) {
                 pooledThreadCount.request_performing(Integer.parseInt(attr.getValue()));
-            } else if (SettingXML.Reply_Sending_Attr.equalsIgnoreCase(attrName)) {
-                pooledThreadCount.reply_sending(Integer.parseInt(attr.getValue()));
+            } else if (SettingXML.Response_Sending_Attr.equalsIgnoreCase(attrName)) {
+                pooledThreadCount.response_sending(Integer.parseInt(attr.getValue()));
             } else if (SettingXML.File_Reading_Attr.equalsIgnoreCase(attrName)) {
                 pooledThreadCount.file_reading(Integer.parseInt(attr.getValue()));
             } else if (SettingXML.Buffer_Sending_Attr.equalsIgnoreCase(attrName)) {

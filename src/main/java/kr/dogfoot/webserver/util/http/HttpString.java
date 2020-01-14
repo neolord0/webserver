@@ -66,7 +66,7 @@ public class HttpString {
     public static final String Q = "q";
     public static final String none = "none";
     public static final String Continue100 = "100-continue";
-    public static final byte[] Reply100Continue = "HTTP/1.1 100 Continue\r\n\n".getBytes();
+    public static final byte[] Response100Continue = "HTTP/1.1 100 Continue\r\n\n".getBytes();
     public static final byte[] Realm = "realm".getBytes();
     public static final String Basic_Auth = "Basic";
     public static final byte[] No_Cache = "no_cache".getBytes();
