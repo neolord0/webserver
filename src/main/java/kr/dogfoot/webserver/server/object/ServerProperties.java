@@ -12,7 +12,6 @@ public class ServerProperties {
     private boolean sendServerHeader;
     private int keepAlive_timeout;
     private int keepAlive_max;
-;
 
     public ServerProperties() {
         pooledThreadCount = new PooledThreadCount();
@@ -27,7 +26,7 @@ public class ServerProperties {
         return pooledThreadCount;
     }
 
-    public boolean sendServerHeader() {
+    public boolean isSendServerHeader() {
         return sendServerHeader;
     }
 

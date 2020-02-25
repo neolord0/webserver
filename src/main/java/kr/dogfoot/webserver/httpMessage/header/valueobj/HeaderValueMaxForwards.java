@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.ToBytes;
 
 public class HeaderValueMaxForwards extends HeaderValue {
@@ -17,6 +16,11 @@ public class HeaderValueMaxForwards extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Max_Forwards;
+    }
+
+    @Override
+    public void reset() {
+        value = 0;
     }
 
     @Override
@@ -36,6 +40,16 @@ public class HeaderValueMaxForwards extends HeaderValue {
 
     public Long getNumberValue() {
         return Long.valueOf(value);
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Max_Forwards) {
+            HeaderValueMaxForwards other2 = (HeaderValueMaxForwards) other;
+
+            return value == other2.value;
+        }
+        return false;
     }
 
     public int value() {

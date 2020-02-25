@@ -2,11 +2,13 @@ package kr.dogfoot.webserver.server.resource.filter;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.*;
-import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAcceptCharset;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentEncoding;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.util.ResponseSetter;
 import kr.dogfoot.webserver.server.Server;
-import kr.dogfoot.webserver.util.bytes.ToBytes;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +31,7 @@ public class FilterCharsetEncoding extends Filter {
     public boolean outboundProcess(Context context, Server server) {
         if (isAcceptTargetCharset(context.request()) && isNormalText(context.response())) {
             if (changeCharset(context.response())) {
-                appendVaryHeader(context.response());
+                ResponseSetter.addFieldNameOfVaryHeader(context.response(), HeaderSort.Accept_Charset);
             } else {
                 context.response(server.objects().responseMaker().new_500CannotChangeCharset(sourceCharset, targetCharset));
             }
@@ -55,56 +57,39 @@ public class FilterCharsetEncoding extends Filter {
     }
 
     private boolean changeCharset(Response response) {
-        byte[] sourceBody = null;
+        byte[] originalBody = null;
         if (response.bodyFile() != null) {
-            sourceBody = readBodyFile(response.bodyFile());
+            originalBody = readBodyFile(response.bodyFile());
         } else if (response.bodyBytes() != null) {
-            sourceBody = response.bodyBytes();
+            originalBody = response.bodyBytes();
         }
 
-        if (sourceBody == null) {
+        if (originalBody == null) {
             return false;
         }
 
-        byte[] targetBody = null;
+        byte[] changedBody;
         try {
-            targetBody = new String(sourceBody, sourceCharset).getBytes(targetCharset);
+            changedBody = new String(originalBody, sourceCharset).getBytes(targetCharset);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-            targetBody = null;
+            changedBody = null;
         }
-        if (targetBody == null) {
+        if (changedBody == null) {
             return false;
         }
 
-        response.bodyBytes(targetBody);
+        response.bodyBytes(changedBody);
         response.bodyFile(null);
         if (response.isPartial()) {
-            setContentRange(response, targetBody.length);
-            response.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(response.calculateContextLength()));
+            ResponseSetter.setLengthOfContentRange(response, changedBody.length);
+            ResponseSetter.setContentLength(response, response.calculateContextLength());
         } else {
-            response.changeHeader(HeaderSort.Content_Length, ToBytes.fromInt(targetBody.length));
+            ResponseSetter.setContentLength(response, changedBody.length);
         }
-        HeaderValueContentType contentType = (HeaderValueContentType) response.getHeaderValueObj(HeaderSort.Content_Type);
-        contentType.mediaType().setCharset(targetCharset);
-        response.changeHeader(HeaderSort.Content_Type, contentType.combineValue());
+
+        ResponseSetter.setCharsetOfContentType(response, targetCharset);
         return true;
-    }
-
-    private void setContentRange(Response response, int length) {
-        HeaderValueContentRange contentRange = (HeaderValueContentRange) response.getHeaderValueObj(HeaderSort.Content_Range);
-        if (contentRange != null) {
-            contentRange.instanceLength().setLength(length);
-            response.changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
-        }
-
-        for (int index = 0; index < response.rangePartCount(); index++) {
-            contentRange = (HeaderValueContentRange) response.rangePart(index).getHeaderValueObj(HeaderSort.Content_Range);
-            if (contentRange != null) {
-                contentRange.instanceLength().setLength(length);
-                response.rangePart(index).changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
-            }
-        }
     }
 
     private byte[] readBodyFile(File bodyFile) {
@@ -112,24 +97,13 @@ public class FilterCharsetEncoding extends Filter {
         try {
             bytes = Files.readAllBytes(bodyFile.toPath());
         } catch (IOException e) {
-            e.printStackTrace();;
+            e.printStackTrace();
+            ;
             bytes = null;
             e.printStackTrace();
         }
         return bytes;
     }
-
-
-    private void appendVaryHeader(Response Response) {
-        HeaderValueVary vary = (HeaderValueVary) Response.getHeaderValueObj(HeaderSort.Vary);
-        if (vary == null) {
-            vary = new HeaderValueVary();
-        }
-        vary.addFieldName(HeaderSort.Accept_Charset);
-
-        Response.setHeader(HeaderSort.Vary, vary.combineValue());
-    }
-
 
     @Override
     public FilterSort sort() {

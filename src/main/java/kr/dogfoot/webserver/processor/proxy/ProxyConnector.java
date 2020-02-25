@@ -43,7 +43,7 @@ public class ProxyConnector extends AsyncSocketProcessor {
                     .setOption(StandardSocketOptions.SO_REUSEADDR, true);
 
             if (register(channel, context, SelectionKey.OP_CONNECT)) {
-                BackendServerInfo proxyBackendServerInfo  = context.proxyBackendServerInfo();
+                BackendServerInfo proxyBackendServerInfo = context.proxyBackendServerInfo();
                 channel.connect(proxyBackendServerInfo.socketAddress());
             }
         } catch (IOException e) {

@@ -3,9 +3,11 @@ package kr.dogfoot.webserver.loader;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.loader.resourcesetting.ResourceSetting;
 import kr.dogfoot.webserver.server.Server;
+import kr.dogfoot.webserver.server.cache.CacheManagerImp;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.MediaTypeManager;
 import kr.dogfoot.webserver.server.object.PooledThreadCount;
+import kr.dogfoot.webserver.server.object.ServerObjects;
 import kr.dogfoot.webserver.server.object.ServerProperties;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -30,7 +32,7 @@ public class WebServiceLoader {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
             if (SettingXML.Properties_Node.equalsIgnoreCase(nodeName)) {
-                setProperties(server.objects().properties(), (Element) node);
+                setProperties(server.objects(), (Element) node);
             } else if (SettingXML.Host_Node.equalsIgnoreCase(nodeName)) {
                 addHost(server, (Element) node);
             }
@@ -45,18 +47,20 @@ public class WebServiceLoader {
         return doc.getDocumentElement();
     }
 
-    private static void setProperties(ServerProperties properties, Element element) {
+    private static void setProperties(ServerObjects serverObjects, Element element) {
         NodeList nodeList = element.getChildNodes();
         int count = nodeList.getLength();
         for (int index = 0; index < count; index++) {
             Node node = nodeList.item(index);
             String nodeName = node.getNodeName();
             if (SettingXML.Pooled_Thread_Count.equalsIgnoreCase(nodeName)) {
-                setPooledThreadCount(properties.pooledThreadCount(), (Element) node);
+                setPooledThreadCount(serverObjects.properties().pooledThreadCount(), (Element) node);
             } else if (SettingXML.Server_Header_Node.equalsIgnoreCase(nodeName)) {
-                setServerHeader(properties, (Element) node);
+                setServerHeader(serverObjects.properties(), (Element) node);
             } else if (SettingXML.Keep_Alive_Node.equalsIgnoreCase(nodeName)) {
-                setKeepAlive(properties, (Element) node);
+                setKeepAlive(serverObjects.properties(), (Element) node);
+            } else if (SettingXML.Cache_Info_Node.equalsIgnoreCase(nodeName)) {
+                setCacheInfo(serverObjects, (Element) node);
             }
         }
     }
@@ -99,7 +103,7 @@ public class WebServiceLoader {
             Attr attr = (Attr) attrMap.item(index);
             String attrName = attr.getName();
             if (SettingXML.Send_Attr.equalsIgnoreCase(attrName)) {
-                properties.sendServerHeader(SettingXML.True_Value.equalsIgnoreCase(attr.getValue()));
+                properties.sendServerHeader(XMLUtil.toBoolean(attr.getValue()));
             }
         }
     }
@@ -111,11 +115,43 @@ public class WebServiceLoader {
             Attr attr = (Attr) attrMap.item(index);
             String attrName = attr.getName();
             if (SettingXML.Timeout_Attr.equalsIgnoreCase(attrName)) {
-                properties.keepAlive_timeout(Integer.parseInt(attr.getValue()));
+                properties.keepAlive_timeout((int) XMLUtil.toDeltaSecond(attr.getValue()));
             } else if (SettingXML.Max_Attr.equalsIgnoreCase(attrName)) {
                 properties.keepAlive_max(Integer.parseInt(attr.getValue()));
             }
         }
+    }
+
+    private static void setCacheInfo(ServerObjects serverObjects, Element element) {
+        CacheManagerImp cacheManagerImp = new CacheManagerImp(serverObjects.timer());
+
+        NodeList nodeList = element.getChildNodes();
+        int count = nodeList.getLength();
+        for (int index = 0; index < count; index++) {
+            Node node = nodeList.item(index);
+            String nodeName = node.getNodeName();
+            if (SettingXML.Storage_Path.equalsIgnoreCase(nodeName)) {
+                cacheManagerImp.storagePath(XMLUtil.getCDATA((Element) node));
+            }
+        }
+
+        if (cacheManagerImp.storagePathFile() == null) {
+            return;
+        }
+
+        NamedNodeMap attrMap = element.getAttributes();
+        int count2 = attrMap.getLength();
+        for (int index = 0; index < count2; index++) {
+            Attr attr = (Attr) attrMap.item(index);
+            String attrName = attr.getName();
+            if (SettingXML.Max_Size_Attr.equalsIgnoreCase(attrName)) {
+                cacheManagerImp.sizeLimiter().maxSize(XMLUtil.toDataSize(attr.getValue()));
+            } else if (SettingXML.Inactive_Time_Attr.equalsIgnoreCase(attrName)) {
+                cacheManagerImp.inactiveTime(XMLUtil.toDeltaSecond(attr.getValue()));
+            }
+        }
+
+        serverObjects.cacheManager(cacheManagerImp);
     }
 
     private static void addHost(Server server, Element element) throws Exception {
@@ -134,7 +170,7 @@ public class WebServiceLoader {
             } else if (SettingXML.Port_Attr.equalsIgnoreCase(attrName)) {
                 host.port(Integer.parseInt(attr.getValue()));
             } else if (SettingXML.Default_Host.equalsIgnoreCase(attrName)) {
-                host.defaultHost(SettingXML.True_Value.equalsIgnoreCase(attr.getValue()));
+                host.defaultHost(XMLUtil.toBoolean(attr.getValue()));
             } else if (SettingXML.Default_Charset_Attr.equalsIgnoreCase(attrName)) {
                 host.hostObjects().defaultCharset(attr.getValue());
             } else if (SettingXML.Default_Allowed_Methods.equalsIgnoreCase(attrName)) {
@@ -177,7 +213,7 @@ public class WebServiceLoader {
         }
 
         Element child = (Element) nodeList.item(0);
-        HostLoader.load(host, SettingXML.getCDATA(child), resourceSetting);
+        HostLoader.load(host, XMLUtil.getCDATA(child), resourceSetting);
     }
 
     private static ResourceSetting loadReourceSetting(Element element) {

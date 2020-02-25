@@ -6,6 +6,7 @@ import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.AppendableToByte;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class LanguageRange implements AppendableToByte {
     private String range;
@@ -31,8 +32,8 @@ public class LanguageRange implements AppendableToByte {
                 try {
                     p.parse(value, ps);
 
-                    if (p.getName().equalsIgnoreCase(HttpString.Q)) {
-                        qvalue = new Float(p.getValue());
+                    if (p.name().equalsIgnoreCase(HttpString.Q)) {
+                        qvalue = new Float(p.value());
                     }
                 } catch (ParserException e) {
                     e.printStackTrace();
@@ -72,30 +73,6 @@ public class LanguageRange implements AppendableToByte {
         }
     }
 
-    public String getRange() {
-        return range;
-    }
-
-    public void setRange(String range) {
-        this.range = range;
-    }
-
-    public String getSubrange() {
-        return subrange;
-    }
-
-    public void setSubrange(String subrange) {
-        this.subrange = subrange;
-    }
-
-    public Float getQvalue() {
-        return qvalue;
-    }
-
-    public void setQvalue(Float qvalue) {
-        this.qvalue = qvalue;
-    }
-
     public boolean isMatch(String compare) {
         if ("*".equals(range) && "*".equals(subrange)) {
             return true;
@@ -112,5 +89,41 @@ public class LanguageRange implements AppendableToByte {
         return false;
     }
 
+    public boolean isMatch(LanguageRange other) {
+        if ("*".equals(range) && "*".equals(subrange)) {
+            return true;
+        }
+
+        if (subrange == null || "*".equals(subrange)) {
+            return StringUtils.equalsWithNull(range, other.range);
+        } else {
+            return StringUtils.equalsWithNull(range, other.range)
+                    && StringUtils.equalsWithNull(subrange, other.subrange);
+        }
+    }
+
+    public String range() {
+        return range;
+    }
+
+    public void range(String range) {
+        this.range = range;
+    }
+
+    public String subrange() {
+        return subrange;
+    }
+
+    public void subrange(String subrange) {
+        this.subrange = subrange;
+    }
+
+    public Float qvalue() {
+        return qvalue;
+    }
+
+    public void qvalue(Float qvalue) {
+        this.qvalue = qvalue;
+    }
 }
 

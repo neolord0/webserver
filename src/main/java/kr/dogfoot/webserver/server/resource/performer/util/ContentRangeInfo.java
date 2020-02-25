@@ -76,12 +76,10 @@ public class ContentRangeInfo {
                 .appendLong(range.lastPos())
                 .append(HttpString.Separator_Divide)
                 .appendLong(instanceLength);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
-    public boolean invalid() {
+    public boolean isInvalid() {
         if (rangeCount == 0) {
             return true;
         }

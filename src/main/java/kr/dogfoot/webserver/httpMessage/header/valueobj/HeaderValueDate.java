@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.http.HttpDateMaker;
 
 public class HeaderValueDate extends HeaderValue {
@@ -17,6 +16,11 @@ public class HeaderValueDate extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Date;
+    }
+
+    @Override
+    public void reset() {
+        date = null;
     }
 
     @Override
@@ -36,6 +40,19 @@ public class HeaderValueDate extends HeaderValue {
     @Override
     public Long getDateValue() {
         return date;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Date) {
+            HeaderValueDate other2 = (HeaderValueDate) other;
+            if (date == null) {
+                return other2.date == null;
+            } else {
+                return date.equals(other2.date);
+            }
+        }
+        return false;
     }
 
     public Long date() {

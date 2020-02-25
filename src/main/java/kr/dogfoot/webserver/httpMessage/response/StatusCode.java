@@ -84,6 +84,10 @@ public enum StatusCode {
     }
 
     public boolean isError() {
-        return code > 400;
+        return code >= 400;
+    }
+
+    public boolean is5xxError() {
+        return code >= 500;
     }
 }

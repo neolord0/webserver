@@ -5,7 +5,6 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.part.WarningValue;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -22,6 +21,11 @@ public class HeaderValueWarning extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Warning;
+    }
+
+    @Override
+    public void reset() {
+        warningValueList.clear();
     }
 
     @Override
@@ -49,9 +53,33 @@ public class HeaderValueWarning extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray(HttpString.Comma, warningValueList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Warning) {
+            HeaderValueWarning other2 = (HeaderValueWarning) other;
+            int includedCount = 0;
+            for (WarningValue wv : other2.warningValueList) {
+                if (isInclude(wv)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.warningValueList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(WarningValue other) {
+        for (WarningValue wv : warningValueList) {
+            if (wv.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public WarningValue addNewWarningValue() {
@@ -62,5 +90,9 @@ public class HeaderValueWarning extends HeaderValue {
 
     public WarningValue[] warningValues() {
         return warningValueList.toArray(Zero_Array);
+    }
+
+    public ArrayList<WarningValue> warningValueList() {
+        return warningValueList;
     }
 }

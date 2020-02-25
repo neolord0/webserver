@@ -1,11 +1,15 @@
 package kr.dogfoot.webserver.httpMessage.request;
 
+import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderList;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueConnection;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueExpect;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.*;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.part.CacheDirectiveSort;
+import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
+import kr.dogfoot.webserver.util.http.HttpString;
+
+import java.util.Date;
 
 public class Request {
     private MethodType method;
@@ -42,8 +46,8 @@ public class Request {
         requestTime = 0;
     }
 
-    public boolean valid() {
-        return method != MethodType.Unknown && requestURI != null;
+    public boolean isSafe() {
+        return method.isSafe();
     }
 
     public MethodType method() {
@@ -80,14 +84,14 @@ public class Request {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(method).append(' ')
-                .append(requestURI.toString()).append(' ')
-                .append(majorVersion).append('.').append(minorVersion)
-                .append("\r\n");
+        OutputBuffer buffer = OutputBuffer.pooledObject();
+        buffer.append(method.getBytes()).append(HttpString.Space)
+                .append(requestURI.toString()).append(HttpString.Space)
+                .appendInt(majorVersion).append(HttpString.Dot).appendInt(minorVersion)
+                .append(HttpString.CRLF);
+        headerList.appendTo(buffer);
 
-        sb.append(headerList);
-        return sb.toString();
+        return new String(buffer.getBytesAndRelease());
     }
 
     public boolean hasBody() {
@@ -95,11 +99,11 @@ public class Request {
     }
 
     public int contentLength() {
-        return headerList.getContentLength();
+        return headerList.contentLength();
     }
 
     public boolean hasContentLength() {
-        return headerList.getContentLength() != -1;
+        return headerList.contentLength() != -1;
     }
 
     public boolean isChunked() {
@@ -111,11 +115,15 @@ public class Request {
     }
 
     public HeaderValue getHeaderValueObj(HeaderSort sort) {
-        return headerList.getValueObj(sort);
+        HeaderItem item = headerList.getHeader(sort);
+        if (item != null) {
+            return item.valueObj();
+        }
+        return null;
     }
 
     public boolean isPersistentConnection() {
-        HeaderValueConnection connection = (HeaderValueConnection) headerList.getValueObj(HeaderSort.Connection);
+        HeaderValueConnection connection = (HeaderValueConnection) getHeaderValueObj(HeaderSort.Connection);
         if (majorVersion > 2 || majorVersion == 1 && minorVersion >= 1) {
             return connection == null || connection.isClose() == false;
         } else if (majorVersion == 1 && minorVersion == 0) {
@@ -125,11 +133,11 @@ public class Request {
     }
 
     public boolean hasExpect100Continue() {
-        HeaderValueExpect expect = (HeaderValueExpect) headerList.getValueObj(HeaderSort.Expect);
+        HeaderValueExpect expect = (HeaderValueExpect) getHeaderValueObj(HeaderSort.Expect);
         return expect != null && expect.is100Continue();
     }
 
-    public boolean emptyBody() {
+    public boolean isEmptyBody() {
         return bodyBuffer.getLength() == 0;
     }
 
@@ -147,5 +155,46 @@ public class Request {
 
     public void requestTime(long requestTime) {
         this.requestTime = requestTime;
+    }
+
+    public void setRequestTimeToNow() {
+        requestTime = new Date().getTime();
+    }
+
+    public boolean hasCacheDirective(CacheDirectiveSort directiveSort) {
+        HeaderValueCacheControl cacheControl = (HeaderValueCacheControl) getHeaderValueObj(HeaderSort.Cache_Control);
+        if (cacheControl != null) {
+            return cacheControl.hasCacheDirective(directiveSort);
+        }
+        return false;
+    }
+
+    public boolean hasNoCache() {
+        if (hasCacheDirective(CacheDirectiveSort.NoCache) || hasNoCachePragma()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasNoCachePragma() {
+        HeaderValuePragma pragma = (HeaderValuePragma) getHeaderValueObj(HeaderSort.Pragma);
+        if (pragma != null) {
+            if (BytesUtil.compare(pragma.value(), HttpString.No_Cache) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Request clone() {
+        Request cloned = new Request();
+        cloned.method = method;
+        cloned.requestURI.copyFrom(requestURI);
+        cloned.majorVersion = majorVersion;
+        cloned.minorVersion = minorVersion;
+        cloned.headerList.copyFrom(headerList);
+        cloned.bodyBuffer.copyFrom(bodyBuffer);
+        cloned.requestTime = requestTime;
+        return cloned;
     }
 }

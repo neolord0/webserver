@@ -138,7 +138,7 @@ public class BufferSender implements Startable {
 
                 waitingJobQueueForSocket.add(new SendJob(channel, nextBufferInfo));
                 nioSelector.wakeup();
-            } else if (nextBufferInfo.jobType() == SendBufferInfo.JobType.Close){
+            } else if (nextBufferInfo.jobType() == SendBufferInfo.JobType.Close) {
                 storage.removeBuffer(channel);
                 closeConnection(nextBufferInfo);
             }
@@ -236,7 +236,7 @@ public class BufferSender implements Startable {
     private void onSend(SocketChannel channel, SendBufferInfo bufferInfo, long currentTime) {
         server.objects().executorForBufferSending().
                 execute(() -> {
-                    if (bufferInfo.isHttps() && bufferInfo.wrapped() == false) {
+                    if (bufferInfo.isHttps() && bufferInfo.isWrapped() == false) {
                         wrapBuffer(bufferInfo);
                     }
                     boolean error = false;
@@ -308,7 +308,7 @@ public class BufferSender implements Startable {
                     }
                     wrappedBuffer.flip();
                     bufferInfo.buffer(wrappedBuffer);
-                    bufferInfo.wrapped(true);
+                    bufferInfo.setWrapped(true);
                     retry = false;
                 }
                 break;

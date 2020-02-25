@@ -5,9 +5,9 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueHost;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.server.resource.ResourceNegotiatedFile;
 import kr.dogfoot.webserver.server.resource.filter.part.condition.HeaderCondition;
@@ -21,9 +21,9 @@ public class DefaultMessageBody {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n")
                 .append("<html><head>\n")
-                .append("<title>").append(response.code().getCodeByte()).append(" ").append(response.code().getDefaultReason()).append("</title>\n")
+                .append("<title>").append(response.statusCode().getCodeByte()).append(" ").append(response.statusCode().getDefaultReason()).append("</title>\n")
                 .append("</head><body>\n")
-                .append("<h1>").append(response.code().getCodeByte()).append(" ").append(response.code().getDefaultReason()).append("</h1>\n")
+                .append("<h1>").append(response.statusCode().getCodeByte()).append(" ").append(response.statusCode().getDefaultReason()).append("</h1>\n")
                 .append("<p>").append(message).append("</p>\n")
                 .append("</body></html>\n");
         setResponseBody(buffer, response);
@@ -37,6 +37,7 @@ public class DefaultMessageBody {
                 .bodyBytes(bodyBuffer.getBytes())
                 .bodyFile(null);
     }
+
 
     public static void makeForPostResponse(Response response, Request request) {
         OutputBuffer buffer = OutputBuffer.pooledObject();
@@ -52,7 +53,7 @@ public class DefaultMessageBody {
                 .append("<h2>header list</h2>\n")
                 .append("<ol>\n");
 
-        HeaderItem[] items = request.headerList().getHeaderByteArray();
+        HeaderItem[] items = request.headerList().getHeaderItemArray();
         for (HeaderItem item : items) {
             buffer
                     .append("<li>")
@@ -68,7 +69,7 @@ public class DefaultMessageBody {
                 .append("<h2>body</h2>\n")
                 .append("<br>\n")
                 .append("<textarea rows=\"20\" cols=\"100\">")
-                .append(request.bodyBytes())
+                .appendInt(request.bodyBytes().length)
                 .append("</textarea>\n")
                 .append("</body></html>\n");
 

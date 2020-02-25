@@ -4,9 +4,9 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 import java.util.ArrayList;
 
@@ -21,6 +21,11 @@ public class HeaderValueUpgrade extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Upgrade;
+    }
+
+    @Override
+    public void reset() {
+        productList.clear();
     }
 
     @Override
@@ -45,9 +50,33 @@ public class HeaderValueUpgrade extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendStringArray(HttpString.Comma, productList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Upgrade) {
+            HeaderValueUpgrade other2 = (HeaderValueUpgrade) other;
+            int includedCount = 0;
+            for (String product : other2.productList) {
+                if (isInclude(product)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.productList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(String other) {
+        for (String product : productList) {
+            if (StringUtils.equalsWithNull(product, other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addProduct(String product) {

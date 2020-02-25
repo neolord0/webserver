@@ -30,8 +30,8 @@ public class Coding implements AppendableToByte {
                 try {
                     p.parse(value, ps);
 
-                    if (p.getName().equalsIgnoreCase(HttpString.Q)) {
-                        qvalue = new Float(p.getValue());
+                    if (p.name().equalsIgnoreCase(HttpString.Q)) {
+                        qvalue = new Float(p.value());
                     }
                 } catch (ParserException e) {
                     e.printStackTrace();
@@ -52,20 +52,8 @@ public class Coding implements AppendableToByte {
         }
     }
 
-    public ContentCodingSort getContentCoding() {
-        return contentCoding;
-    }
-
-    public void getContentCoding(ContentCodingSort contentCoding) {
-        this.contentCoding = contentCoding;
-    }
-
-    public Float getQvalue() {
-        return qvalue;
-    }
-
-    public void setQvalue(Float qvalue) {
-        this.qvalue = qvalue;
+    public boolean isMatch(Coding other) {
+        return contentCoding == ContentCodingSort.Asterisk || contentCoding == other.contentCoding;
     }
 
     public boolean isMatch(String compare) {
@@ -79,4 +67,23 @@ public class Coding implements AppendableToByte {
     public boolean isAsterisk() {
         return contentCoding == ContentCodingSort.Asterisk;
     }
+
+    public ContentCodingSort contentCoding() {
+        return contentCoding;
+    }
+
+    public void contentCoding(ContentCodingSort contentCoding) {
+        this.contentCoding = contentCoding;
+    }
+
+    public Float qvalue() {
+        return qvalue;
+    }
+
+    public void qvalue(Float qvalue) {
+        this.qvalue = qvalue;
+    }
 }
+
+
+

@@ -25,6 +25,11 @@ public class HeaderValueAcceptEncoding extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        codingList.clear();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -49,9 +54,7 @@ public class HeaderValueAcceptEncoding extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray(HttpString.Comma, codingList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
     @Override
@@ -62,13 +65,39 @@ public class HeaderValueAcceptEncoding extends HeaderValue {
         return getQvalue(ContentCodingSort.fromString(compare));
     }
 
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Accept_Encoding) {
+            HeaderValueAcceptEncoding other2 = (HeaderValueAcceptEncoding) other;
+            int includedCount = 0;
+            for (Coding c : other2.codingList) {
+                if (isInclude(c)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.codingList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(Coding other) {
+        for (Coding c : codingList) {
+            if (c.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public float getQvalue(ContentCodingSort coding) {
         float qvalue = -1;
         float qvalue_asterisk = -1;
 
         for (Coding cd : codingList) {
-            float cd_qvalue = (cd.getQvalue() == null) ? 1 : cd.getQvalue();
-            if (cd.getContentCoding() == coding) {
+            float cd_qvalue = (cd.qvalue() == null) ? 1 : cd.qvalue();
+            if (cd.contentCoding() == coding) {
                 qvalue = Math.max(cd_qvalue, qvalue);
             } else if (cd.isAsterisk()) {
                 qvalue_asterisk = Math.max(cd_qvalue, qvalue_asterisk);
@@ -97,9 +126,9 @@ public class HeaderValueAcceptEncoding extends HeaderValue {
         ContentCodingSort result = ContentCodingSort.Unknown;
         float maxQvalue = -1;
         for (Coding c : codingList) {
-            float qvalue = (c.getQvalue() == null) ? 1 : c.getQvalue();
+            float qvalue = (c.qvalue() == null) ? 1 : c.qvalue();
             if (maxQvalue < qvalue) {
-                result = c.getContentCoding();
+                result = c.contentCoding();
                 maxQvalue = qvalue;
             }
         }

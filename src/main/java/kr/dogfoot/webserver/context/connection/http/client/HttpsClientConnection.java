@@ -45,7 +45,7 @@ public class HttpsClientConnection extends HttpClientConnection {
     }
 
     @Override
-    public boolean adjustSSL() {
+    public boolean isAdjustSSL() {
         return true;
     }
 

@@ -131,7 +131,7 @@ public class ResourceSetting {
 
         public void addNotServiceFilePatternOnlyInherited(DirectorySetting ds) {
             for (NotServicedFile nsr : ds.notServicedFiles()) {
-                if (nsr.inheritable()) {
+                if (nsr.isInheritable()) {
                     resultForNotServiceFilenamePattern.add(nsr.namePatten());
                 }
             }

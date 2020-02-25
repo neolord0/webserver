@@ -39,13 +39,14 @@ public class HttpProxyConnectionManager {
         if (conn != null) {
             Message.debug(context.httpProxy(), "release and close http proxy connection");
 
-            _releaseAndClose(conn);
+            close(conn);
+            addToPool(conn);
 
             context.httpProxy(null);
         }
     }
 
-    private void _releaseAndClose(HttpProxyConnection conn) {
+    public void close(HttpProxyConnection conn) {
         if (conn.channel() != null) {
             try {
                 conn.channel().close();
@@ -56,11 +57,10 @@ public class HttpProxyConnectionManager {
             conn.backendServerInfo().decreaseConnectCount();
             conn.channel(null);
         }
-
-        addToPool(conn);
     }
 
     private void addToPool(HttpProxyConnection connection) {
         connectionPool.offer(connection);
     }
+
 }

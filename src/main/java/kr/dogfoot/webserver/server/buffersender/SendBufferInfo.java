@@ -95,14 +95,14 @@ public class SendBufferInfo {
     }
 
     public boolean isHttps() {
-        return protocol == Protocol.Client && context.clientConnection().adjustSSL();
+        return protocol == Protocol.Client && context.clientConnection().isAdjustSSL();
     }
 
-    public boolean wrapped() {
+    public boolean isWrapped() {
         return wrapped;
     }
 
-    public void wrapped(boolean wrapped) {
+    public void setWrapped(boolean wrapped) {
         this.wrapped = wrapped;
     }
 

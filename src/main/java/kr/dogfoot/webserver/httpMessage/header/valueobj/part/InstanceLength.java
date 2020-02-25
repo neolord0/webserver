@@ -14,6 +14,11 @@ public class InstanceLength implements AppendableToByte {
     public InstanceLength() {
     }
 
+    public void reset() {
+        isAsterisk = false;
+        length = 0;
+    }
+
     public void parse(byte[] value, ParseState parentPS) throws ParserException {
         if (parentPS.end - parentPS.start == 1
                 && value[parentPS.start] == HttpString.Asterisk) {
@@ -34,20 +39,28 @@ public class InstanceLength implements AppendableToByte {
         }
     }
 
+    public boolean isMatch(InstanceLength other) {
+        if (isAsterisk == other.isAsterisk
+                && length == other.length) {
+            return true;
+        }
+        return false;
+    }
+
+
     public boolean isAsterisk() {
         return isAsterisk;
     }
 
-    public void setAsterisk(boolean asterisk) {
+    public void isAsterisk(boolean asterisk) {
         isAsterisk = asterisk;
     }
 
-    public long getLength() {
+    public long length() {
         return length;
     }
 
-    public void setLength(long length) {
+    public void length(long length) {
         this.length = length;
     }
-
 }

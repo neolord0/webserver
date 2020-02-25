@@ -91,4 +91,20 @@ public class StringUtils {
         return newString(bytes, StandardCharsets.UTF_8);
     }
 
+    public static boolean equalsWithNull(String str1, String str2) {
+        if (str1 == null) {
+            return str2 == null;
+        } else {
+            return str1.equals(str2);
+        }
+    }
+
+    public static boolean equalsIgnoreCaseWithNull(String str1, String str2) {
+        if (str1 == null) {
+            return str2 == null;
+        } else {
+            return str1.equalsIgnoreCase(str2);
+        }
+    }
 }
+

@@ -12,7 +12,7 @@ public class ContentRangeInfoMaker {
         }
 
         ContentRange[] contentRanges = makeContentRangeArray(range.rangeList(), contentLength);
-        if (invalid(contentRanges)) {
+        if (isInvalid(contentRanges)) {
             return new ContentRangeInfo();
         } else {
             sort(contentRanges);
@@ -25,7 +25,7 @@ public class ContentRangeInfoMaker {
         }
     }
 
-    private static boolean invalid(ContentRange[] contentRanges) {
+    private static boolean isInvalid(ContentRange[] contentRanges) {
         for (ContentRange cr : contentRanges) {
             if (cr == null) {
                 return true;
@@ -96,7 +96,7 @@ public class ContentRangeInfoMaker {
             if (contentRanges[i] != null) {
                 for (int j = i + 1; j < count; j++) {
                     if (contentRanges[j] != null) {
-                        if (contentRanges[i].merge(contentRanges[j])) {
+                        if (contentRanges[i].isMerge(contentRanges[j])) {
                             contentRanges[j] = null;
                         }
                     }

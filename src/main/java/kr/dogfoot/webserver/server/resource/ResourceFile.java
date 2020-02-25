@@ -1,7 +1,7 @@
 package kr.dogfoot.webserver.server.resource;
 
-import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.server.host.HostObjects;
 import kr.dogfoot.webserver.server.resource.look.LookResult;
 import kr.dogfoot.webserver.server.resource.look.LookState;
@@ -21,6 +21,7 @@ public class ResourceFile extends Resource {
     private long length;
     private long lastModified;
     private byte[] etag;
+    private byte[] etagWithDQute;
 
     public ResourceFile(ResourceDirectory parentDirectory) {
         this.parentDirectory = parentDirectory;
@@ -99,6 +100,7 @@ public class ResourceFile extends Resource {
         length = file.length();
         lastModified = file.lastModified();
         etag = makeEtag();
+        etagWithDQute = makeETagWithDQute();
     }
 
     private byte[] makeEtag() {
@@ -106,17 +108,21 @@ public class ResourceFile extends Resource {
             byte[] part1 = Long.toString(length, 32).getBytes();
             byte[] part2 = Long.toString(lastModified, 32).getBytes();
 
-            OutputBuffer buffer =  OutputBuffer.pooledObject();
-            buffer.append(HttpString.DQuote)
-                    .append(part1)
+            OutputBuffer buffer = OutputBuffer.pooledObject();
+            buffer.append(part1)
                     .append(HttpString.Colon)
-                    .append(part2)
-                    .append(HttpString.DQuote);
-            byte[] etag = buffer.getBytes();
-            OutputBuffer.release(buffer);
-            return etag;
+                    .append(part2);
+            return buffer.getBytesAndRelease();
         }
         return null;
+    }
+
+    private byte[] makeETagWithDQute() {
+        byte[] etagWithDQute = new byte[etag.length + 2];
+        etagWithDQute[0] = HttpString.DQuote;
+        System.arraycopy(etag, 0, etagWithDQute, 1, etag.length);
+        etagWithDQute[etag.length + 1] = HttpString.DQuote;
+        return etagWithDQute;
     }
 
     public byte[] mediaType() {
@@ -139,8 +145,7 @@ public class ResourceFile extends Resource {
         return etag;
     }
 
-    public byte[] getETag() {
-        return etag;
+    public byte[] etagWithDQute() {
+        return etagWithDQute;
     }
-
 }

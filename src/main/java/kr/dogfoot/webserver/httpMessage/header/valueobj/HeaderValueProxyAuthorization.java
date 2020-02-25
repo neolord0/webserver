@@ -4,20 +4,23 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class HeaderValueProxyAuthorization extends HeaderValue {
     private String type;
     private String credentials;
 
-    public HeaderValueProxyAuthorization() {
-    }
-
     @Override
     public HeaderSort sort() {
         return HeaderSort.Proxy_Authorization;
+    }
+
+    @Override
+    public void reset() {
+        type = null;
+        credentials = null;
     }
 
     @Override
@@ -43,9 +46,18 @@ public class HeaderValueProxyAuthorization extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append(type).append(HttpString.Space).append(credentials);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Proxy_Authorization) {
+            HeaderValueProxyAuthorization other2 = (HeaderValueProxyAuthorization) other;
+
+            return StringUtils.equalsIgnoreCaseWithNull(type, other2.type)
+                    && StringUtils.equalsIgnoreCaseWithNull(credentials, other2.credentials);
+        }
+        return false;
     }
 
     public String type() {

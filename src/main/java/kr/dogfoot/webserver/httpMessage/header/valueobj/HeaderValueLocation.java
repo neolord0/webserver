@@ -1,15 +1,17 @@
 package kr.dogfoot.webserver.httpMessage.header.valueobj;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
+import kr.dogfoot.webserver.httpMessage.request.URI;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 
 public class HeaderValueLocation extends HeaderValue {
-    private String absoluteURI;
+    private URI uri;
 
     public HeaderValueLocation() {
+        uri = new URI();
     }
 
     @Override
@@ -18,20 +20,44 @@ public class HeaderValueLocation extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        uri.reset();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
-        absoluteURI = new String(value, StandardCharsets.ISO_8859_1);
+        uri.parse(new String(value, StandardCharsets.ISO_8859_1));
     }
 
     @Override
     public byte[] combineValue() {
-        return absoluteURI.getBytes();
+        String s = uri.toString();
+        if (s != null) {
+            return s.getBytes();
+        } else {
+            return null;
+        }
     }
 
-    public String absoluteURI() {
-        return absoluteURI;
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Location) {
+            HeaderValueLocation other2 = (HeaderValueLocation) other;
+
+            return StringUtils.equalsWithNull(uri(), other2.uri());
+        }
+        return false;
     }
 
-    public void absoluteURI(String absoluteURI) {
-        this.absoluteURI = absoluteURI;
+    public String uri() {
+        return uri.toString();
+    }
+
+    public void uri(String uri) {
+        this.uri.parse(uri);
+    }
+
+    public URI uriObject() {
+        return uri;
     }
 }

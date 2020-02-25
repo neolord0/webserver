@@ -170,6 +170,18 @@ public class URI {
         return this;
     }
 
+
+    public boolean isSameHost(URI other) {
+        if (type == URIType.AbsoluteURI && type == other.type
+                && protocol == other.protocol
+                && ipOrDomain.equalsIgnoreCase(other.ipOrDomain)
+                && port == other.port) {
+            return true;
+        }
+        return false;
+    }
+
+
     public String path() {
         return path;
     }
@@ -193,5 +205,14 @@ public class URI {
         protocol = backendServerInfo.protocol();
         ipOrDomain = backendServerInfo.ipOrDomain();
         port = backendServerInfo.port();
+    }
+
+    public void copyFrom(URI source) {
+        type = source.type;
+        protocol = source.protocol;
+        ipOrDomain = source.ipOrDomain;
+        port = source.port;
+        path = source.path;
+        queryString = source.queryString;
     }
 }

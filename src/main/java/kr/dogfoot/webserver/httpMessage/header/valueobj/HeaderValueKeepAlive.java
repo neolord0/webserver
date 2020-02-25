@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -20,6 +19,12 @@ public class HeaderValueKeepAlive extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Keep_Alive;
+    }
+
+    @Override
+    public void reset() {
+        timeout = -1;
+        max = -1;
     }
 
     @Override
@@ -65,10 +70,18 @@ public class HeaderValueKeepAlive extends HeaderValue {
         buffer.append(HttpString.Timeout, HttpString.Equal, timeout)
                 .append(HttpString.Separator_Comma)
                 .append(HttpString.Max, HttpString.Equal, max);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
 
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Keep_Alive) {
+            HeaderValueKeepAlive other2 = (HeaderValueKeepAlive) other;
+
+            return timeout == other2.timeout
+                    && max == other2.max;
+        }
+        return false;
     }
 
     public int timeout() {

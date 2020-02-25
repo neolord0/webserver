@@ -21,11 +21,11 @@ public class NotServicedFile {
         this.namePatten = namePatten;
     }
 
-    public boolean inheritable() {
+    public boolean isInheritable() {
         return inheritable;
     }
 
-    public void inheritable(boolean inheritable) {
+    public void setInheritable(boolean inheritable) {
         this.inheritable = inheritable;
     }
 }

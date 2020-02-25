@@ -6,6 +6,7 @@ import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class HeaderValueAuthorization extends HeaderValue {
     private String type;
@@ -14,6 +15,12 @@ public class HeaderValueAuthorization extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Authorization;
+    }
+
+    @Override
+    public void reset() {
+        type = null;
+        credentials = null;
     }
 
     @Override
@@ -39,9 +46,18 @@ public class HeaderValueAuthorization extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.append(type).append(HttpString.Space).append(credentials);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Authorization) {
+            HeaderValueAuthorization other2 = (HeaderValueAuthorization) other;
+
+            return StringUtils.equalsIgnoreCaseWithNull(type, other2.type)
+                    && StringUtils.equalsIgnoreCaseWithNull(credentials, other2.credentials);
+        }
+        return false;
     }
 
     public String type() {

@@ -38,8 +38,8 @@ public class TransferEncoding implements AppendableToByte {
                 try {
                     p.parse(value, ps);
 
-                    if (p.getName().equalsIgnoreCase(HttpString.Q)) {
-                        qvalue = new Float(p.getValue());
+                    if (p.name().equalsIgnoreCase(HttpString.Q)) {
+                        qvalue = new Float(p.value());
                     } else {
                         parameterList.add(p);
                     }
@@ -63,24 +63,27 @@ public class TransferEncoding implements AppendableToByte {
         }
     }
 
-    public TransferCodingSort getSort() {
+    public boolean isMatch(TransferEncoding other) {
+        return sort == other.sort;
+    }
+
+    public TransferCodingSort sort() {
         return sort;
     }
 
-    public void setSort(TransferCodingSort sort) {
+    public void sort(TransferCodingSort sort) {
         this.sort = sort;
     }
 
-    public Float getQvalue() {
+    public Float qvalue() {
         return qvalue;
     }
 
-    public void setQvalue(Float qvalue) {
+    public void qvalue(Float qvalue) {
         this.qvalue = qvalue;
     }
 
     public ArrayList<Parameter> getParameterList() {
         return parameterList;
     }
-
 }

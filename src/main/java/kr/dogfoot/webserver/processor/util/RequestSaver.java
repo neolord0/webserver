@@ -3,7 +3,6 @@ package kr.dogfoot.webserver.processor.util;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 
 import java.nio.channels.SocketChannel;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,7 +19,6 @@ public class RequestSaver {
             queue = new ConcurrentLinkedQueue<Request>();
             storage.put(channel, queue);
         }
-        request.requestTime(new Date().getTime());
         queue.add(request);
     }
 

@@ -15,6 +15,11 @@ public class HeaderValueAge extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        ageValue = 0;
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -28,14 +33,22 @@ public class HeaderValueAge extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendLong(ageValue);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
     @Override
     public Long getNumberValue() {
         return ageValue;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Age) {
+            HeaderValueAge other2 = (HeaderValueAge) other;
+
+            return ageValue == other2.ageValue;
+        }
+        return false;
     }
 
     public long ageValue() {

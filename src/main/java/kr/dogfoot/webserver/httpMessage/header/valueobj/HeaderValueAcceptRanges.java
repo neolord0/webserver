@@ -6,6 +6,7 @@ import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 import java.util.ArrayList;
 
@@ -20,6 +21,11 @@ public class HeaderValueAcceptRanges extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Accept_Ranges;
+    }
+
+    @Override
+    public void reset() {
+        rangeUnitList.clear();
     }
 
     @Override
@@ -49,10 +55,35 @@ public class HeaderValueAcceptRanges extends HeaderValue {
         } else {
             buffer.append("none");
         }
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Accept_Ranges) {
+            HeaderValueAcceptRanges other2 = (HeaderValueAcceptRanges) other;
+            int includedCount = 0;
+            for (String ru : other2.rangeUnitList) {
+                if (isInclude(ru)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.rangeUnitList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(String other) {
+        for (String ru : rangeUnitList) {
+            if (StringUtils.equalsWithNull(ru, other)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public void addRangeUnit(String rangeUnit) {
         rangeUnitList.add(rangeUnit);

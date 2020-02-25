@@ -22,6 +22,12 @@ public class ContentRange implements AppendableToByte {
         this.lastPos = lastPos;
     }
 
+    public void reset() {
+        isAsterisk = false;
+        firstPos = 0;
+        lastPos = 0;
+    }
+
     public void parse(byte[] value, ParseState parentPS) throws ParserException {
         if (parentPS.end - parentPS.start == 1
                 && value[parentPS.start] == HttpString.Asterisk) {
@@ -59,31 +65,7 @@ public class ContentRange implements AppendableToByte {
         }
     }
 
-    public boolean isAsterisk() {
-        return isAsterisk;
-    }
-
-    public void setAsterisk(boolean asterisk) {
-        isAsterisk = asterisk;
-    }
-
-    public long getFirstPos() {
-        return firstPos;
-    }
-
-    public void setFirstPos(long firstPos) {
-        this.firstPos = firstPos;
-    }
-
-    public long getLastPos() {
-        return lastPos;
-    }
-
-    public void setLastPos(long lastPos) {
-        this.lastPos = lastPos;
-    }
-
-    public boolean merge(ContentRange other) {
+    public boolean canMerge(ContentRange other) {
         if (this.firstPos <= other.firstPos && this.lastPos >= other.lastPos) {
             return true;
         } else if (this.firstPos >= other.firstPos && this.lastPos <= other.lastPos) {
@@ -110,5 +92,38 @@ public class ContentRange implements AppendableToByte {
         } else {
             return OutputBuffer.getWriteSize_Long(firstPos) + 1 + OutputBuffer.getWriteSize_Long(lastPos);
         }
+    }
+
+    public boolean isMatch(ContentRange other) {
+        if (isAsterisk == other.isAsterisk
+                && firstPos == other.firstPos
+                && lastPos == other.lastPos) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isAsterisk() {
+        return isAsterisk;
+    }
+
+    public void isAsterisk(boolean asterisk) {
+        isAsterisk = asterisk;
+    }
+
+    public long firstPos() {
+        return firstPos;
+    }
+
+    public void firstPos(long firstPos) {
+        this.firstPos = firstPos;
+    }
+
+    public long lastPos() {
+        return lastPos;
+    }
+
+    public void lastPos(long lastPos) {
+        this.lastPos = lastPos;
     }
 }

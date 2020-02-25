@@ -3,7 +3,7 @@ package kr.dogfoot.webserver.httpMessage.header.valueobj.part;
 public enum CacheDirectiveSort {
     Unknown(""),
     NoCache("no-cache"),
-    NoState("no-state"),
+    NoStore("no-store"),
     MaxAge("max-age"),
     MaxStale("max-stale"),
     MinFresh("min-fresh"),
@@ -29,10 +29,10 @@ public enum CacheDirectiveSort {
                 }
             }
         }
-        return getUnknown(str);
+        return unknown(str);
     }
 
-    private static CacheDirectiveSort getUnknown(String str) {
+    private static CacheDirectiveSort unknown(String str) {
         CacheDirectiveSort cds = CacheDirectiveSort.Unknown;
         cds.str = str;
         return cds;

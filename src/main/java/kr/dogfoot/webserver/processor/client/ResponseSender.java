@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ResponseSender extends GeneralProcessor {
-    private static int ResponseSenderID = 0;
     private static final String Error_TooManyFielsOpen = "(Too many open files)";
+    private static int ResponseSenderID = 0;
 
     public ResponseSender(Server server) {
         super(server, ResponseSenderID++);
@@ -35,14 +35,29 @@ public class ResponseSender extends GeneralProcessor {
                 });
     }
 
-    void sendResponse(Context context) {
+    private void sendResponse(Context context) {
         if (context.clientConnection().senderStatus().stateIsBeforeBody()) {
             Message.debug(context, "Send response");
+
+            // test
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            try {
+                System.out.println(context.clientConnection().channel().getRemoteAddress() + " <== " + context.clientConnection().channel().getLocalAddress());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(context.response());
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+            if (context.usingStoredResponse() != null) {
+                context.usingStoredResponse().lockUsing();
+            }
 
             ToClientCommon.sendStatusLine_Headers(context, server);
 
             SenderStatus ss = context.clientConnection().senderStatus();
             ss.changeState(SendingState.Body);
+
         }
 
         sendBodyBlock(context);
@@ -50,7 +65,7 @@ public class ResponseSender extends GeneralProcessor {
 
     private void sendBodyBlock(Context context) {
         SenderStatus ss = context.clientConnection().senderStatus();
-        if (context.response().isBodyFile() && ss.openedResourceFile() == false) {
+        if (context.response().isBodyFile() && ss.isOpenedResourceFile() == false) {
             openResourceFile(context);
         }
         if (context.response().isBodyFile()) {
@@ -114,7 +129,12 @@ public class ResponseSender extends GeneralProcessor {
     }
 
     private void onEndRequest(Context context) {
-        if (context.response().code().isError()) {
+        if (context.usingStoredResponse() != null) {
+            context.usingStoredResponse().freeUsing();
+            context.usingStoredResponse(null);
+        }
+
+        if (context.response().statusCode().isError()) {
             bufferSender().sendCloseSignalForClient(context);
         } else {
             if (context.response().hasKeepAlive() == true) {

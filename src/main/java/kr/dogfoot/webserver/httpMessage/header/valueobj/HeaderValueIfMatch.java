@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
@@ -23,6 +22,12 @@ public class HeaderValueIfMatch extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.If_Match;
+    }
+
+    @Override
+    public void reset() {
+        isAsterisk = false;
+        entityTagList.clear();
     }
 
     @Override
@@ -56,11 +61,38 @@ public class HeaderValueIfMatch extends HeaderValue {
         if (isAsterisk) {
             buffer.append(HttpString.Asterisk);
         } else {
-            buffer.appendStringArray(HttpString.Comma, entityTagList.toArray());
+            buffer.appendByteArrayQuoted(HttpString.Comma, entityTagList.toArray(Zero_Array));
         }
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.If_Match) {
+            HeaderValueIfMatch other2 = (HeaderValueIfMatch) other;
+            if (isAsterisk == other2.isAsterisk) {
+                return true;
+            }
+            int includedCount = 0;
+            for (byte[] entryTag : other2.entityTagList) {
+                if (isInclude(entryTag)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.entityTagList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isInclude(byte[] other) {
+        for (byte[] entryTag : entityTagList) {
+            if (BytesUtil.compareWithNull(entryTag, other) == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isAsterisk() {
@@ -77,15 +109,6 @@ public class HeaderValueIfMatch extends HeaderValue {
 
     public byte[][] entityTags() {
         return entityTagList.toArray(Zero_Array);
-    }
-
-    public boolean isMatch(byte[] etag) {
-        for (byte[] etag2 : entityTagList) {
-            if (BytesUtil.compare(etag, 0, etag.length, etag2) == 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

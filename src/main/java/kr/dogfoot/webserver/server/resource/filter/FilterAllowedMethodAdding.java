@@ -1,10 +1,9 @@
 package kr.dogfoot.webserver.server.resource.filter;
 
 import kr.dogfoot.webserver.context.Context;
-import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAllow;
-import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
+import kr.dogfoot.webserver.httpMessage.util.ResponseSetter;
 import kr.dogfoot.webserver.server.Server;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class FilterAllowedMethodAdding extends Filter {
 
     @Override
     public boolean inboundProcess(Context context, Server server) {
-        if (includedAllowedMethod(context.request().method()) == false) {
+        if (isIncludedAllowedMethod(context.request().method()) == false) {
             context.response(server.objects().responseMaker().new_405MethodNotAllowed(context.request(), allowedMethods()));
             return false;
         }
@@ -28,18 +27,10 @@ public class FilterAllowedMethodAdding extends Filter {
 
     @Override
     public boolean outboundProcess(Context context, Server server) {
-        if (context.request().method() == MethodType.HEAD && context.response().code() == StatusCode.Code200) {
-            context.response().addHeader(HeaderSort.Allow, allowHeaderValue());
+        if (context.request().method() == MethodType.HEAD && context.response().statusCode() == StatusCode.Code200) {
+            ResponseSetter.setAllow(context.response(), allowedMethodList);
         }
         return true;
-    }
-
-    private byte[] allowHeaderValue() {
-        HeaderValueAllow allow = new HeaderValueAllow();
-        for (MethodType mt : allowedMethodList) {
-            allow.addMethodType(mt);
-        }
-        return allow.combineValue();
     }
 
     @Override
@@ -48,12 +39,12 @@ public class FilterAllowedMethodAdding extends Filter {
     }
 
     public void addAllowedMethod(MethodType mt) {
-        if (includedAllowedMethod(mt) == false) {
+        if (isIncludedAllowedMethod(mt) == false) {
             allowedMethodList.add(mt);
         }
     }
 
-    private boolean includedAllowedMethod(MethodType mt) {
+    private boolean isIncludedAllowedMethod(MethodType mt) {
         for (MethodType mt2 : allowedMethodList) {
             if (mt2 == mt) {
                 return true;

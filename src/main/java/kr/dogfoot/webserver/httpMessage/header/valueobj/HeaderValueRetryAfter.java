@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpDateMaker;
 
@@ -12,12 +11,15 @@ public class HeaderValueRetryAfter extends HeaderValue {
     private Long date;
     private Long deltaSeconds;
 
-    public HeaderValueRetryAfter() {
-    }
-
     @Override
     public HeaderSort sort() {
         return HeaderSort.Retry_After;
+    }
+
+    @Override
+    public void reset() {
+        date = null;
+        deltaSeconds = null;
     }
 
     @Override
@@ -51,9 +53,7 @@ public class HeaderValueRetryAfter extends HeaderValue {
         } else {
             buffer.appendLong(deltaSeconds);
         }
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
     @Override
@@ -64,6 +64,27 @@ public class HeaderValueRetryAfter extends HeaderValue {
     @Override
     public Long getDateValue() {
         return date;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Retry_After) {
+            HeaderValueRetryAfter other2 = (HeaderValueRetryAfter) other;
+            boolean equalDate;
+            if (date == null) {
+                equalDate = other2.date == null;
+            } else {
+                equalDate = date.equals(other2.date);
+            }
+            boolean equalDeltaSeconds;
+            if (deltaSeconds == null) {
+                equalDeltaSeconds = other2.deltaSeconds == null;
+            } else {
+                equalDeltaSeconds = deltaSeconds.equals(other2.deltaSeconds);
+            }
+            return equalDate && equalDeltaSeconds;
+        }
+        return false;
     }
 
     public Long date() {

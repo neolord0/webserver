@@ -10,8 +10,9 @@ public class BackendServerInfo {
     private String ipOrDomain;
     private int port;
     private InetSocketAddress socketAddress;
-    private int keepAlive_timeout;
-    private int idle_timeout;
+    private long keepAlive_timeout;
+    private long idle_timeout;
+    private CacheOption cacheOption;
 
     private volatile int connectCount;
 
@@ -20,6 +21,7 @@ public class BackendServerInfo {
         this.index = index;
 
         connectCount = 0;
+        cacheOption = new CacheOption();
     }
 
     public int index() {
@@ -72,19 +74,19 @@ public class BackendServerInfo {
         return socketAddress.toString();
     }
 
-    public int keepAlive_timeout() {
+    public long keepAlive_timeout() {
         return keepAlive_timeout;
     }
 
-    public void keepAlive_timeout(int timeoutSecond) {
+    public void keepAlive_timeout(long timeoutSecond) {
         this.keepAlive_timeout = timeoutSecond;
     }
 
-    public int idle_timeout() {
+    public long idle_timeout() {
         return idle_timeout;
     }
 
-    public void idle_timeout(int idle_timeout) {
+    public void idle_timeout(long idle_timeout) {
         this.idle_timeout = idle_timeout;
     }
 
@@ -98,5 +100,9 @@ public class BackendServerInfo {
 
     public synchronized void decreaseConnectCount() {
         connectCount--;
+    }
+
+    public CacheOption cacheOption() {
+        return cacheOption;
     }
 }

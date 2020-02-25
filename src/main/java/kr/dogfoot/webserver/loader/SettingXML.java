@@ -11,6 +11,8 @@ public class SettingXML {
     public final static String Pooled_Thread_Count = "pooled_thread_count";
     public final static String Server_Header_Node = "server_header";
     public final static String Keep_Alive_Node = "keep_alive";
+    public final static String Cache_Info_Node = "cache_info";
+    public final static String Storage_Path = "storage_path";
     public final static String Root_Path_Node = "root_path";
     public final static String Custom_Media_Types_Node = "custom_media_types";
     public final static String SSL_Config_Node = "ssl_config";
@@ -21,6 +23,7 @@ public class SettingXML {
     public final static String File_Path_Node = "file_path";
     public final static String Proxy_Info_Node = "proxy_info";
     public final static String Backend_Server_Node = "backend_server";
+    public final static String Cache_Option_Node = "cache_option";
     public final static String Proxy_Filters_Node = "proxy_filters";
     public final static String Resource_Setting_Node = "resource_setting";
     public final static String Directory_Node = "directory";
@@ -62,6 +65,8 @@ public class SettingXML {
     public final static String Send_Attr = "send";
     public final static String Timeout_Attr = "timeout";
     public final static String Max_Attr = "max";
+    public final static String Max_Size_Attr = "max_size";
+    public final static String Inactive_Time_Attr = "inactive_time";
 
     public final static String Name_Attr = "name";
     public final static String Domain_Attr = "domain";
@@ -81,6 +86,8 @@ public class SettingXML {
     public final static String IP_Or_Domain_Attr = "ip_or_domain";
     public final static String Keep_Alive_Timeout_Attr = "keep_alive_timeout";
     public final static String Idle_Timeout_Attr = "idle_timeout";
+    public final static String Use_Attr = "use";
+    public final static String Default_Expires_Attr = "default_expires";
     public final static String URL_Attr = "url";
     public final static String Name_Pattern_Attr = "name_pattern";
     public final static String Inheritable_Attr = "inheritable";
@@ -105,14 +112,5 @@ public class SettingXML {
     public final static String Least_Connection_Value = "least_connection";
 
     public final static String Comma = ",";
-
-    public static String getCDATA(Element element) {
-        Node child = element.getFirstChild();
-        if (child instanceof CharacterData) {
-            CharacterData cd = (CharacterData) child;
-            return cd.getData();
-        }
-        return "";
-    }
 
 }

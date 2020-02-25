@@ -23,10 +23,10 @@ public enum TransferCodingSort {
                 }
             }
         }
-        return getUnknown(str);
+        return unknown(str);
     }
 
-    private static TransferCodingSort getUnknown(String str) {
+    private static TransferCodingSort unknown(String str) {
         TransferCodingSort ccs = TransferCodingSort.Unknown;
         ccs.str = str;
         return ccs;

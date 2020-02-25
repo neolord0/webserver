@@ -3,16 +3,14 @@ package kr.dogfoot.webserver.server.resource.filter;
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAcceptEncoding;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentRange;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueVary;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.util.ResponseSetter;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.object.BufferManager;
 import kr.dogfoot.webserver.server.resource.filter.part.condition.HeaderConditionList;
 import kr.dogfoot.webserver.util.bytes.Compressor;
-import kr.dogfoot.webserver.util.bytes.ToBytes;
 
 public class FilterContentEncoding extends Filter {
     private HeaderConditionList applyCondition;
@@ -72,44 +70,17 @@ public class FilterContentEncoding extends Filter {
             response.bodyBytes(compressed);
             response.bodyFile(null);
             if (response.isPartial()) {
-                setContentRange(response, compressed.length);
+                ResponseSetter.setLengthOfContentRange(response, compressed.length);
                 if (response.rangePartCount() != 0) {
-                    response.changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(response.calculateContextLength()));
+                    ResponseSetter.setContentLength(response, response.calculateContextLength());
                 }
             } else {
                 response.range().lastPos(compressed.length - 1);
-                response.changeHeader(HeaderSort.Content_Length, ToBytes.fromInt(compressed.length));
+                ResponseSetter.setContentLength(response, compressed.length);
             }
-            response.setHeader(HeaderSort.Content_Encoding, contentCoding.toString().getBytes());
-
-            appendVaryHeader(response);
+            ResponseSetter.addContentEncoding(response, contentCoding);
+            ResponseSetter.addFieldNameOfVaryHeader(response, HeaderSort.Accept_Encoding);
         }
-    }
-
-    private void setContentRange(Response response, int length) {
-        HeaderValueContentRange contentRange = (HeaderValueContentRange) response.getHeaderValueObj(HeaderSort.Content_Range);
-        if (contentRange != null) {
-            contentRange.instanceLength().setLength(length);
-            response.changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
-        }
-
-        for (int index = 0; index < response.rangePartCount(); index++) {
-            contentRange = (HeaderValueContentRange) response.rangePart(index).getHeaderValueObj(HeaderSort.Content_Range);
-            if (contentRange != null) {
-                contentRange.instanceLength().setLength(length);
-                response.rangePart(index).changeHeader(HeaderSort.Content_Range, contentRange.combineValue());
-            }
-        }
-    }
-
-    private void appendVaryHeader(Response response) {
-        HeaderValueVary vary = (HeaderValueVary) response.getHeaderValueObj(HeaderSort.Vary);
-        if (vary == null) {
-            vary = new HeaderValueVary();
-        }
-        vary.addFieldName(HeaderSort.Accept_Encoding);
-
-        response.setHeader(HeaderSort.Vary, vary.combineValue());
     }
 
     @Override

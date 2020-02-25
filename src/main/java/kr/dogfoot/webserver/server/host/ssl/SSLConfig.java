@@ -210,7 +210,7 @@ public class SSLConfig {
         return jsseCipherNames;
     }
 
-    public boolean getHonorCipherOrder() {
+    public boolean isHonorCipherOrder() {
         return honorCipherOrder;
     }
 

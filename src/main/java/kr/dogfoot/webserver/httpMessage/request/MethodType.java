@@ -76,6 +76,14 @@ public enum MethodType {
         return mt;
     }
 
+    public boolean isSafe() {
+        if (this == GET || this == HEAD) {
+            return true;
+        }
+        return false;
+    }
+
+
     public byte[] getBytes() {
         return value;
     }
@@ -83,4 +91,5 @@ public enum MethodType {
     public byte ajpCode() {
         return ajpCode;
     }
+
 }

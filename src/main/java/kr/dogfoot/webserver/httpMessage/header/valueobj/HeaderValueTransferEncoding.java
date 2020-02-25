@@ -5,7 +5,6 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.part.TransferCodingSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -19,9 +18,18 @@ public class HeaderValueTransferEncoding extends HeaderValue {
         transferCodingSortList = new ArrayList<TransferCodingSort>();
     }
 
+    public HeaderValueTransferEncoding(ArrayList<TransferCodingSort> transferCodingSortList) {
+        this.transferCodingSortList = transferCodingSortList;
+    }
+
     @Override
     public HeaderSort sort() {
         return HeaderSort.Transfer_Encoding;
+    }
+
+    @Override
+    public void reset() {
+        transferCodingSortList.clear();
     }
 
     @Override
@@ -46,9 +54,34 @@ public class HeaderValueTransferEncoding extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendStringArray(HttpString.Comma, transferCodingSortList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Transfer_Encoding) {
+            HeaderValueTransferEncoding other2 = (HeaderValueTransferEncoding) other;
+            int includedCount = 0;
+            for (TransferCodingSort tcs : other2.transferCodingSortList) {
+                if (isInclude(tcs)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.transferCodingSortList.size()) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    private boolean isInclude(TransferCodingSort other) {
+        for (TransferCodingSort tcs : transferCodingSortList) {
+            if (tcs == other) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addTransferCoding(TransferCodingSort transferCoding) {

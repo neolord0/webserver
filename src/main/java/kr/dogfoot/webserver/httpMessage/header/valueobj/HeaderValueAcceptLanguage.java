@@ -24,6 +24,11 @@ public class HeaderValueAcceptLanguage extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        languageRangeList.clear();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -48,9 +53,7 @@ public class HeaderValueAcceptLanguage extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray((byte) ',', languageRangeList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
     @Override
@@ -62,11 +65,37 @@ public class HeaderValueAcceptLanguage extends HeaderValue {
 
         for (LanguageRange lr : languageRangeList) {
             if (lr.isMatch(compare)) {
-                float lr_qvalue = (lr.getQvalue() == null) ? 1 : lr.getQvalue();
+                float lr_qvalue = (lr.qvalue() == null) ? 1 : lr.qvalue();
                 qvalue = Math.max(lr_qvalue, qvalue);
             }
         }
         return qvalue;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Accept_Language) {
+            HeaderValueAcceptLanguage other2 = (HeaderValueAcceptLanguage) other;
+            int includedCount = 0;
+            for (LanguageRange lr : other2.languageRangeList) {
+                if (isInclude(lr)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.languageRangeList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(LanguageRange other) {
+        for (LanguageRange lr : languageRangeList) {
+            if (lr.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

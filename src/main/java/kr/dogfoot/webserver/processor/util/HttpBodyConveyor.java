@@ -8,13 +8,15 @@ import kr.dogfoot.webserver.context.connection.http.senderstatus.SenderStatus;
 import kr.dogfoot.webserver.parser.HttpChunkedBodyParser;
 import kr.dogfoot.webserver.parser.util.CachedReader;
 import kr.dogfoot.webserver.server.Server;
+import kr.dogfoot.webserver.server.cache.StoredResponse;
+import kr.dogfoot.webserver.server.cache.StoredResponseStorer;
 import kr.dogfoot.webserver.util.bytes.ToBytes;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 import java.nio.ByteBuffer;
 
 public class HttpBodyConveyor {
-    public static void conveyAsMuchContentLength(HttpConnection source, HttpConnection target, Server server) {
+    public static void conveyAsMuchContentLength(HttpConnection source, HttpConnection target, StoredResponse cacheResponse, Server server) {
         ByteBuffer readBuffer = source.readBuffer();
         ParserStatus ps = source.parserStatus();
         do {
@@ -32,8 +34,8 @@ public class HttpBodyConveyor {
             }
 
             if (length > 0) {
-                writeBuffer.put(readBuffer.array(), readBuffer.position(), length);
-                readBuffer.position(readBuffer.position() + length);
+                writeBuffer.put(readBuffer.array(), readBuffer.position(), (int) length);
+                readBuffer.position((int) (readBuffer.position() + length));
                 ps.addReadBodySize(length);
 
                 if (writeBuffer.hasRemaining() == false || ps.hasRemainingReadBodySize() == false) {
@@ -41,6 +43,10 @@ public class HttpBodyConveyor {
                     writeBuffer.flip();
 
                     if (target.isClientConnection()) {
+                        if (cacheResponse != null) {
+                            StoredResponseStorer.storeBody(cacheResponse, writeBuffer);
+                            writeBuffer.rewind();
+                        }
                         server.bufferSender().sendBufferToClient(target.context(), writeBuffer, true);
                     } else if (target.isHttpProxyConnection()) {
                         server.bufferSender().sendBufferToHttpServer(target.context(), writeBuffer, true);
@@ -57,7 +63,7 @@ public class HttpBodyConveyor {
         return false;
     }
 
-    public static void conveyUtilChunkEnd(HttpConnection source, HttpConnection target, Server server) {
+    public static void conveyUtilChunkEnd(HttpConnection source, HttpConnection target, StoredResponse cacheResponse, Server server) {
         ByteBuffer readBuffer = source.readBuffer();
         ParserStatus ps = source.parserStatus();
         CachedReader reader = source.reader();
@@ -99,11 +105,11 @@ public class HttpBodyConveyor {
         }
     }
 
-    private static void writeChunkSize(HttpConnection target, Server server, int chunkSize) {
+    private static void writeChunkSize(HttpConnection target, Server server, long chunkSize) {
         ByteBuffer writeBuffer = target.bodyBuffer();
         if (writeBuffer.remaining() >= sizeForChunkSize(chunkSize)) {
             writeBuffer
-                    .put(Integer.toHexString(chunkSize).getBytes())
+                    .put(Long.toHexString(chunkSize).getBytes())
                     .put(HttpString.CRLF);
         } else {
             sendBuffer(target, server, writeBuffer);
@@ -113,8 +119,8 @@ public class HttpBodyConveyor {
         }
     }
 
-    private static int sizeForChunkSize(int chunkSize) {
-        return ToBytes.fromInt(chunkSize).length + HttpString.CRLF.length;
+    private static long sizeForChunkSize(long chunkSize) {
+        return ToBytes.fromLong(chunkSize).length + HttpString.CRLF.length;
     }
 
     private static void sendBuffer(HttpConnection target, Server server, ByteBuffer writeBuffer) {

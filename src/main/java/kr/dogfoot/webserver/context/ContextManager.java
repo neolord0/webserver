@@ -1,9 +1,9 @@
 package kr.dogfoot.webserver.context;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ContextManager {
+    private static Context[] ZeroArray = new Context[0];
     private ConcurrentLinkedQueue<Context> contextPool;
     private ConcurrentLinkedQueue<Context> usedContexts;
 
@@ -17,25 +17,24 @@ public class ContextManager {
         if (context == null) {
             context = new Context();
         }
+
+        context.changeState(ContextState.Waiting);
+
         usedContexts.add(context);
-
-        context.resetForPooled();
-
         return context;
     }
 
-    public void releaseAll() throws IOException {
-        usedContexts.clear();
-        contextPool.clear();
-    }
-
     public void release(Context context) {
-        context.changeState(ContextState.Released);
+        context.resetForRelease();
         toPool(context);
     }
 
     private void toPool(Context context) {
         usedContexts.remove(context);
         contextPool.add(context);
+    }
+
+    public Context[] usedContexts() {
+        return usedContexts.toArray(ZeroArray);
     }
 }

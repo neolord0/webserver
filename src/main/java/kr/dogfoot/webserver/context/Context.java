@@ -3,9 +3,9 @@ package kr.dogfoot.webserver.context;
 import kr.dogfoot.webserver.context.connection.ajp.AjpProxyConnection;
 import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
-import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.request.Request;
-import kr.dogfoot.webserver.server.buffersender.BufferSender;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.server.cache.StoredResponse;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
@@ -16,11 +16,14 @@ public class Context {
     private ContextState state;
 
     private Request request;
+    private Request originalRequest;
     private Response response;
 
     private Host host;
     private Resource resource;
     private Filter[] filters;
+
+    private StoredResponse usingStoredResponse;
 
     private HttpClientConnection clientConnection;
 
@@ -28,17 +31,18 @@ public class Context {
     private AjpProxyConnection ajpProxyConnection;
     private HttpProxyConnection httpProxyConnection;
 
-    private BufferSender bufferSender;
-
     public Context() {
         state = ContextState.Waiting;
 
         request = new Request();
+        originalRequest = null;
         response = null;
 
         host = null;
         resource = null;
         filters = null;
+
+        usingStoredResponse = null;
 
         clientConnection = null;
 
@@ -46,33 +50,37 @@ public class Context {
         httpProxyConnection = null;
     }
 
-    public Context resetForPooled() {
-        state = ContextState.Waiting;
+    public void resetForRelease() {
+        state = ContextState.Released;
 
         request.reset();
+        originalRequest = null;
         response = null;
 
         host = null;
         resource = null;
         filters = null;
 
+        usingStoredResponse = null;
+
         clientConnection = null;
 
         ajpProxyConnection = null;
         httpProxyConnection = null;
-
-        return this;
     }
 
     public void resetForNextRequest() {
         state = ContextState.Waiting;
 
         request.reset();
+        originalRequest = null;
         response = null;
 
         host = null;
         resource = null;
         filters = null;
+
+        usingStoredResponse = null;
 
         clientConnection.resetForNextRequest();
 
@@ -89,6 +97,14 @@ public class Context {
 
     public Request request() {
         return request;
+    }
+
+    public Request originalRequest() {
+        return originalRequest;
+    }
+
+    public void backupOriginalRequest() {
+        originalRequest = request.clone();
     }
 
     public Response response() {
@@ -115,6 +131,14 @@ public class Context {
         this.resource = resource;
         return this;
     }
+
+    public StoredResponse usingStoredResponse() {
+        return  usingStoredResponse;
+    }
+
+    public void usingStoredResponse(StoredResponse usingStoredResponse) {
+        this.usingStoredResponse = usingStoredResponse;
+    };
 
     public Filter[] filters() {
         return filters;
@@ -182,3 +206,5 @@ public class Context {
         return this;
     }
 }
+
+

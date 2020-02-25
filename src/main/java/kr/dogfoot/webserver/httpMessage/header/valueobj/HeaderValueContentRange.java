@@ -8,6 +8,7 @@ import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class HeaderValueContentRange extends HeaderValue {
     private String unit;
@@ -22,6 +23,13 @@ public class HeaderValueContentRange extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Content_Range;
+    }
+
+    @Override
+    public void reset() {
+        unit = null;
+        contentRange.reset();
+        instanceLength.reset();
     }
 
     @Override
@@ -54,9 +62,21 @@ public class HeaderValueContentRange extends HeaderValue {
         contentRange.append(buffer);
         buffer.append('/');
         instanceLength.append(buffer);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Content_Range) {
+            HeaderValueContentRange other2 = (HeaderValueContentRange) other;
+
+            if (StringUtils.equalsIgnoreCaseWithNull(unit, other2.unit)
+                    && contentRange.isMatch(other2.contentRange)
+                    && instanceLength.isMatch(other2.instanceLength)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String unit() {

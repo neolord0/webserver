@@ -54,7 +54,7 @@ public class PooledThreadCount {
     }
 
     public void request_performing(int request_performing) {
-        this.request_performing =  request_performing;
+        this.request_performing = request_performing;
     }
 
     public int response_sending() {

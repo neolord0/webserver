@@ -37,7 +37,7 @@ public class AjpMessageMaker {
         }
         fillBoolean(buffer, ssl);                        // is_ssl
 
-        HeaderItem[] headers = request.headerList().getHeaderByteArray();
+        HeaderItem[] headers = request.headerList().getHeaderItemArray();
         fillInteger(buffer, (short) headers.length);            // num_headers
         for (HeaderItem item : headers) {
             fillHeader(buffer, item);
@@ -120,7 +120,7 @@ public class AjpMessageMaker {
         buffer.position(pos);
     }
 
-    public static void forRequestBodyChunk(ByteBuffer buffer, int chunkSize) {
+    public static void forRequestBodyChunk(ByteBuffer buffer, long chunkSize) {
         int oldPos = buffer.position();
         buffer.position(0);
         buffer.put(PreFix);
@@ -129,12 +129,12 @@ public class AjpMessageMaker {
         buffer.position(oldPos);
     }
 
-    public static void forRequestBodyChunk(ByteBuffer buffer, ByteBuffer readBuffer, int chunkSize) {
+    public static void forRequestBodyChunk(ByteBuffer buffer, ByteBuffer readBuffer, long chunkSize) {
         buffer.put(PreFix);
         buffer.putShort((short) (chunkSize + 2));
         buffer.putShort((short) chunkSize);
-        buffer.put(readBuffer.array(), readBuffer.position(), chunkSize);
-        readBuffer.position(readBuffer.position() + chunkSize);
+        buffer.put(readBuffer.array(), readBuffer.position(), (int) chunkSize);
+        readBuffer.position((int) (readBuffer.position() + chunkSize));
     }
 
     public static void forEmptyBodyChunk(ByteBuffer buffer) {

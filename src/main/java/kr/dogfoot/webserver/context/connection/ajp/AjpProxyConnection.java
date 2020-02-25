@@ -16,7 +16,7 @@ public class AjpProxyConnection extends Connection {
     private AjpProxyState state;
 
     private short packetSize;
-    private int bodyChunkSize;
+    private long bodyChunkSize;
     private boolean responseHasContentLength;
 
     private Object timerEventForIdle;
@@ -93,15 +93,15 @@ public class AjpProxyConnection extends Connection {
         this.packetSize = packetSize;
     }
 
-    public int bodyChunkSize() {
+    public long bodyChunkSize() {
         return bodyChunkSize;
     }
 
-    public void bodyChunkSize(int bodyChunkSize) {
+    public void bodyChunkSize(long bodyChunkSize) {
         this.bodyChunkSize = bodyChunkSize;
     }
 
-    public void addBodyChunkSize(int size) {
+    public void addBodyChunkSize(long size) {
         bodyChunkSize += size;
     }
 
@@ -113,7 +113,7 @@ public class AjpProxyConnection extends Connection {
         this.responseHasContentLength = responseHasContentLength;
     }
 
-    public void setTimerForIdle(Timer timer, int timeout, TimerEventHandler handler) {
+    public void setTimerForIdle(Timer timer, long timeout, TimerEventHandler handler) {
         timerEventForIdle = timer.addEvent(timeout, handler, this);
     }
 

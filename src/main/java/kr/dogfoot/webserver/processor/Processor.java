@@ -9,6 +9,7 @@ import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.Startable;
 import kr.dogfoot.webserver.server.buffersender.BufferSender;
+import kr.dogfoot.webserver.server.cache.CacheManager;
 import kr.dogfoot.webserver.server.object.BufferManager;
 import kr.dogfoot.webserver.server.object.ServerProperties;
 
@@ -74,6 +75,10 @@ public abstract class Processor implements Startable {
 
     protected ResponseMaker responseMaker() {
         return server.objects().responseMaker();
+    }
+
+    protected CacheManager cacheManager() {
+        return server.objects().cacheManager();
     }
 
     protected void closeAllConnectionFor(Context context) {

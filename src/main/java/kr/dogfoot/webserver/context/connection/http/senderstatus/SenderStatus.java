@@ -43,7 +43,7 @@ public class SenderStatus {
         this.resourceFileCh = resourceFileCh;
     }
 
-    public boolean openedResourceFile() {
+    public boolean isOpenedResourceFile() {
         return resourceFileCh != null;
     }
 

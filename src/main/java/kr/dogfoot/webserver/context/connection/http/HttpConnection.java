@@ -25,7 +25,7 @@ public abstract class HttpConnection extends Connection {
         senderStatus = new SenderStatus();
     }
 
-    public abstract boolean adjustSSL();
+    public abstract boolean isAdjustSSL();
 
     @Override
     public void resetForPooled() {

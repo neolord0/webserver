@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 public class ToAjpServer {
     public static void sendForwardRequest(Context context, Server server) {
         ByteBuffer buffer = server.objects().bufferManager().pooledBufferForAjpPacket();
-        AjpMessageMaker.forForwardRequest(buffer, context.request(), context.clientConnection().remoteAddress(), context.clientConnection().adjustSSL());
+        AjpMessageMaker.forForwardRequest(buffer, context.request(), context.clientConnection().remoteAddress(), context.clientConnection().isAdjustSSL());
         buffer.flip();
 
         server.bufferSender().sendBufferToAjpServer(context, buffer, true);

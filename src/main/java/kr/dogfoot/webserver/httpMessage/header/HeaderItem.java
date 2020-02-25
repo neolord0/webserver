@@ -3,7 +3,6 @@ package kr.dogfoot.webserver.httpMessage.header;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.FactoryForHeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 public class HeaderItem {
@@ -33,31 +32,36 @@ public class HeaderItem {
     }
 
     public HeaderValue valueObj() {
-        return valueObj;
-    }
-
-    public HeaderValue createValueObj() {
         if (valueObj == null) {
             valueObj = FactoryForHeaderValue.create(sort);
+            if (valueBytes != null) {
+                try {
+                    valueObj.parseValue(valueBytes);
+                } catch (ParserException e) {
+                    valueObj.reset();
+                }
+            }
         }
+
         return valueObj;
     }
 
-    public byte[] updateValueBytes() {
+    public void updateValueBytes() {
         if (valueObj != null) {
             valueBytes = valueObj.combineValue();
         }
-        return valueBytes;
     }
 
-    public HeaderValue updateValueObj() throws ParserException {
-        if (valueObj == null) {
-            valueObj = FactoryForHeaderValue.create(sort);
-        }
+    public void updateValueObj() {
         if (valueBytes != null && valueObj != null) {
-            valueObj.parseValue(valueBytes);
+            valueObj.reset();
+
+            try {
+                valueObj.parseValue(valueBytes);
+            } catch (ParserException e) {
+                valueObj.reset();
+            }
         }
-        return valueObj;
     }
 
     public long calculateContextLength() {

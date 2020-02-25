@@ -59,6 +59,7 @@ public class HttpString {
     public static final byte Asterisk = '*';
     public static final String Ajp_1_3 = "ajp/1.3";
     public static final String Http = "http";
+    public static final String Version_1_1 = "1.1";
     public static final String Https = "https";
     public static final String HttpWithPostFix = "http://";
     public static final String HttpsWithPostFix = "https://";
@@ -69,9 +70,11 @@ public class HttpString {
     public static final byte[] Response100Continue = "HTTP/1.1 100 Continue\r\n\n".getBytes();
     public static final byte[] Realm = "realm".getBytes();
     public static final String Basic_Auth = "Basic";
-    public static final byte[] No_Cache = "no_cache".getBytes();
+    public static final String No_Cache_String = "no_cache";
+    public static final byte[] No_Cache = No_Cache_String.getBytes();
     public static final String Charset_String = "charset";
     public static final byte[] Charset = "charset".getBytes();
+    public static final byte[] WeakValidator_Prefix = "W/".getBytes();
     private static final byte[] Multipart_Boundar_Chars =
             "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     .getBytes();
@@ -106,8 +109,6 @@ public class HttpString {
                 .append(Max)
                 .append(Equal)
                 .appendInt(max);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 }

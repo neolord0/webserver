@@ -23,7 +23,7 @@ public class RequestToBuffer {
     }
 
     private static void forHeaders(ByteBuffer buffer, Request request) {
-        for (HeaderItem item : request.headerList().getHeaderByteArray()) {
+        for (HeaderItem item : request.headerList().getHeaderItemArray()) {
             buffer
                     .put(item.sort().toString().getBytes())
                     .put(HttpString.HeaderSeparator)

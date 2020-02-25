@@ -2,7 +2,6 @@ package kr.dogfoot.webserver.processor.client;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.context.connection.http.client.HttpClientConnection;
-import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.host.Host;
@@ -48,7 +47,7 @@ public class ClientListener extends AsyncSocketProcessor {
     private void listenAllHost() throws Exception {
         for (Host h : server.hosts()) {
             if (h != null) {
-                listenServerSocket(h.port(), h.adjustSSL());
+                listenServerSocket(h.port(), h.isAdjustSSL());
             }
         }
     }
@@ -94,7 +93,6 @@ public class ClientListener extends AsyncSocketProcessor {
     @Override
     protected void onAccept(ServerSocketChannel serverChannel, long currentTime) {
         SocketChannel channel = accept(serverChannel);
-        System.out.println("AAAA");
         if (channel != null) {
             ServerSocketInfo info = serverSocketInfos.get(serverChannel);
 

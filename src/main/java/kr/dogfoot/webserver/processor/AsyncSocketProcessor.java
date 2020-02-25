@@ -9,12 +9,11 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AsyncSocketProcessor extends Processor {
-    private int selectDelayTime = 1000;
     protected ConcurrentHashMap<SocketChannel, Context> contextMap;
     protected Selector nioSelector;
-
     protected volatile boolean running;
     protected Thread thread;
+    private int selectDelayTime = 1000;
 
     protected AsyncSocketProcessor(Server server, int id) {
         super(server, id);

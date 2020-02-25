@@ -22,5 +22,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.6" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.10.2" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains:annotations:18.0.0" level="project" />
   </component>
 </module>

@@ -47,7 +47,6 @@ public class FilterExpectChecking extends Filter {
         server.bufferSender().sendBufferToClient(context, temp, false);
     }
 
-
     public HeaderConditionList failCondition() {
         return failCondition;
     }

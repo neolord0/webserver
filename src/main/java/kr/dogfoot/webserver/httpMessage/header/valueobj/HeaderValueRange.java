@@ -5,9 +5,9 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.part.Range;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 import java.util.ArrayList;
 
@@ -22,6 +22,12 @@ public class HeaderValueRange extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Range;
+    }
+
+    @Override
+    public void reset() {
+        unit = null;
+        rangeList.clear();
     }
 
     @Override
@@ -50,9 +56,35 @@ public class HeaderValueRange extends HeaderValue {
                 .append(unit)
                 .append(HttpString.Equal)
                 .appendArray(HttpString.Comma, rangeList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Range) {
+            HeaderValueRange other2 = (HeaderValueRange) other;
+            if (StringUtils.equalsIgnoreCaseWithNull(unit, other2.unit)) {
+                int includeCount = 0;
+                for (Range range : other2.rangeList) {
+                    if (isInclude(range)) {
+                        includeCount++;
+                    }
+                }
+                if (includeCount == other2.rangeList.size()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(Range other) {
+        for (Range range : rangeList) {
+            if (range.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void parseRanges(byte[] value, ParseState parentPS) throws ParserException {

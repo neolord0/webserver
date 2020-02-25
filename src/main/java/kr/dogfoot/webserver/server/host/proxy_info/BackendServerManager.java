@@ -2,10 +2,9 @@ package kr.dogfoot.webserver.server.host.proxy_info;
 
 public abstract class BackendServerManager {
     private static final int DEFAULT_BACKEND_SERVER_COUNT = 3;
-
-    private ProxyInfo proxyInfo;
     protected BackendServerInfo[] backendServers;
     protected int backendServerCount;
+    private ProxyInfo proxyInfo;
 
     protected BackendServerManager(ProxyInfo proxyInfo) {
         this.proxyInfo = proxyInfo;

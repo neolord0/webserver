@@ -328,8 +328,9 @@ public class ByteParser {
                 // rfc 1123
                 m = parseMonth(buf, ps);
                 ps.prepare();
-                if ((y = parseInt(buf, ps) - 1900) < 0)
+                if ((y = parseInt(buf, ps) - 1900) < 0) { // YYYY
                     y += 1900;
+                }
                 ps.prepare();
                 ps.separator = (byte) ':';
                 hh = parseInt(buf, ps);
@@ -342,7 +343,7 @@ public class ByteParser {
                 ps.separator = (byte) '-';
                 m = parseMonth(buf, ps);
                 ps.prepare();
-                y = parseInt(buf, ps);
+                y = parseInt(buf, ps); // YY
                 ps.prepare();
                 ps.separator = (byte) ':';
                 hh = parseInt(buf, ps);
@@ -364,7 +365,7 @@ public class ByteParser {
             ss = parseInt(buf, ps);
             ps.prepare();
             ps.separator = (byte) ' ';
-            y = parseInt(buf, ps) - 1900;
+            y = parseInt(buf, ps) - 1900; // yyyy
         }
         ParseState.release(it);
         return Date.UTC(y, m, d, hh, mm, ss);

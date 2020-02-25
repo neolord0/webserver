@@ -4,19 +4,22 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
+import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.http.HttpDateMaker;
 
 public class HeaderValueIfRange extends HeaderValue {
     private Long date;
     private byte[] entityTag;
 
-    public HeaderValueIfRange() {
-    }
-
     @Override
     public HeaderSort sort() {
         return HeaderSort.If_Range;
+    }
+
+    @Override
+    public void reset() {
+        date = null;
+        entityTag = null;
     }
 
     @Override
@@ -31,8 +34,6 @@ public class HeaderValueIfRange extends HeaderValue {
             date = new Long(dateValue);
             entityTag = null;
         } catch (ParserException e) {
-            e.printStackTrace();
-
             ps.ioff = 0;
             ps.bufend = value.length;
             ByteParser.unquote(value, ps);
@@ -55,6 +56,25 @@ public class HeaderValueIfRange extends HeaderValue {
     @Override
     public Long getDateValue() {
         return date;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.If_Range) {
+            HeaderValueIfRange other2 = (HeaderValueIfRange) other;
+            if (isEqualDate(other2) && BytesUtil.compareWithNull(entityTag, other2.entityTag) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isEqualDate(HeaderValueIfRange other) {
+        if (date == null) {
+            return other.date == null;
+        } else {
+            return date.equals(other.date);
+        }
     }
 
     public Long date() {

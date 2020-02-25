@@ -7,7 +7,8 @@ public enum WarnCodeSort {
     Code113("113", "Heuristic expiration"),
     Code199("199", "Miscellaneous warning"),
     Code214("214", "Transformation applied"),
-    Code299("299", "Miscellaneous persistent warning");
+    Code299("299", "Miscellaneous persistent warning"),
+    Unknown(null, null);
 
     private String str;
     private String defaultText;
@@ -25,8 +26,19 @@ public enum WarnCodeSort {
                 }
             }
         }
-        return null;
+        return unknown(str);
     }
+
+    private static WarnCodeSort unknown(String str) {
+        WarnCodeSort warnCodeSort = WarnCodeSort.Unknown;
+        warnCodeSort.str = str;
+        return warnCodeSort;
+    }
+
+    public boolean is1xx() {
+        return str.startsWith("1");
+    }
+
 
     public String toString() {
         return str;

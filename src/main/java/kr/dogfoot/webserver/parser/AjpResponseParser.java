@@ -1,19 +1,18 @@
 package kr.dogfoot.webserver.parser;
 
-import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.TransferCodingSort;
 import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
-import kr.dogfoot.webserver.util.bytes.OutputBuffer;
+import kr.dogfoot.webserver.httpMessage.util.ResponseSetter;
 
 import java.nio.ByteBuffer;
 
 public class AjpResponseParser {
     public static Response sendHeadersToResponse(ByteBuffer buffer, ResponseMaker responseMaker) {
         Response response = new Response()
-                .code(StatusCode.fromCode(readInt(buffer)))
+                .statusCode(StatusCode.fromCode(readInt(buffer)))
                 .reason(readBytesInString(buffer));
 
         int headerCount = readInt(buffer);
@@ -27,27 +26,14 @@ public class AjpResponseParser {
     }
 
     private static Response adjustHeader(Response response, ResponseMaker responseMaker) {
-        if (response.getHeaderItem(HeaderSort.Date) == null) {
+        if (response.hasHeader(HeaderSort.Date) == false) {
             responseMaker.addHeader_Date(response);
         }
-        if (response.getHeaderItem(HeaderSort.Server) == null) {
+        if (response.hasHeader(HeaderSort.Server) == false) {
             responseMaker.addHeader_Server(response);
         }
-
         if (response.hasContentLength() == false) {
-            HeaderItem transferEncoding = response.getHeaderItem(HeaderSort.Transfer_Encoding);
-            if (transferEncoding == null) {
-                response.addHeader(HeaderSort.Transfer_Encoding,
-                        TransferCodingSort.Chunked.toString().getBytes());
-            } else {
-                OutputBuffer buffer = OutputBuffer.pooledObject();
-                buffer.append(transferEncoding.valueBytes())
-                        .appendComma()
-                        .appendSP()
-                        .append(TransferCodingSort.Chunked.toString());
-                transferEncoding.valueBytes(buffer.getBytes());
-                OutputBuffer.release(buffer);
-            }
+            ResponseSetter.addTransferEncoding(response, TransferCodingSort.Chunked);
         }
         return response;
     }

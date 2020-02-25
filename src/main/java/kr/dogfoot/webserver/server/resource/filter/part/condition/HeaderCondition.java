@@ -3,8 +3,6 @@ package kr.dogfoot.webserver.server.resource.filter.part.condition;
 import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderList;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
-import kr.dogfoot.webserver.parser.util.ParserException;
 
 public class HeaderCondition implements HeaderConditionInterface {
     private HeaderSort header;

@@ -23,10 +23,10 @@ public enum ContentCodingSort {
                 }
             }
         }
-        return getUnknown(str);
+        return unknown(str);
     }
 
-    private static ContentCodingSort getUnknown(String str) {
+    private static ContentCodingSort unknown(String str) {
         ContentCodingSort ccs = ContentCodingSort.Unknown;
         ccs.str = str;
         return ccs;

@@ -4,9 +4,9 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class HeaderValueHost extends HeaderValue {
     private String ipOrDomain;
@@ -20,6 +20,12 @@ public class HeaderValueHost extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Host;
+    }
+
+    @Override
+    public void reset() {
+        ipOrDomain = null;
+        port = -1;
     }
 
     @Override
@@ -49,18 +55,36 @@ public class HeaderValueHost extends HeaderValue {
         if (port != -1) {
             buffer
                     .append(HttpString.Colon)
-                    .append(port);
+                    .appendInt(port);
         }
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Host) {
+            HeaderValueHost other2 = (HeaderValueHost) other;
+            if (StringUtils.equalsWithNull(ipOrDomain, other2.ipOrDomain)
+                    && port == other2.port) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String ipOrDomain() {
         return ipOrDomain;
     }
 
+    public void ipOrDomain(String ipOrDomain) {
+        this.ipOrDomain = ipOrDomain;
+    }
+
     public int port() {
         return port;
+    }
+
+    public void port(int port) {
+        this.port = port;
     }
 }

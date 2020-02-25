@@ -1,5 +1,6 @@
 package kr.dogfoot.webserver.httpMessage.header.valueobj.part;
 
+import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 public class CacheDirective implements AppendableToByte {
     private CacheDirectiveSort sort;
     private Long deltaSeconds;
-    private ArrayList<String> fieldNameList;
+    private ArrayList<HeaderSort> fieldNameList;
 
     public CacheDirective() {
         this.sort = CacheDirectiveSort.Unknown;
@@ -32,7 +33,7 @@ public class CacheDirective implements AppendableToByte {
             fieldNameList = null;
         } else if (hasFieldNameList()) {
             deltaSeconds = null;
-            fieldNameList = new ArrayList<String>();
+            fieldNameList = new ArrayList<HeaderSort>();
         } else {
             deltaSeconds = null;
             fieldNameList = null;
@@ -61,7 +62,7 @@ public class CacheDirective implements AppendableToByte {
         ByteParser.nextItem(value, ps);
 
         String sort = ps.toString(value);
-        setSort(CacheDirectiveSort.fromString(sort));
+        sort(CacheDirectiveSort.fromString(sort));
 
         if (ByteParser.nextItem(value, ps) >= 0) {
             parseValue(value, ps);
@@ -87,7 +88,7 @@ public class CacheDirective implements AppendableToByte {
             while (ByteParser.nextItem(value, ps) >= 0) {
                 fieldName = ps.toString(value);
                 if (fieldName != null) {
-                    fieldNameList.add(fieldName);
+                    fieldNameList.add(HeaderSort.fromString(fieldName));
                 }
             }
         }
@@ -105,25 +106,77 @@ public class CacheDirective implements AppendableToByte {
         }
     }
 
-    public CacheDirectiveSort getSort() {
+    public boolean isMatch(CacheDirective other) {
+        if (sort == other.sort
+                && isEqualDeltaSeconds(other)
+                && isEqualFieldName(other)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isEqualDeltaSeconds(CacheDirective other) {
+        if (deltaSeconds == null) {
+            return other.deltaSeconds == null;
+        } else {
+            return deltaSeconds.equals(other.deltaSeconds);
+        }
+    }
+
+    private boolean isEqualFieldName(CacheDirective other) {
+        if (fieldNameList == null) {
+            if (other.fieldNameList == null) {
+                return true;
+            }
+        } else {
+            if (other.fieldNameList == null) {
+                return false;
+            } else {
+                if (fieldNameList.size() != other.fieldNameList.size()) {
+                    return false;
+                }
+                int includeCount = 0;
+                for (HeaderSort otherHeaderSort : other.fieldNameList) {
+                    if (isIncludeFieldName(otherHeaderSort)) {
+                        includeCount++;
+                    }
+                }
+                if (includeCount == other.fieldNameList.size()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isIncludeFieldName(HeaderSort otherHeaderSort) {
+        for (HeaderSort headerSort : fieldNameList) {
+            if (headerSort == otherHeaderSort) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public CacheDirectiveSort sort() {
         return sort;
     }
 
-    public void setSort(CacheDirectiveSort sort) {
+    public void sort(CacheDirectiveSort sort) {
         this.sort = sort;
         createValues();
     }
 
-    public Long getDeltaSeconds() {
+    public Long deltaSeconds() {
         return deltaSeconds;
     }
 
-    public void setDeltaSeconds(Long deltaSeconds) {
+    public void deltaSeconds(Long deltaSeconds) {
         this.deltaSeconds = deltaSeconds;
     }
 
-    public ArrayList<String> getFieldNameList() {
+    public ArrayList<HeaderSort> fieldNameList() {
         return fieldNameList;
     }
-
 }

@@ -16,16 +16,6 @@ public class EachRangePart {
         range = null;
     }
 
-
-    public EachRangePart setHeader(HeaderSort sort, byte[] value) {
-        if (hasHeader(sort)) {
-            changeHeader(sort, value);
-        } else {
-            addHeader(sort, value);
-        }
-        return this;
-    }
-
     public boolean hasHeader(HeaderSort sort) {
         return headerList.has(sort);
     }
@@ -36,22 +26,27 @@ public class EachRangePart {
     }
 
     public EachRangePart changeHeader(HeaderSort sort, byte[] value) {
-        HeaderItem item = getHeaderItem(sort);
-        if (item != null) {
-            item.valueBytes(value);
-            headerList.pre_parse(item);
-        }
+        headerList.changeHeader(sort, value);
         return this;
-    }
-
-
-    public HeaderValue getHeaderValueObj(HeaderSort sort) {
-        return headerList.getValueObj(sort);
     }
 
     public EachRangePart removeHeader(HeaderSort sort) {
         headerList.remove(sort);
         return this;
+    }
+
+    public EachRangePart removeHeader(HeaderItem item) {
+        headerList.remove(item);
+        return this;
+    }
+
+
+    public HeaderValue getHeaderValueObj(HeaderSort sort) {
+        HeaderItem item = getHeaderItem(sort);
+        if (item != null) {
+            return item.valueObj();
+        }
+        return null;
     }
 
     public HeaderItem getHeaderItem(int index) {
@@ -87,11 +82,16 @@ public class EachRangePart {
         return this;
     }
 
-    public long calculateContextLength() {
-        long size = 0;
+    public int calculateContextLength() {
+        int size = 0;
         size += headerList.calculateContextLength();
         size += HttpString.CRLF.length;
         size += range.length();
         return size;
+    }
+
+    protected void copyFrom(EachRangePart source) {
+        headerList.copyFrom(source.headerList);
+        range = (source.range != null) ? source.range.clone() : null;
     }
 }

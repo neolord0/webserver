@@ -183,17 +183,20 @@ public class BodyReceiver extends AsyncSocketProcessor {
                 gotoSelf(context);
             }
         } else {
-            context.httpProxy().changeState(HttpProxyState.ReceivingResponse);
+            context.httpProxy()
+                    .changeState(HttpProxyState.ReceivingResponse)
+                    .resetForNextRequest();
+
             server.gotoHttpProxier(context);
         }
     }
 
     private boolean parseBodyAndSendUntilEnd(HttpClientConnection clientConn, Context context) {
         if (context.request().hasContentLength()) {
-            HttpBodyConveyor.conveyAsMuchContentLength(clientConn, context.httpProxy(), server);
+            HttpBodyConveyor.conveyAsMuchContentLength(clientConn, context.httpProxy(), null, server);
             return clientConn.parserStatus().hasRemainingReadBodySize();
         } else if (context.request().isChunked()) {
-            HttpBodyConveyor.conveyUtilChunkEnd(clientConn, context.httpProxy(), server);
+            HttpBodyConveyor.conveyUtilChunkEnd(clientConn, context.httpProxy(), null, server);
             return clientConn.parserStatus().chunkState() != ChunkParsingState.ChunkEnd;
         }
         return false;

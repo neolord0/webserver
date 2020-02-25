@@ -3,10 +3,10 @@ package kr.dogfoot.webserver.server.resource.performer;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueConnection;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueRange;
+import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.httpMessage.response.EachRangePart;
 import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.response.StatusCode;
-import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.host.HostObjects;
 import kr.dogfoot.webserver.server.resource.ResourceFile;
 import kr.dogfoot.webserver.server.resource.performer.util.ContentRange;
@@ -50,7 +50,7 @@ public class FilePerformer {
         if (response == null) {
             response = hostObjects.responseMaker().new_200OK()
                     .addHeader(HeaderSort.Last_Modified, HttpDateMaker.makeBytes(resource.lastModified()))
-                    .addHeader(HeaderSort.ETag, resource.etag())
+                    .addHeader(HeaderSort.ETag, resource.etagWithDQute())
                     .addHeader(HeaderSort.Content_Length, ToBytes.fromLong(resource.length()))
                     .addHeader(HeaderSort.Content_Type, contentType(resource.mediaType(), hostObjects.defaultCharset()))
                     .bodyFile(resource.file())
@@ -68,33 +68,29 @@ public class FilePerformer {
                 .append(mediaType)
                 .append(HttpString.Semicolon)
                 .append(HttpString.Charset_String, HttpString.Equal, defaultCharset);
-        byte[] bytes = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return bytes;
+        return buffer.getBytesAndRelease();
     }
 
     private static void range(Request request, Response response, ResourceFile resource) {
         HeaderValueRange range = (HeaderValueRange) request.getHeaderValueObj(HeaderSort.Range);
         if (range != null) {
             ContentRangeInfo cri = ContentRangeInfoMaker.make(range, resource.length());
-            if (cri.invalid()) {
-                response.isPartial(false);
+            if (cri.isInvalid()) {
                 response.range(new ContentRange(0, resource.length() - 1));
             } else {
-                response.isPartial(true);
+                response
+                        .statusCode(StatusCode.Code206)
+                        .addHeader(HeaderSort.Accept_Ranges, HttpString.Bytes);
+
                 if (cri.rangeCount() == 1) {
                     ContentRange cr = cri.range(0);
                     response
-                            .code(StatusCode.Code206)
-                            .addHeader(HeaderSort.Accept_Ranges, HttpString.Bytes)
                             .changeHeader(HeaderSort.Content_Length, ToBytes.fromLong(cr.length()))
                             .addHeader(HeaderSort.Content_Range, cri.toBytes(0))
                             .range(cr);
                 } else {
                     byte[] boundary = HttpString.newBoundary();
                     response
-                            .code(StatusCode.Code206)
-                            .addHeader(HeaderSort.Accept_Ranges, HttpString.Bytes)
                             .boundary(boundary)
                             .changeHeader(HeaderSort.Content_Type, HttpString.mulitPart_Byteranges(boundary))
                             .range(null);
@@ -110,7 +106,6 @@ public class FilePerformer {
                 }
             }
         } else {
-            response.isPartial(false);
             response.range(new ContentRange(0, resource.length() - 1));
         }
     }
@@ -118,8 +113,8 @@ public class FilePerformer {
     public static void connection(Request request, Response response, HostObjects hostObjects) {
         HeaderValueConnection connection = (HeaderValueConnection) request.getHeaderValueObj(HeaderSort.Connection);
         if (connection != null && connection.isKeepAlive()) {
-            response.addHeader(HeaderSort.Keep_Alive, HttpString.keepAliveValue(hostObjects.serverProperties().keepAlive_timeout(),
-                    hostObjects.serverProperties().keepAlive_max()));
+            response.addHeader(HeaderSort.Keep_Alive,
+                    HttpString.keepAliveValue(hostObjects.serverProperties().keepAlive_timeout(), hostObjects.serverProperties().keepAlive_max()));
             response.addHeader(HeaderSort.Connection, HttpString.Keep_Alive);
         } else if (request.isPersistentConnection() == false) {
             response.addHeader(HeaderSort.Connection, HttpString.Close);
@@ -130,7 +125,7 @@ public class FilePerformer {
     public static Response head(Request request, ResourceFile resource, HostObjects hostObjects) {
         Response response = hostObjects.responseMaker().new_200OK()
                 .addHeader(HeaderSort.Last_Modified, ToBytes.fromLong(resource.lastModified()))
-                .addHeader(HeaderSort.ETag, resource.etag())
+                .addHeader(HeaderSort.ETag, resource.etagWithDQute())
                 .addHeader(HeaderSort.Content_Length, ToBytes.fromLong(resource.length()))
                 .addHeader(HeaderSort.Content_Type, resource.mediaType())
                 .bodyFile(null)

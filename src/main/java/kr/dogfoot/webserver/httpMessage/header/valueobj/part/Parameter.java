@@ -43,19 +43,19 @@ public class Parameter implements AppendableToByte {
         buffer.append(name, HttpString.Equal, value);
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public void setName(String name) {
+    public void name(String name) {
         this.name = name;
     }
 
-    public String getValue() {
+    public String value() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void value(String value) {
         this.value = value;
     }
 

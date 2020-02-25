@@ -76,6 +76,28 @@ public class Range implements AppendableToByte {
         }
     }
 
+    public boolean isMatch(Range other) {
+        boolean equalFirstPos;
+        if (firstPos == null) {
+            equalFirstPos = other.firstPos == null;
+        } else {
+            equalFirstPos = firstPos.equals(other.firstPos);
+        }
+
+        boolean equalLastPos;
+        if (lastPos == null) {
+            equalLastPos = other.lastPos == null;
+        } else {
+            equalLastPos = lastPos.equals(other.lastPos);
+        }
+
+        return equalFirstPos && equalLastPos;
+    }
+
+    public boolean isSuffix() {
+        return firstPos == null;
+    }
+
     public Long firstPos() {
         return firstPos;
     }
@@ -91,9 +113,4 @@ public class Range implements AppendableToByte {
     public void lastPos(Long lastPos) {
         this.lastPos = lastPos;
     }
-
-    public boolean isSuffix() {
-        return firstPos == null;
-    }
-
 }

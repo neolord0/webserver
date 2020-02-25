@@ -5,7 +5,6 @@ import kr.dogfoot.webserver.httpMessage.header.valueobj.part.RecipientInfo;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -22,6 +21,11 @@ public class HeaderValueVia extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Via;
+    }
+
+    @Override
+    public void reset() {
+        recipientInfoList.clear();
     }
 
     @Override
@@ -45,9 +49,34 @@ public class HeaderValueVia extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray((byte) ',', recipientInfoList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Via) {
+            HeaderValueVia other2 = (HeaderValueVia) other;
+            int includedCount = 0;
+            for (RecipientInfo ri : other2.recipientInfoList) {
+                if (isInclude(ri)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.recipientInfoList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(RecipientInfo other) {
+        for (RecipientInfo ri : recipientInfoList) {
+            if (ri.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     public RecipientInfo addNewRecipientInfo() {

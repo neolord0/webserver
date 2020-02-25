@@ -50,21 +50,21 @@ public class HttpChunkedBodyParser {
 
         if (r.peekIsCR()) {
             r.pollAndReadAndCache();
-            ps.doneCR(true);
+            ps.isDoneCR(true);
         }
 
         if (r.peekIsLF()) {
             r.pollAndReadAndCache();
-            ps.doneCR(false);
-            ps.doneCRLF(true);
+            ps.isDoneCR(false);
+            ps.isDoneCRLF(true);
         } else {
-            if (ps.doneCR() == true && r.peekIsEnd() == false) {
-                ps.doneCR(false);
-                ps.doneCRLF(true);
+            if (ps.isDoneCR() == true && r.peekIsEnd() == false) {
+                ps.isDoneCR(false);
+                ps.isDoneCRLF(true);
             }
         }
 
-        if (ps.doneCRLF() == true) {
+        if (ps.isDoneCRLF() == true) {
             switch (ps.chunkState()) {
                 case ChunkSizeCRLF:
                     if (ps.chunkSize() == 0) {

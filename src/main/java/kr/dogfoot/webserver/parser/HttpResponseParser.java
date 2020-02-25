@@ -120,7 +120,7 @@ public class HttpResponseParser extends HttpMessageParser {
         ParseState.release(ps);
 
         if (code != -1) {
-            response.code(StatusCode.fromCode(code));
+            response.statusCode(StatusCode.fromCode(code));
         }
     }
 

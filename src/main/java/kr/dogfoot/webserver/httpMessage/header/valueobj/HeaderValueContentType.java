@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.MediaType;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -21,6 +20,11 @@ public class HeaderValueContentType extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        mediaType.reset();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.start = 0;
@@ -34,9 +38,18 @@ public class HeaderValueContentType extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         mediaType.append(buffer);
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Content_Type) {
+            HeaderValueContentType other2 = (HeaderValueContentType) other;
+            if (mediaType.isMatch(other2.mediaType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public MediaType mediaType() {
@@ -44,6 +57,6 @@ public class HeaderValueContentType extends HeaderValue {
     }
 
     public boolean isText() {
-        return mediaType.getType().equalsIgnoreCase(HttpString.Text_Type);
+        return mediaType.type().equalsIgnoreCase(HttpString.Text_Type);
     }
 }

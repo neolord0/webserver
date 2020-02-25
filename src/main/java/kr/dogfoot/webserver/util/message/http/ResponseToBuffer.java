@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 
 public class ResponseToBuffer {
     public static void forStatusLine(ByteBuffer buffer, Response response) {
-        if (response.code() != null) {
+        if (response.statusCode() != null) {
             buffer
                     .put(HttpString.Version_Prefix)
                     .put(ToBytes.fromInt(response.majorVersion()))
@@ -19,12 +19,12 @@ public class ResponseToBuffer {
                     .put(ToBytes.fromInt(response.minorVersion()))
                     .put(HttpString.Space);
             buffer
-                    .put(response.code().getCodeByte())
+                    .put(response.statusCode().getCodeByte())
                     .put(HttpString.Space);
             if (response.reason() != null) {
                 buffer.put(response.reason());
             } else {
-                buffer.put(response.code().getDefaultReason());
+                buffer.put(response.statusCode().getDefaultReason());
             }
             buffer.put(HttpString.CRLF);
         }

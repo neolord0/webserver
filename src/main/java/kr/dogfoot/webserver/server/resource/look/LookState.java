@@ -1,7 +1,7 @@
 package kr.dogfoot.webserver.server.resource.look;
 
 import kr.dogfoot.webserver.httpMessage.request.Request;
-import kr.dogfoot.webserver.server.host.ssl.SSLConfig;
+import kr.dogfoot.webserver.httpMessage.request.URI;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 public class LookState {
@@ -10,6 +10,10 @@ public class LookState {
 
     public LookState(Request request) {
         splitPathItems(request.requestURI().path());
+    }
+
+    public LookState(URI uri) {
+        splitPathItems(uri.path());
     }
 
     public LookState(String url) {

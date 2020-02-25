@@ -8,8 +8,10 @@ import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingState;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnection;
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyState;
 import kr.dogfoot.webserver.context.connection.http.senderstatus.ChunkedBodySendState;
+import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.response.Response;
 import kr.dogfoot.webserver.httpMessage.response.StatusCode;
+import kr.dogfoot.webserver.httpMessage.util.ResponseSetter;
 import kr.dogfoot.webserver.parser.HttpResponseParser;
 import kr.dogfoot.webserver.processor.AsyncSocketProcessor;
 import kr.dogfoot.webserver.processor.util.HttpBodyConveyor;
@@ -17,8 +19,11 @@ import kr.dogfoot.webserver.processor.util.RequestSaver;
 import kr.dogfoot.webserver.processor.util.ToClientCommon;
 import kr.dogfoot.webserver.processor.util.ToHttpServer;
 import kr.dogfoot.webserver.server.Server;
+import kr.dogfoot.webserver.server.cache.StoredResponse;
+import kr.dogfoot.webserver.server.resource.performer.ConditonalGetPerformer;
 import kr.dogfoot.webserver.util.Message;
 
+import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
@@ -55,9 +60,12 @@ public class HttpProxier extends AsyncSocketProcessor {
         Message.debug(connection, "send request to http proxy server");
         ToHttpServer.sendRequest(context, server);
 
+        context.request().setRequestTimeToNow();
+        context.originalRequest().requestTime(context.request().requestTime());
+
         requestSaver.save(connection.channel(), context.request());
 
-        if (context.request().hasBody() && context.request().hasExpect100Continue() == false)  {
+        if (context.request().hasBody() && context.request().hasExpect100Continue() == false) {
             sendRequestBodyByReceiver(context);
         } else {
             connection.changeState(HttpProxyState.ReceivingResponse);
@@ -154,30 +162,8 @@ public class HttpProxier extends AsyncSocketProcessor {
         connection.prepareReceiving();
 
         if (connection.parserStatus().state() == ParsingState.BodyStart) {
-            ToClientCommon.sendStatusLine_Headers(context, server);
-            context.response().request(requestSaver.get(connection.channel()));
-
-            if (context.response().code() == StatusCode.Code100 && context.request().hasBody()) {
-                sendRequestBodyByReceiver(context);
-                connection.resetForNextRequest();
-                return;
-            }
-
-            connection.senderStatus().reset();
-
-            if (context.response().hasBody()) {
-                connection.changeState(HttpProxyState.ReceivingResponseBody);
-
-                context.clientConnection().senderStatus()
-                        .changeChunkedBodySendState(ChunkedBodySendState.ChunkSize);
-                connection.parserStatus()
-                        .prepareBodyParsing(BodyParsingType.ForHttpProxy, context.response().contentLength());
-
-                gotoSelf(context);
-            } else {
-                onResponseEnd(connection, context);
-            }
-            } else {
+            processOnBodyStart(connection, context, afterProcess);
+        } else {
             if (afterProcess == AfterProcess.Register) {
                 register(connection.channel(), context, SelectionKey.OP_READ);
             } else if (afterProcess == AfterProcess.GotoSelf) {
@@ -185,6 +171,143 @@ public class HttpProxier extends AsyncSocketProcessor {
             }
         }
     }
+
+    private void processOnBodyStart(HttpProxyConnection connection, Context context, AfterProcess afterProcess) {
+        // test
+        System.out.println("*********************************** Proxy Received");
+        try {
+            System.out.println(connection.channel().getRemoteAddress() + " ==> " + connection.channel().getLocalAddress());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(context.response());
+        System.out.println("*********************************** Proxy Received");
+
+        context.response().setResponseTimeToNow();
+
+        boolean gotoSender = preprocessForCache(connection, context);
+        if (gotoSender == true) {
+            server.gotoSender(context);
+        } else {
+            context.response().request(requestSaver.get(connection.channel()));
+            ToClientCommon.sendStatusLine_Headers(context, server);
+
+            if (context.response().statusCode() == StatusCode.Code100) {
+                if (context.request().hasBody()) {
+                    sendRequestBodyByReceiver(context);
+                } else {
+                    receiveRealResponse(connection, context);
+                }
+            } else {
+                connection.senderStatus().reset();
+
+                if (context.response().hasBody()) {
+                    receiveResponseBody(connection, context);
+                } else {
+                    onResponseEnd(connection, context);
+                }
+            }
+        }
+    }
+
+    private boolean preprocessForCache(HttpProxyConnection connection, Context context) {
+        if (connection.backendServerInfo().cacheOption().use() == false) {
+            context.usingStoredResponse(null);
+            return false;
+        }
+
+        if (cacheManager().canUpdate(context.originalRequest(), context.response())) {
+            StoredResponse storedResponse = cacheManager().getResponse(connection.backendServerInfo(),
+                    context.originalRequest(),
+                    context.response());
+            if (storedResponse != null) {
+                storedResponse.update(context.originalRequest(), context.response());
+
+                return procssAfterUpdating(context, storedResponse);
+            }
+        }
+
+        if (cacheManager().canInvalidate(context.originalRequest(), context.response())) {
+            // test
+            System.out.println("invalidate");
+
+            cacheManager().invalidate(context.httpProxy().backendServerInfo(),
+                    context.originalRequest(),
+                    context.response());
+
+            context.usingStoredResponse(null);
+            return false;
+        }
+
+        if (cacheManager().canStore(context.originalRequest(), context.response())) {
+            StoredResponse storedResponse = cacheManager().getResponse(context.httpProxy().backendServerInfo(), context.originalRequest(), context.response());
+            if (storedResponse != null) {
+                // test
+                System.out.println("replace");
+
+                storedResponse.replace(context.originalRequest(),
+                        context.response());
+            } else {
+                // test
+                System.out.println("store");
+
+                storedResponse = cacheManager().store(context.httpProxy().backendServerInfo(),
+                        context.originalRequest(),
+                        context.response());
+            }
+
+            context.usingStoredResponse(storedResponse);
+            storedResponse.lockUsing();
+            return false;
+        }
+
+        context.usingStoredResponse(null);
+        return false;
+    }
+
+    private boolean procssAfterUpdating(Context context, StoredResponse storedResponse) {
+        if (context.originalRequest().hasHeader(HeaderSort.If_None_Match)
+                || context.originalRequest().hasHeader(HeaderSort.If_Modified_Since)) {
+            storedResponse.lockUsing();
+            Response response = ConditonalGetPerformer.performForCache(context.originalRequest(), storedResponse, context.host().hostObjects());
+            storedResponse.freeUsing();
+
+            if (response != null) {
+                context.response(response);
+
+                context.usingStoredResponse(null);
+                return true;
+            }
+        }
+
+        context.response(storedResponse.response().clone());
+        ResponseSetter.setAge(context.response(), storedResponse.currentAge() / 1000);
+        context.response().bodyFile(storedResponse.bodyFile());
+
+        context.usingStoredResponse(storedResponse);
+        return true;
+    }
+
+
+    public void receiveRealResponse(HttpProxyConnection connection, Context context) {
+        connection
+                .changeState(HttpProxyState.ReceivingResponse)
+                .resetForNextRequest();
+
+        gotoSelf(context);
+    }
+
+    private void receiveResponseBody(HttpProxyConnection connection, Context context) {
+        connection.changeState(HttpProxyState.ReceivingResponseBody);
+
+        context.clientConnection().senderStatus()
+                .changeChunkedBodySendState(ChunkedBodySendState.ChunkSize);
+        connection.parserStatus()
+                .prepareBodyParsing(BodyParsingType.ForHttpProxy, context.response().contentLength());
+
+        gotoSelf(context);
+    }
+
 
     private void parseResponse(Context context) {
         HttpProxyConnection connection = context.httpProxy();
@@ -221,10 +344,10 @@ public class HttpProxier extends AsyncSocketProcessor {
 
     private boolean parseAndSendResponseBody(HttpProxyConnection connection, Context context) {
         if (context.response().hasContentLength()) {
-            HttpBodyConveyor.conveyAsMuchContentLength(context.httpProxy(), context.clientConnection(), server);
+            HttpBodyConveyor.conveyAsMuchContentLength(context.httpProxy(), context.clientConnection(), context.usingStoredResponse(), server);
             return connection.parserStatus().hasRemainingReadBodySize();
         } else if (context.response().isChunked()) {
-            HttpBodyConveyor.conveyUtilChunkEnd(context.httpProxy(), context.clientConnection(), server);
+            HttpBodyConveyor.conveyUtilChunkEnd(context.httpProxy(), context.clientConnection(), context.usingStoredResponse(), server);
             return connection.parserStatus().chunkState() != ChunkParsingState.ChunkEnd;
         }
         return false;
@@ -233,10 +356,13 @@ public class HttpProxier extends AsyncSocketProcessor {
     private void onResponseEnd(HttpProxyConnection connection, Context context) {
         Message.debug(connection, "complete receive response_body from http proxy server and send to client");
 
-        context.response().setResponseTimeToNow();
-        System.out.println("response delay : " + context.response().response_delay());
+        if (context.usingStoredResponse() != null) {
+            context.usingStoredResponse().addTotalSize();
+            context.usingStoredResponse().freeUsing();
+            context.usingStoredResponse(null);
+        }
 
-        if (context.response().code().isError()) {
+        if (context.response().statusCode().isError()) {
             bufferSender().sendCloseSignalForHttpServer(context);
             bufferSender().sendCloseSignalForClient(context);
         } else {
@@ -247,7 +373,7 @@ public class HttpProxier extends AsyncSocketProcessor {
                 connection.resetForNextRequest();
             } else {
                 connection.changeState(HttpProxyState.Close);
-                
+
                 bufferSender().sendCloseSignalForHttpServer(context);
             }
 

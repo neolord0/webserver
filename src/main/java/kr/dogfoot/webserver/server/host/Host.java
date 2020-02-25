@@ -99,7 +99,7 @@ public class Host {
         this.port = port;
     }
 
-    public boolean adjustSSL() {
+    public boolean isAdjustSSL() {
         return adjustSSL;
     }
 
@@ -177,7 +177,7 @@ public class Host {
         engine.setEnabledProtocols(sslConfig.getEnabledProtocols());
 
         SSLParameters sslParameters = engine.getSSLParameters();
-        sslParameters.setUseCipherSuitesOrder(sslConfig.getHonorCipherOrder());
+        sslParameters.setUseCipherSuitesOrder(sslConfig.isHonorCipherOrder());
         engine.setSSLParameters(sslParameters);
 
         return engine;

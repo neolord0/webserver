@@ -4,10 +4,9 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
-import kr.dogfoot.webserver.util.bytes.BytesUtil;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 import java.util.ArrayList;
 
@@ -22,6 +21,11 @@ public class HeaderValueUserAgent extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.User_Agent;
+    }
+
+    @Override
+    public void reset() {
+        infoList.clear();
     }
 
     @Override
@@ -46,9 +50,33 @@ public class HeaderValueUserAgent extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendStringArray((byte) ' ', infoList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.User_Agent) {
+            HeaderValueUserAgent other2 = (HeaderValueUserAgent) other;
+            int includedCount = 0;
+            for (String info : other2.infoList) {
+                if (isInclude(info)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.infoList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(String other) {
+        for (String info : infoList) {
+            if (StringUtils.equalsIgnoreCaseWithNull(info, other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addInfo(String info) {

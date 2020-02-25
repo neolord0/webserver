@@ -9,15 +9,15 @@ import kr.dogfoot.webserver.parser.util.CachedReader;
 public class HttpMessageParser {
     protected static boolean skipSpace(HttpConnection connection) {
         ParserStatus ps = connection.parserStatus();
-        if (ps.skippingSpace() == true) {
+        if (ps.isSkippingSpace() == true) {
             CachedReader r = connection.reader();
             r.readAndCache();
 
             while (r.hasData() && r.peekIsSP() == true) {
                 r.pollAndReadAndCache();
             }
-                if (r.peekIsEnd() == false && r.peekIsSP() == false) {
-                    ps.skippingSpace(false);
+            if (r.peekIsEnd() == false && r.peekIsSP() == false) {
+                ps.isSkippingSpace(false);
             }
             return true;
         }
@@ -43,21 +43,21 @@ public class HttpMessageParser {
         ParserStatus ps = connection.parserStatus();
         if (r.peekIsCR()) {
             r.pollAndReadAndCache();
-            ps.doneCR(true);
+            ps.isDoneCR(true);
         }
 
         if (r.peekIsLF()) {
             r.pollAndReadAndCache();
-            ps.doneCR(false);
-            ps.doneCRLF(true);
+            ps.isDoneCR(false);
+            ps.isDoneCRLF(true);
         } else {
-            if (ps.doneCR() == true && r.peekIsEnd() == false) {
-                ps.doneCR(false);
-                ps.doneCRLF(true);
+            if (ps.isDoneCR() == true && r.peekIsEnd() == false) {
+                ps.isDoneCR(false);
+                ps.isDoneCRLF(true);
             }
         }
 
-        if (ps.doneCRLF() == true) {
+        if (ps.isDoneCRLF() == true) {
             r.rollbackByCache();
             switch (ps.state()) {
                 case CRLF:

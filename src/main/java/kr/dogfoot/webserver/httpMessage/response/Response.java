@@ -1,26 +1,33 @@
 package kr.dogfoot.webserver.httpMessage.response;
 
+import kr.dogfoot.webserver.httpMessage.header.HeaderItem;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
-import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueCacheControl;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueETag;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.part.CacheDirectiveSort;
 import kr.dogfoot.webserver.httpMessage.request.Request;
 import kr.dogfoot.webserver.server.resource.performer.util.ContentRange;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.message.http.ResponseToBuffer;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.Date;
 
 public class Response extends EachRangePart {
     private static final int Default_RangePart_Count = 3;
-    public boolean isPartial;
+
     private short majorVersion;
     private short minorVersion;
-    private StatusCode code;
+    private StatusCode statusCode;
     private byte[] reason;
-    private byte[] bodyBytes;
-    private File bodyFile;
+
     private byte[] boundary;
     private EachRangePart[] rangeParts;
     private int rangePartCount;
+
+    private byte[] bodyBytes;
+    private File bodyFile;
 
     private Request request;
     private long responseTime;
@@ -30,13 +37,12 @@ public class Response extends EachRangePart {
 
         majorVersion = 1;
         minorVersion = 1;
-        code = null;
+        statusCode = null;
         reason = null;
 
         bodyBytes = null;
         bodyFile = null;
 
-        isPartial = false;
         boundary = null;
         rangeParts = new EachRangePart[Default_RangePart_Count];
         rangePartCount = 0;
@@ -45,38 +51,37 @@ public class Response extends EachRangePart {
         responseTime = 0;
     }
 
-    public Response setHeader(HeaderSort sort, byte[] value) {
-        if (hasHeader(sort)) {
-            changeHeader(sort, value);
-        } else {
-            addHeader(sort, value);
-        }
-        return this;
-    }
 
+    @Override
     public boolean hasHeader(HeaderSort sort) {
         return headerList.has(sort);
     }
 
+    @Override
     public Response addHeader(HeaderSort sort, byte[] value) {
         super.addHeader(sort, value);
         return this;
     }
 
+    @Override
     public Response changeHeader(HeaderSort sort, byte[] value) {
         super.changeHeader(sort, value);
         return this;
     }
 
-    public HeaderValue getHeaderValueObj(HeaderSort sort) {
-        return headerList.getValueObj(sort);
-    }
-
+    @Override
     public Response removeHeader(HeaderSort sort) {
         super.removeHeader(sort);
         return this;
     }
 
+    @Override
+    public Response removeHeader(HeaderItem item) {
+        super.removeHeader(item);
+        return this;
+    }
+
+    @Override
     public Response range(ContentRange range) {
         super.range(range);
         return this;
@@ -100,13 +105,17 @@ public class Response extends EachRangePart {
         return this;
     }
 
-    public StatusCode code() {
-        return code;
+    public StatusCode statusCode() {
+        return statusCode;
     }
 
-    public Response code(StatusCode code) {
-        this.code = code;
+    public Response statusCode(StatusCode statusCode) {
+        this.statusCode = statusCode;
         return this;
+    }
+
+    public boolean isError() {
+        return statusCode.isError();
     }
 
     public byte[] reason() {
@@ -141,11 +150,7 @@ public class Response extends EachRangePart {
     }
 
     public boolean isPartial() {
-        return isPartial;
-    }
-
-    public void isPartial(boolean isPartial) {
-        this.isPartial = isPartial;
+        return statusCode == StatusCode.Code206;
     }
 
     public byte[] boundary() {
@@ -176,23 +181,39 @@ public class Response extends EachRangePart {
     }
 
     public boolean hasContentLength() {
-        return headerList.getContentLength() != -1;
+        return headerList.contentLength() != -1;
     }
 
     public int contentLength() {
-        return headerList.getContentLength();
+        return headerList.contentLength();
     }
 
     public boolean hasKeepAlive() {
         return headerList.has(HeaderSort.Keep_Alive);
     }
 
+    public boolean hasValidator() {
+        HeaderValueETag eTag = (HeaderValueETag) getHeaderValueObj(HeaderSort.ETag);
+        if (eTag != null && eTag.etag() != null && eTag.etag().length != 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean hasWeakValidator() {
+        HeaderValueETag eTag = (HeaderValueETag) getHeaderValueObj(HeaderSort.ETag);
+        if (eTag != null && eTag.etag() != null && eTag.isWeak()) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
-    public long calculateContextLength() {
+    public int calculateContextLength() {
         if (isMultiPart() == false) {
             return super.calculateContextLength();
         } else {
-            long size = 0;
+            int size = 0;
             for (int index = 0; index < rangePartCount; index++) {
                 size += sizeForStartBoundary();
                 size += rangePart(index).calculateContextLength();
@@ -228,6 +249,14 @@ public class Response extends EachRangePart {
         this.request = request;
     }
 
+    public long responseTime() {
+        return responseTime;
+    }
+
+    public void responseTime(long responseTime) {
+        this.responseTime = responseTime;
+    }
+
     public void setResponseTimeToNow() {
         responseTime = new Date().getTime();
     }
@@ -238,4 +267,49 @@ public class Response extends EachRangePart {
         }
         return -1;
     }
+
+    public boolean hasCacheDirective(CacheDirectiveSort directiveSort) {
+        HeaderValueCacheControl cacheControl = (HeaderValueCacheControl) getHeaderValueObj(HeaderSort.Cache_Control);
+        if (cacheControl != null) {
+            return cacheControl.hasCacheDirective(directiveSort);
+        }
+        return false;
+    }
+
+    @Override
+    public Response clone() {
+        Response cloned = new Response();
+        ((EachRangePart) cloned).copyFrom((EachRangePart) this);
+
+        cloned.majorVersion = majorVersion;
+        cloned.minorVersion = minorVersion;
+        cloned.statusCode = statusCode;
+        cloned.reason = (reason != null) ? reason.clone() : null;
+
+        cloned.boundary = (boundary != null) ? boundary.clone() : null;
+        for (int index = 0; index < rangePartCount; index++) {
+            if (rangeParts[index] != null) {
+                cloned.addNewRangePart().copyFrom(rangeParts[index]);
+            }
+        }
+
+        cloned.bodyBytes = (bodyBytes != null) ? bodyBytes.clone() : null;
+        cloned.bodyFile = bodyFile;
+
+        cloned.request = request;
+        cloned.responseTime = responseTime;
+
+        return cloned;
+    }
+
+    @Override
+    public String toString() {
+        ByteBuffer buffer = ByteBuffer.allocate(4096);
+        ResponseToBuffer.forStatusLine(buffer, this);
+        ResponseToBuffer.forHeaders(buffer, this);
+        buffer.flip();
+
+        return new String(buffer.array(), 0, buffer.limit());
+    }
+
 }

@@ -1,7 +1,6 @@
 package kr.dogfoot.webserver.context.connection.http.client;
 
 import kr.dogfoot.webserver.context.Context;
-import kr.dogfoot.webserver.server.timer.Timer;
 import kr.dogfoot.webserver.util.Message;
 
 import java.io.IOException;
@@ -52,43 +51,39 @@ public class ClientConnectionManager {
     public void releaseAndClose(Context context) {
         Message.debug(context, "release and close http connection.");
         if (context.clientConnection() != null) {
-            HttpClientConnection conn = context.clientConnection();
-            if (conn.channel() != null) {
-                try {
-                    conn.channel().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                conn.channel(null);
-            }
-
-            if (conn.adjustSSL()) {
-                HttpsClientConnection conn2 = (HttpsClientConnection) conn;
-                if (conn2.sslEngine() != null) {
-                    conn2.sslEngine(null);
-                }
-                poolForHttps.add(conn2);
-            } else {
-                poolForHttp.add(conn);
-            }
+            close(context.clientConnection());
+            release(context.clientConnection());
             context.clientConnection(null);
+        }
+    }
+
+    public void close(HttpClientConnection conn) {
+        if (conn.channel() != null) {
+            try {
+                conn.channel().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            conn.channel(null);
+        }
+    }
+
+    private void release(HttpClientConnection conn) {
+        if (conn.isAdjustSSL()) {
+            HttpsClientConnection conn2 = (HttpsClientConnection) conn;
+            if (conn2.sslEngine() != null) {
+                conn2.sslEngine(null);
+            }
+            poolForHttps.add(conn2);
+        } else {
+            poolForHttp.add(conn);
         }
     }
 
     public void release(Context context) {
         Message.debug(context, "release and close http connection.");
         if (context.clientConnection() != null) {
-            HttpClientConnection conn = context.clientConnection();
-
-            if (conn.adjustSSL()) {
-                HttpsClientConnection conn2 = (HttpsClientConnection) conn;
-                if (conn2.sslEngine() != null) {
-                    conn2.sslEngine(null);
-                }
-                poolForHttps.add(conn2);
-            } else {
-                poolForHttp.add(conn);
-            }
+            release(context.clientConnection());
             context.clientConnection(null);
         }
     }

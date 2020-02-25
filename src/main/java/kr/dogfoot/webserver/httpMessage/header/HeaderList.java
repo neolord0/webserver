@@ -4,50 +4,46 @@ import kr.dogfoot.webserver.context.connection.http.parserstatus.ParsingBuffer;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueContentLength;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueTransferEncoding;
-import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.BytesUtil;
+import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 import java.util.ArrayList;
 
+
 public class HeaderList {
     private final static HeaderItem[] Zero_Array = new HeaderItem[0];
-    private ArrayList<HeaderItem> headers;
+    private ArrayList<HeaderItem> headerList;
     private int contentLength;
 
     public HeaderList() {
-        headers = new ArrayList<HeaderItem>();
+        headerList = new ArrayList<HeaderItem>();
         contentLength = -1;
     }
 
     public void reset() {
-        headers.clear();
+        headerList.clear();
         contentLength = -1;
     }
 
     public int count() {
-        return headers.size();
+        return headerList.size();
     }
 
     public HeaderItem getHeader(int index) {
-        if (index < headers.size()) {
-            return headers.get(index);
+        if (index < headerList.size()) {
+            return headerList.get(index);
         }
         return null;
     }
 
     public boolean has(HeaderSort sort) {
-        for (HeaderItem item : headers) {
-            if (item.sort() == sort) {
-                return true;
-            }
-        }
-        return false;
+        return getHeader(sort) != null;
     }
 
     public HeaderItem getHeader(HeaderSort sort) {
-        for (HeaderItem item : headers) {
+        for (HeaderItem item : headerList) {
             if (item.sort() == sort) {
                 return item;
             }
@@ -55,42 +51,45 @@ public class HeaderList {
         return null;
     }
 
-    public void addHeaderFromBytes(HeaderSort sort, byte[] value) {
+    public HeaderItem addHeaderFromBytes(HeaderSort sort, byte[] value) {
         HeaderItem item = new HeaderItem()
                 .sort(sort)
                 .valueBytes(value);
-        headers.add(item);
-
+        headerList.add(item);
         pre_parse(item);
+
+        return item;
     }
 
-    public void pre_parse(HeaderItem item) {
+    public HeaderItem addHeader(HeaderSort sort) {
+        HeaderItem item = new HeaderItem()
+                .sort(sort);
+        headerList.add(item);
+        return item;
+    }
+
+    public HeaderItem changeHeader(HeaderSort sort, byte[] value) {
+        HeaderItem item = getHeader(sort);
+        if (item != null) {
+            item.valueBytes(value);
+            item.updateValueObj();
+
+            pre_parse(item);
+        }
+        return item;
+    }
+
+    private void pre_parse(HeaderItem item) {
         switch (item.sort()) {
             case Content_Length:
                 parseContentLength(item);
-                break;
-            case Transfer_Encoding:
-                parseTransferEncoding(item);
                 break;
         }
     }
 
     private void parseContentLength(HeaderItem item) {
-        try {
-            HeaderValueContentLength contentLength = (HeaderValueContentLength) item.updateValueObj();
-            this.contentLength = contentLength.value();
-        } catch (ParserException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void parseTransferEncoding(HeaderItem item) {
-        try {
-            item.updateValueObj();
-        } catch (ParserException e) {
-            e.printStackTrace();
-        }
+        HeaderValueContentLength contentLength = (HeaderValueContentLength) item.valueObj();
+        this.contentLength = contentLength.value();
     }
 
     public void continueBytes(HeaderSort sort, ParsingBuffer buffer) {
@@ -105,34 +104,13 @@ public class HeaderList {
                                 buffer.newBytes(), 0, buffer.length())
                 );
             }
+            item.updateValueObj();
+
             pre_parse(item);
         }
     }
 
-    public HeaderValue getValueObj(HeaderSort sort) {
-        HeaderValue valueObj = null;
-
-        HeaderItem item = getHeader(sort);
-        if (item != null) {
-            try {
-                valueObj = item.updateValueObj();
-            } catch (ParserException e) {
-                e.printStackTrace();
-                valueObj = null;
-            }
-        }
-        return valueObj;
-    }
-
-    public byte[] getValueBytes(HeaderSort sort) {
-        HeaderItem item = getHeader(sort);
-        if (item != null) {
-            return item.valueBytes();
-        }
-        return null;
-    }
-
-    public int getContentLength() {
+    public int contentLength() {
         return contentLength;
     }
 
@@ -145,43 +123,34 @@ public class HeaderList {
         return false;
     }
 
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-
-        for (HeaderItem item : headers) {
-            sb
-                    .append(item.sort())
-                    .append(HttpString.Equal)
-                    .append(new String(item.valueBytes()))
-                    .append(HttpString.CRLF);
-        }
-        return sb.toString();
-    }
-
-    public HeaderItem[] getHeaderByteArray() {
-        return headers.toArray(Zero_Array);
+    public HeaderItem[] getHeaderItemArray() {
+        return headerList.toArray(Zero_Array);
     }
 
     public void remove(HeaderSort sort) {
-        for (HeaderItem item : headers) {
+        for (HeaderItem item : headerList) {
             if (item.sort() == sort) {
-                headers.remove(item);
+                headerList.remove(item);
                 break;
             }
         }
     }
 
+    public void remove(HeaderItem item) {
+        headerList.remove(item);
+    }
+
+
     public long calculateContextLength() {
         long size = 0;
-        for (HeaderItem item : headers) {
+        for (HeaderItem item : headerList) {
             size += item.calculateContextLength();
         }
         return size;
     }
 
     public boolean hasBody() {
-        return getContentLength() > 0 || isChunked();
+        return contentLength() > 0 || isChunked();
     }
 
     public boolean compare(HeaderSort headerSort, CompareOperator operator, String value) {
@@ -191,25 +160,35 @@ public class HeaderList {
         } else if (operator == CompareOperator.NotExist) {
             return (item == null);
         }
+        if (item == null) {
+            return false;
+        }
+
         if (operator.compareWithBytes()) {
             return operator.compareπWithByte(item.valueBytes(), value.getBytes());
         }
 
-        HeaderValue headerValue;
-        try {
-            headerValue = item.updateValueObj();
-        } catch (ParserException e) {
-            headerValue = null;
-        }
-        if (headerValue != null) {
-            if (headerValue.getNumberValue() != null) {
-                return operator.compareWithNumber(headerValue.getNumberValue(), Long.parseLong(value));
-            } else if (headerValue.getDateValue() != null) {
-                return operator.compareWithDate(headerValue.getDateValue(), value.getBytes());
-            }
+        HeaderValue headerValue = item.valueObj();
+        if (headerValue.getNumberValue() != null) {
+            return operator.compareWithNumber(headerValue.getNumberValue(), Long.parseLong(value));
+        } else if (headerValue.getDateValue() != null) {
+            return operator.compareWithDate(headerValue.getDateValue(), value.getBytes());
         }
         return false;
     }
+
+    public void copyFrom(HeaderList source) {
+        for (HeaderItem hi : source.headerList) {
+            addHeaderFromBytes(hi.sort(), hi.valueBytes());
+        }
+    }
+
+    public void appendTo(OutputBuffer buffer) {
+        for (HeaderItem item : headerList) {
+            buffer.append(item.sort().toString().getBytes())
+                    .append(HttpString.HeaderSeparator)
+                    .append(item.valueBytes())
+                    .append(HttpString.CRLF);
+        }
+    }
 }
-
-

@@ -9,8 +9,6 @@ import kr.dogfoot.webserver.processor.proxy.http.HttpProxier;
 import kr.dogfoot.webserver.server.buffersender.BufferSender;
 import kr.dogfoot.webserver.server.host.Host;
 import kr.dogfoot.webserver.server.object.ServerObjects;
-import kr.dogfoot.webserver.server.timer.Timer;
-import kr.dogfoot.webserver.util.ConfigFileLoader;
 import kr.dogfoot.webserver.util.Message;
 
 public class Server implements Startable {
@@ -33,9 +31,7 @@ public class Server implements Startable {
     private HttpProxier httpProxier;
     private BufferSender bufferSender;
 
-    public Server() throws Exception {
-        ConfigFileLoader.setConfigDirectory("/Users/neolord/WebServerHome/config");
-
+    public Server() {
         serverObjects = new ServerObjects();
         hosts = new Host[DEFAULT_HOST_COUNT];
         hostCount = 0;
@@ -43,7 +39,6 @@ public class Server implements Startable {
 
     @Override
     public void start() throws Exception {
-        startTimer();
         initialize();
 
         createAndStartListner();
@@ -56,14 +51,6 @@ public class Server implements Startable {
         createAndStartAjpProxier();
         createAndStartHttpProxier();
         createAndStartBuffeSender();
-    }
-
-    private void startTimer() {
-        timer().start();
-    }
-
-    private Timer timer() {
-        return serverObjects.timer();
     }
 
     private void initialize() {
@@ -148,8 +135,6 @@ public class Server implements Startable {
 
     @Override
     public void terminate() throws Exception {
-        timer().terminate();
-
         terminateListener();
         terminateHandshaker();
         terminateRequestReceiver();
@@ -161,7 +146,7 @@ public class Server implements Startable {
         terminateHttpProxier();
         terminateBufferSender();
 
-        contextManager().releaseAll();
+        serverObjects.terminate();
 
         Message.debug("terminate Server...");
     }

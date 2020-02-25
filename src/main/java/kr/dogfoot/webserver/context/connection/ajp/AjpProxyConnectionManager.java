@@ -2,7 +2,6 @@ package kr.dogfoot.webserver.context.connection.ajp;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.server.host.proxy_info.BackendServerInfo;
-import kr.dogfoot.webserver.server.host.proxy_info.ProxyInfo;
 import kr.dogfoot.webserver.server.timer.Timer;
 import kr.dogfoot.webserver.server.timer.TimerEventHandler;
 import kr.dogfoot.webserver.util.Message;
@@ -85,14 +84,15 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
         if (conn != null) {
             Message.debug(conn, "release and close ajp proxy connection");
 
-            _releaseAndClose(conn);
+            close(conn);
+            addToPool(conn);
 
             removeFromAssigned(conn);
             context.ajpProxy(null);
         }
     }
 
-    private void _releaseAndClose(AjpProxyConnection conn) {
+    public void close(AjpProxyConnection conn) {
         if (conn.channel() != null) {
             try {
                 conn.channel().close();
@@ -101,10 +101,10 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
             }
 
             conn.killTimerForIdle(timer);
-            conn.backendServerInfo().decreaseConnectCount();;
+            conn.backendServerInfo().decreaseConnectCount();
+            ;
             conn.channel(null);
         }
-        addToPool(conn);
     }
 
     private void addToPool(AjpProxyConnection connection) {
@@ -140,7 +140,8 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
     public void HandleTimerEvent(Object data, long time) {
         AjpProxyConnection conn = (AjpProxyConnection) data;
         if (conn != null) {
-            _releaseAndClose(conn);
+            close(conn);
+            addToPool(conn);
         }
     }
 }

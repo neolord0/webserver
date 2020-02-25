@@ -52,6 +52,9 @@ public class AjpProxier extends AsyncSocketProcessor {
         Message.debug(connection, "send FORWARD_REQUEST message");
         ToAjpServer.sendForwardRequest(context, server);
 
+        context.request().setRequestTimeToNow();
+        context.originalRequest().requestTime(context.request().requestTime());
+
         requestSaver.save(connection.channel(), context.request());
 
         if (context.request().hasBody()) {
@@ -231,6 +234,8 @@ public class AjpProxier extends AsyncSocketProcessor {
         AjpProxyConnection connection = context.ajpProxy();
 
         context.response(AjpResponseParser.sendHeadersToResponse(connection.receiveBuffer(), responseMaker()));
+        context.response().setResponseTimeToNow();
+
         connection.responseHasContentLength(context.response().hasContentLength());
 
         ToClientCommon.sendStatusLine_Headers(context, server);
@@ -271,8 +276,6 @@ public class AjpProxier extends AsyncSocketProcessor {
         if (connection.responseHasContentLength() == false) {
             ToClient.sendLastBodyChunk(context, server);
         }
-
-        context.response().setResponseTimeToNow();
 
         boolean reuse = AjpResponseParser.readBool(connection.receiveBuffer());
         if (reuse) {

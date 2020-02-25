@@ -89,27 +89,27 @@ public class ParserStatus {
         return buffer;
     }
 
-    public boolean skippingSpace() {
+    public boolean isSkippingSpace() {
         return skippingSpace;
     }
 
-    public void skippingSpace(boolean skippingSpace) {
+    public void isSkippingSpace(boolean skippingSpace) {
         this.skippingSpace = skippingSpace;
     }
 
-    public boolean doneCR() {
+    public boolean isDoneCR() {
         return doneCR;
     }
 
-    public void doneCR(boolean doneCR) {
+    public void isDoneCR(boolean doneCR) {
         this.doneCR = doneCR;
     }
 
-    public boolean doneCRLF() {
+    public boolean isDoneCRLF() {
         return doneCRLF;
     }
 
-    public void doneCRLF(boolean doneCRLF) {
+    public void isDoneCRLF(boolean doneCRLF) {
         this.doneCRLF = doneCRLF;
     }
 

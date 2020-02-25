@@ -23,11 +23,12 @@ public class OutputBuffer {
         if (ob == null) {
             ob = new OutputBuffer();
         }
-        ob.reset();
         return ob;
     }
 
     public static void release(OutputBuffer ob) {
+        ob.reset();
+
         obPool.add(ob);
     }
 
@@ -232,6 +233,23 @@ public class OutputBuffer {
         return this;
     }
 
+
+    public final OutputBuffer appendByteArrayQuoted(byte sep, byte[][] arr) {
+        boolean first = true;
+        for (byte[] item : arr) {
+            if (first) {
+                first = false;
+            } else {
+                append(sep);
+                append(HttpString.Space);
+            }
+
+            appendQuoted(item);
+        }
+        return this;
+
+    }
+
     public final OutputBuffer appendQValue(float qvalue) {
         if (qvalue > 1 || qvalue < 0) {
             return this;
@@ -277,7 +295,8 @@ public class OutputBuffer {
 
     public final OutputBuffer appendArray(byte sep, Object[] arr) {
         boolean first = true;
-        for (AppendableToByte atb : (AppendableToByte[]) arr) {
+        for (Object o : arr) {
+            AppendableToByte atb = (AppendableToByte) o;
             if (first) {
                 first = false;
             } else {
@@ -316,6 +335,12 @@ public class OutputBuffer {
         return all;
     }
 
+    public final byte[] getBytesAndRelease() {
+        byte[] ret = getBytes();
+        release(this);
+        return ret;
+    }
+
     public int getLength() {
         return length;
     }
@@ -333,4 +358,10 @@ public class OutputBuffer {
         length = 0;
     }
 
+    public void copyFrom(OutputBuffer source) {
+        byte[] bytes = source.getBytes();
+        if (bytes != null) {
+            append(bytes);
+        }
+    }
 }

@@ -7,6 +7,7 @@ import kr.dogfoot.webserver.util.bytes.AppendableToByte;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpDateMaker;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class WarningValue implements AppendableToByte {
     private WarnCodeSort code;
@@ -68,35 +69,50 @@ public class WarningValue implements AppendableToByte {
         }
     }
 
-    public WarnCodeSort getCode() {
+    public boolean isMatch(WarningValue other) {
+        return code == other.code
+                && StringUtils.equalsIgnoreCaseWithNull(agent, other.agent)
+                && StringUtils.equalsIgnoreCaseWithNull(text, other.text)
+                && isEqualsDate(other);
+    }
+
+    private boolean isEqualsDate(WarningValue other) {
+        if (date == null) {
+            return other.date == null;
+        } else {
+            return date.equals(other.date);
+        }
+    }
+
+    public WarnCodeSort code() {
         return code;
     }
 
-    public void setCode(WarnCodeSort code) {
+    public void code(WarnCodeSort code) {
         this.code = code;
     }
 
-    public String getAgent() {
+    public String agent() {
         return agent;
     }
 
-    public void setAgent(String agent) {
+    public void agent(String agent) {
         this.agent = agent;
     }
 
-    public String getText() {
+    public String text() {
         return text;
     }
 
-    public void setText(String text) {
+    public void text(String text) {
         this.text = text;
     }
 
-    public Long getDate() {
+    public Long date() {
         return date;
     }
 
-    public void setDate(Long date) {
+    public void date(Long date) {
         this.date = date;
     }
 }

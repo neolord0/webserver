@@ -24,6 +24,11 @@ public class HeaderValueContentEncoding extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        contentCodingList.clear();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -46,9 +51,33 @@ public class HeaderValueContentEncoding extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendStringArray(HttpString.Comma, contentCodingList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Content_Encoding) {
+            HeaderValueContentEncoding other2 = (HeaderValueContentEncoding) other;
+            int includedCount = 0;
+            for (ContentCodingSort cc : other2.contentCodingList) {
+                if (isInclude(cc)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.contentCodingList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(ContentCodingSort other) {
+        for (ContentCodingSort cc : contentCodingList) {
+            if (cc == other) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addContentCoding(ContentCodingSort contentCoding) {

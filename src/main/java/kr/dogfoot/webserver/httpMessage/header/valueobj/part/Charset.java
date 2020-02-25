@@ -6,6 +6,7 @@ import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.AppendableToByte;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 public class Charset implements AppendableToByte {
     private String charset;
@@ -30,8 +31,8 @@ public class Charset implements AppendableToByte {
                 try {
                     p.parse(value, ps);
 
-                    if (p.getName().equalsIgnoreCase("q")) {
-                        qvalue = new Float(p.getValue());
+                    if (p.name().equalsIgnoreCase("q")) {
+                        qvalue = new Float(p.value());
                     }
                 } catch (ParserException e) {
                     e.printStackTrace();
@@ -49,19 +50,24 @@ public class Charset implements AppendableToByte {
         }
     }
 
-    public String getCharset() {
+    public boolean isMatch(Charset other) {
+        return StringUtils.equalsWithNull(charset, other.charset);
+    }
+
+    public String charset() {
         return charset;
     }
 
-    public void setCharset(String charset) {
+    public void charset(String charset) {
         this.charset = charset;
     }
 
-    public Float getQvalue() {
+    public Float qvalue() {
         return qvalue;
     }
 
-    public void setQvalue(Float qvalue) {
+    public void qvalue(Float qvalue) {
         this.qvalue = qvalue;
     }
+
 }

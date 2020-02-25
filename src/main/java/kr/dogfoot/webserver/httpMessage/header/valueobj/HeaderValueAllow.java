@@ -24,6 +24,11 @@ public class HeaderValueAllow extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        methodTypeList.clear();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -52,9 +57,33 @@ public class HeaderValueAllow extends HeaderValue {
             }
             buffer.append(mt.getBytes());
         }
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Allow) {
+            HeaderValueAllow other2 = (HeaderValueAllow) other;
+            int includedCount = 0;
+            for (MethodType mt : other2.methodTypeList) {
+                if (isInclude(mt)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.methodTypeList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isInclude(MethodType other) {
+        for (MethodType mt : methodTypeList) {
+            if (mt == other) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addMethodType(MethodType mt) {

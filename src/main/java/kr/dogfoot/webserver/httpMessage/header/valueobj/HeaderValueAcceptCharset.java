@@ -24,6 +24,11 @@ public class HeaderValueAcceptCharset extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        charsetList.clear();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -48,9 +53,7 @@ public class HeaderValueAcceptCharset extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray((byte) ',', charsetList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
     @Override
@@ -63,8 +66,8 @@ public class HeaderValueAcceptCharset extends HeaderValue {
         float qvalue_asterisk = -1;
 
         for (Charset cs : charsetList) {
-            String cd_text = cs.getCharset();
-            float cs_qvalue = (cs.getQvalue() == null) ? 1 : cs.getQvalue();
+            String cd_text = cs.charset();
+            float cs_qvalue = (cs.qvalue() == null) ? 1 : cs.qvalue();
 
             if (cd_text.equalsIgnoreCase(compare)) {
                 qvalue = Math.max(cs_qvalue, qvalue);
@@ -77,6 +80,32 @@ public class HeaderValueAcceptCharset extends HeaderValue {
         } else {
             return qvalue_asterisk;
         }
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Accept_Charset) {
+            HeaderValueAcceptCharset other2 = (HeaderValueAcceptCharset) other;
+            int includedCount = 0;
+            for (Charset cs : other2.charsetList) {
+                if (isInclude(cs)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.charsetList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(Charset other) {
+        for (Charset cs : charsetList) {
+            if (cs.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Charset addNewCharset() {

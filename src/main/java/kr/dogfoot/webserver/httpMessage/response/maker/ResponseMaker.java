@@ -3,11 +3,14 @@ package kr.dogfoot.webserver.httpMessage.response.maker;
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.FactoryForHeaderValue;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueAllow;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueETag;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.HeaderValueLastModified;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.ContentCodingSort;
-import kr.dogfoot.webserver.httpMessage.response.Response;
-import kr.dogfoot.webserver.httpMessage.response.StatusCode;
 import kr.dogfoot.webserver.httpMessage.request.MethodType;
 import kr.dogfoot.webserver.httpMessage.request.Request;
+import kr.dogfoot.webserver.httpMessage.response.Response;
+import kr.dogfoot.webserver.httpMessage.response.StatusCode;
+import kr.dogfoot.webserver.server.cache.StoredResponse;
 import kr.dogfoot.webserver.server.host.proxy_info.Protocol;
 import kr.dogfoot.webserver.server.object.ServerProperties;
 import kr.dogfoot.webserver.server.resource.ResourceFile;
@@ -39,6 +42,26 @@ public class ResponseMaker {
         createStaticResponse();
     }
 
+    private static void addHeader_WWWAuthenticate(Response response, String authorizationType, String realmDescription) {
+        OutputBuffer buffer = OutputBuffer.pooledObject();
+        buffer
+                .append(authorizationType.getBytes())
+                .append(HttpString.Space)
+                .append(HttpString.Realm)
+                .append(HttpString.Equal)
+                .appendQuoted(realmDescription);
+        response.addHeader(HeaderSort.WWW_Authenticate, buffer.getBytes());
+        OutputBuffer.release(buffer);
+    }
+
+    private static void addHeader_Allow(Response response, MethodType[] allowedMethods) {
+        HeaderValueAllow allow = (HeaderValueAllow) FactoryForHeaderValue.create(HeaderSort.Allow);
+        for (MethodType mt : allowedMethods) {
+            allow.addMethodType(mt);
+        }
+        response.addHeader(HeaderSort.Allow, allow.combineValue());
+    }
+
     private void createStaticResponse() {
         _500CannotConnectWAS = new_500InternalServerError(Error_500CannotConnectWAS);
         _500DisconnectWAS = new_500InternalServerError(Error_500DisconnectWAS);
@@ -49,7 +72,7 @@ public class ResponseMaker {
     }
 
     private Response new_500InternalServerError(String message) {
-        Response response = new Response().code(StatusCode.Code500);
+        Response response = new Response().statusCode(StatusCode.Code500);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -63,13 +86,13 @@ public class ResponseMaker {
     }
 
     public void addHeader_Server(Response response) {
-        if (serverProperties.sendServerHeader()) {
+        if (serverProperties.isSendServerHeader()) {
             response.addHeader(HeaderSort.Server, serverProperties.serverInfos());
         }
     }
 
     private Response new_417ExpectationFail() {
-        Response response = new Response().code(StatusCode.Code417);
+        Response response = new Response().statusCode(StatusCode.Code417);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -78,7 +101,7 @@ public class ResponseMaker {
     }
 
     public Response new_200OK() {
-        Response response = new Response().code(StatusCode.Code200);
+        Response response = new Response().statusCode(StatusCode.Code200);
         addHeader_Date(response);
         addHeader_Server(response);
         return response;
@@ -86,35 +109,52 @@ public class ResponseMaker {
 
     public Response new_DefalutPost(Request request) {
         Response response = new_200OK();
-        addHeader_Date(response);
-        addHeader_Server(response);
-
         DefaultMessageBody.makeForPostResponse(response, request);
         return response;
     }
 
     public Response new_Redirect(StatusCode statusCode, String targetURL) {
-        Response response = new Response().code(statusCode);
+        Response response = new Response().statusCode(statusCode);
         addHeader_Date(response);
         addHeader_Server(response);
-        response.addHeader(HeaderSort.Location, targetURL.getBytes());
-        response.addHeader(HeaderSort.Cache_Control, HttpString.No_Cache);
-        response.addHeader(HeaderSort.Connection, HttpString.Close);
-        response.addHeader(HeaderSort.Pragma, HttpString.No_Cache);
+        response.addHeader(HeaderSort.Location, targetURL.getBytes())
+                .addHeader(HeaderSort.Cache_Control, HttpString.No_Cache)
+                .addHeader(HeaderSort.Connection, HttpString.Close)
+                .addHeader(HeaderSort.Pragma, HttpString.No_Cache);
 
         return response;
     }
 
     public Response new_304NotModified(ResourceFile resource) {
-        Response response = new Response().code(StatusCode.Code304);
+        Response response = new Response().statusCode(StatusCode.Code304);
         addHeader_Date(response);
         addHeader_Server(response);
-        response.addHeader(HeaderSort.ETag, resource.getETag());
+        response.addHeader(HeaderSort.ETag, resource.etagWithDQute())
+                .addHeader(HeaderSort.Last_Modified, HttpDateMaker.makeBytes(resource.lastModified()));
+        return response;
+    }
+
+    public Response new_304NotModified(StoredResponse storedResponse) {
+        Response response = new Response().statusCode(StatusCode.Code304);
+        addHeader_Date(response);
+        addHeader_Server(response);
+
+        HeaderValueETag eTag = (HeaderValueETag) storedResponse.response().getHeaderValueObj(HeaderSort.ETag);
+        if (eTag != null) {
+            OutputBuffer buffer = OutputBuffer.pooledObject();
+            buffer.appendQuoted(eTag.etag());
+            response.addHeader(HeaderSort.ETag, buffer.getBytesAndRelease());
+        }
+
+        HeaderValueLastModified lastModified = (HeaderValueLastModified) storedResponse.response().getHeaderValueObj(HeaderSort.Last_Modified);
+        if (lastModified != null) {
+            response.addHeader(HeaderSort.Last_Modified, HttpDateMaker.makeBytes(lastModified.date()));
+        }
         return response;
     }
 
     public Response new_400BadRequest(String message) {
-        Response response = new Response().code(StatusCode.Code304);
+        Response response = new Response().statusCode(StatusCode.Code304);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -123,7 +163,7 @@ public class ResponseMaker {
     }
 
     public Response new_401Unauthorized(String authorizationType, String realmDescription) {
-        Response response = new Response().code(StatusCode.Code401);
+        Response response = new Response().statusCode(StatusCode.Code401);
         addHeader_Date(response);
         addHeader_Server(response);
         addHeader_WWWAuthenticate(response, authorizationType, realmDescription);
@@ -132,20 +172,8 @@ public class ResponseMaker {
         return response;
     }
 
-    private static void addHeader_WWWAuthenticate(Response response, String authorizationType, String realmDescription) {
-        OutputBuffer buffer = OutputBuffer.pooledObject();
-        buffer
-                .append(authorizationType.getBytes())
-                .append(HttpString.Space)
-                .append(HttpString.Realm)
-                .append(HttpString.Equal)
-                .appendQuoted(realmDescription);
-        response.addHeader(HeaderSort.WWW_Authenticate, buffer.getBytes());
-        OutputBuffer.release(buffer);
-    }
-
     public Response new_404NotFound(Request request) {
-        Response response = new Response().code(StatusCode.Code404);
+        Response response = new Response().statusCode(StatusCode.Code404);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -154,7 +182,7 @@ public class ResponseMaker {
     }
 
     public Response new_405MethodNotAllowed(Request request, MethodType[] allowedMethods) {
-        Response response = new Response().code(StatusCode.Code405);
+        Response response = new Response().statusCode(StatusCode.Code405);
         addHeader_Date(response);
         addHeader_Server(response);
         addHeader_Allow(response, allowedMethods);
@@ -163,16 +191,8 @@ public class ResponseMaker {
         return response;
     }
 
-    private static void addHeader_Allow(Response response, MethodType[] allowedMethods) {
-        HeaderValueAllow allow = (HeaderValueAllow) FactoryForHeaderValue.create(HeaderSort.Allow);
-        for (MethodType mt : allowedMethods) {
-            allow.addMethodType(mt);
-        }
-        response.addHeader(HeaderSort.Allow, allow.combineValue());
-    }
-
     public Response new_406NotAcceptable(ResourceNegotiatedFile resource) {
-        Response response = new Response().code(StatusCode.Code406);
+        Response response = new Response().statusCode(StatusCode.Code406);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -181,7 +201,7 @@ public class ResponseMaker {
     }
 
     public Response new_407Unauthorized(String authorizationType, String realmDescription) {
-        Response response = new Response().code(StatusCode.Code407);
+        Response response = new Response().statusCode(StatusCode.Code407);
         addHeader_Date(response);
         addHeader_Server(response);
         addHeader_ProxyAuthenticate(response, authorizationType, realmDescription);
@@ -204,11 +224,11 @@ public class ResponseMaker {
     }
 
     public Response new_412PreconditionFailed(ResourceFile resource) {
-        Response response = new Response().code(StatusCode.Code412);
+        Response response = new Response().statusCode(StatusCode.Code412);
         addHeader_Date(response);
         addHeader_Server(response);
-        response.addHeader(HeaderSort.Last_Modified, HttpDateMaker.makeBytes(resource.lastModified()));
-        response.addHeader(HeaderSort.ETag, resource.etag());
+        response.addHeader(HeaderSort.Last_Modified, HttpDateMaker.makeBytes(resource.lastModified()))
+                .addHeader(HeaderSort.ETag, resource.etagWithDQute());
 
         return response;
     }
@@ -218,7 +238,7 @@ public class ResponseMaker {
     }
 
     public Response new_500NotSupportedEncoding(ContentCodingSort coding) {
-        Response response = new Response().code(StatusCode.Code500);
+        Response response = new Response().statusCode(StatusCode.Code500);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -227,7 +247,7 @@ public class ResponseMaker {
     }
 
     public Response new_500NotSupportedProxyProtocol(Protocol protocol) {
-        Response response = new Response().code(StatusCode.Code500);
+        Response response = new Response().statusCode(StatusCode.Code500);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -236,7 +256,7 @@ public class ResponseMaker {
     }
 
     public Response new_500CannotChangeCharset(String sourceCharset, String targetCharset) {
-        Response response = new Response().code(StatusCode.Code500);
+        Response response = new Response().statusCode(StatusCode.Code500);
         addHeader_Date(response);
         addHeader_Server(response);
 
@@ -263,5 +283,6 @@ public class ResponseMaker {
     public Response get_500TooManyFileOpen() {
         return _500TooManyFileOpen;
     }
+
 }
 

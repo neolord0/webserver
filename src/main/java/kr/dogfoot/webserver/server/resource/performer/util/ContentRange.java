@@ -15,7 +15,7 @@ public class ContentRange {
         this.lastPos = lastPos;
     }
 
-    public boolean asterisk() {
+    public boolean isAsterisk() {
         return isAsterisk;
     }
 
@@ -39,7 +39,7 @@ public class ContentRange {
         this.lastPos = lastPos;
     }
 
-    public boolean merge(ContentRange other) {
+    public boolean isMerge(ContentRange other) {
         if (this.firstPos <= other.firstPos && this.lastPos >= other.lastPos) {
             return true;
         } else if (this.firstPos >= other.firstPos && this.lastPos <= other.lastPos) {
@@ -59,4 +59,14 @@ public class ContentRange {
     public long length() {
         return lastPos - firstPos + 1;
     }
+
+    public ContentRange clone() {
+        ContentRange cloned = new ContentRange();
+        cloned.isAsterisk = isAsterisk;
+        cloned.firstPos = firstPos;
+        cloned.lastPos = lastPos;
+        return cloned;
+    }
 }
+
+

@@ -4,7 +4,6 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -22,6 +21,12 @@ public class HeaderValueVary extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Vary;
+    }
+
+    @Override
+    public void reset() {
+        isAsterisk = false;
+        fieldNameList.clear();
     }
 
     @Override
@@ -57,9 +62,35 @@ public class HeaderValueVary extends HeaderValue {
         } else {
             buffer.appendStringArray(HttpString.Comma, fieldNameList.toArray());
         }
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Vary) {
+            HeaderValueVary other2 = (HeaderValueVary) other;
+            if (isAsterisk == other2.isAsterisk) {
+                int includedCount = 0;
+                for (HeaderSort headerSort : other2.fieldNameList) {
+                    if (isInclude(headerSort)) {
+                        includedCount++;
+                    }
+                }
+                if (includedCount == other2.fieldNameList.size()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(HeaderSort other) {
+        for (HeaderSort headerSort : fieldNameList) {
+            if (headerSort == other) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isAsterisk() {

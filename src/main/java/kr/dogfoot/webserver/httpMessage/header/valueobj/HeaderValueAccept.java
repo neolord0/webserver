@@ -24,6 +24,11 @@ public class HeaderValueAccept extends HeaderValue {
     }
 
     @Override
+    public void reset() {
+        mediaTypeList.clear();
+    }
+
+    @Override
     public void parseValue(byte[] value) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.ioff = 0;
@@ -48,9 +53,7 @@ public class HeaderValueAccept extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray(HttpString.Comma, mediaTypeList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
     }
 
     @Override
@@ -62,11 +65,37 @@ public class HeaderValueAccept extends HeaderValue {
 
         for (MediaType mt : mediaTypeList) {
             if (mt.isMatch(compare)) {
-                float mt_qvalue = (mt.getQvalue() == null) ? 1 : mt.getQvalue();
+                float mt_qvalue = (mt.qvalue() == null) ? 1 : mt.qvalue();
                 qvalue = Math.max(mt_qvalue, qvalue);
             }
         }
         return qvalue;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Accept) {
+            HeaderValueAccept other2 = (HeaderValueAccept) other;
+            int includedCount = 0;
+            for (MediaType mt : other2.mediaTypeList) {
+                if (isInclude(mt)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.mediaTypeList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(MediaType other) {
+        for (MediaType mt : mediaTypeList) {
+            if (mt.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public MediaType addNewMediaType() {

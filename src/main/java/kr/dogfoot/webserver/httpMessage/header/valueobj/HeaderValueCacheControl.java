@@ -2,6 +2,7 @@ package kr.dogfoot.webserver.httpMessage.header.valueobj;
 
 import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.httpMessage.header.valueobj.part.CacheDirective;
+import kr.dogfoot.webserver.httpMessage.header.valueobj.part.CacheDirectiveSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
@@ -21,6 +22,11 @@ public class HeaderValueCacheControl extends HeaderValue {
     @Override
     public HeaderSort sort() {
         return HeaderSort.Cache_Control;
+    }
+
+    @Override
+    public void reset() {
+        cacheDirectiveList.clear();
     }
 
     @Override
@@ -48,9 +54,33 @@ public class HeaderValueCacheControl extends HeaderValue {
     public byte[] combineValue() {
         OutputBuffer buffer = OutputBuffer.pooledObject();
         buffer.appendArray((byte) ',', cacheDirectiveList.toArray());
-        byte[] ret = buffer.getBytes();
-        OutputBuffer.release(buffer);
-        return ret;
+        return buffer.getBytesAndRelease();
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Cache_Control) {
+            HeaderValueCacheControl other2 = (HeaderValueCacheControl) other;
+            int includedCount = 0;
+            for (CacheDirective cd : other2.cacheDirectiveList) {
+                if (isInclude(cd)) {
+                    includedCount++;
+                }
+            }
+            if (includedCount == other2.cacheDirectiveList.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInclude(CacheDirective other) {
+        for (CacheDirective cd : cacheDirectiveList) {
+            if (cd.isMatch(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public CacheDirective addNewCacheDirective() {
@@ -61,5 +91,23 @@ public class HeaderValueCacheControl extends HeaderValue {
 
     public CacheDirective[] cacheDirectives() {
         return cacheDirectiveList.toArray(Zero_Array);
+    }
+
+    public boolean hasCacheDirective(CacheDirectiveSort directiveSort) {
+        for (CacheDirective cd : cacheDirectiveList) {
+            if (cd.sort() == directiveSort) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public CacheDirective getCacheDirective(CacheDirectiveSort directiveSort) {
+        for (CacheDirective cd : cacheDirectiveList) {
+            if (cd.sort() == directiveSort) {
+                return cd;
+            }
+        }
+        return null;
     }
 }

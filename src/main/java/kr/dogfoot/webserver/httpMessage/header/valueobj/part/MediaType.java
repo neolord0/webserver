@@ -6,6 +6,7 @@ import kr.dogfoot.webserver.parser.util.ParserException;
 import kr.dogfoot.webserver.util.bytes.AppendableToByte;
 import kr.dogfoot.webserver.util.bytes.OutputBuffer;
 import kr.dogfoot.webserver.util.http.HttpString;
+import kr.dogfoot.webserver.util.string.StringUtils;
 
 import java.util.ArrayList;
 
@@ -27,6 +28,14 @@ public class MediaType implements AppendableToByte {
         this.parameterList = new ArrayList<Parameter>();
     }
 
+    public void reset() {
+        type = null;
+        subtype = null;
+        qvalue = null;
+        charset = null;
+        parameterList.clear();
+    }
+
     public void parse(byte[] value, ParseState parentPS) throws ParserException {
         ParseState ps = ParseState.pooledObject();
         ps.prepare(parentPS);
@@ -43,10 +52,10 @@ public class MediaType implements AppendableToByte {
                 try {
                     p.parse(value, ps);
 
-                    if (p.getName().equalsIgnoreCase(HttpString.Q)) {
-                        qvalue = new Float(p.getValue());
-                    } else if (p.getName().equalsIgnoreCase(HttpString.Charset_String)) {
-                        charset = p.getValue();
+                    if (p.name().equalsIgnoreCase(HttpString.Q)) {
+                        qvalue = new Float(p.value());
+                    } else if (p.name().equalsIgnoreCase(HttpString.Charset_String)) {
+                        charset = p.value();
                     } else {
                         parameterList.add(p);
                     }
@@ -95,67 +104,16 @@ public class MediaType implements AppendableToByte {
         }
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getSubtype() {
-        return subtype;
-    }
-
-    public void setSubtype(String subtype) {
-        this.subtype = subtype;
-    }
-
-    public Float getQvalue() {
-        return qvalue;
-    }
-
-    public void setQvalue(Float qvalue) {
-        this.qvalue = qvalue;
-    }
-
-    public String getCharset() {
-        return charset;
-    }
-
-    public void setCharset(String charset) {
-        this.charset = charset;
-    }
-
-
-    public ArrayList<Parameter> getParameterList() {
-        return parameterList;
-    }
-
-    public String getParameterValue(String name) {
-        if (name == null) {
-            return null;
+    public boolean isMatch(MediaType other) {
+        if ("*".equals(type) && "*".equals(subtype)) {
+            return true;
         }
-        for (Parameter p : parameterList) {
-            if (name.equalsIgnoreCase(p.getName())) {
-                return p.getValue();
-            }
+        if ("*".equals(subtype)) {
+            return StringUtils.equalsWithNull(type, other.type);
+        } else {
+            return StringUtils.equalsWithNull(type, other.type)
+                    && StringUtils.equalsWithNull(subtype, other.subtype);
         }
-        return null;
-    }
-
-    public long getWriteSize() {
-        long size = 0;
-        size += type.length() + 1 + subtype.length();
-        if (qvalue != null) {
-            size += 1;
-            OutputBuffer.getWriteSize_QValue(qvalue);
-        }
-        for (Parameter p : parameterList) {
-            size += 1;
-            size += p.getWriteSize();
-        }
-        return size;
     }
 
     public boolean isMatch(String compare) {
@@ -170,5 +128,42 @@ public class MediaType implements AppendableToByte {
             return types.length == 2 && type.equals(types[0]) && subtype.equals(types[1]);
         }
         return false;
+    }
+
+
+    public String type() {
+        return type;
+    }
+
+    public void type(String type) {
+        this.type = type;
+    }
+
+    public String subtype() {
+        return subtype;
+    }
+
+    public void subtype(String subtype) {
+        this.subtype = subtype;
+    }
+
+    public Float qvalue() {
+        return qvalue;
+    }
+
+    public void qvalue(Float qvalue) {
+        this.qvalue = qvalue;
+    }
+
+    public String charset() {
+        return charset;
+    }
+
+    public void charset(String charset) {
+        this.charset = charset;
+    }
+
+    public ArrayList<Parameter> parameterList() {
+        return parameterList;
     }
 }

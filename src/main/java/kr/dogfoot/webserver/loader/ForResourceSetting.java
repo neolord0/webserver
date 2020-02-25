@@ -102,7 +102,7 @@ public class ForResourceSetting {
             if (SettingXML.Name_Pattern_Attr.equalsIgnoreCase(attrName)) {
                 nsf.namePatten(attr.getValue());
             } else if (SettingXML.Inheritable_Attr.equalsIgnoreCase(attrName)) {
-                nsf.inheritable(SettingXML.True_Value.equalsIgnoreCase(attr.getValue()));
+                nsf.setInheritable(XMLUtil.toBoolean(attr.getValue()));
             }
         }
     }
@@ -116,7 +116,7 @@ public class ForResourceSetting {
             String nodeName = node.getNodeName();
 
             if (SettingXML.Source_Path_Node.equalsIgnoreCase(nodeName)) {
-                vds.sourcePath(SettingXML.getCDATA((Element) node));
+                vds.sourcePath(XMLUtil.getCDATA((Element) node));
             }
         }
     }

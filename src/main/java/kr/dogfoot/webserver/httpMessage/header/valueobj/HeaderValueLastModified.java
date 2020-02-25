@@ -4,18 +4,19 @@ import kr.dogfoot.webserver.httpMessage.header.HeaderSort;
 import kr.dogfoot.webserver.parser.util.ByteParser;
 import kr.dogfoot.webserver.parser.util.ParseState;
 import kr.dogfoot.webserver.parser.util.ParserException;
-import kr.dogfoot.webserver.server.resource.filter.part.condition.CompareOperator;
 import kr.dogfoot.webserver.util.http.HttpDateMaker;
 
 public class HeaderValueLastModified extends HeaderValue {
     private Long date;
 
-    public HeaderValueLastModified() {
-    }
-
     @Override
     public HeaderSort sort() {
         return HeaderSort.Last_Modified;
+    }
+
+    @Override
+    public void reset() {
+        date = null;
     }
 
     @Override
@@ -35,6 +36,19 @@ public class HeaderValueLastModified extends HeaderValue {
     @Override
     public Long getDateValue() {
         return date;
+    }
+
+    @Override
+    public boolean isEqualValue(HeaderValue other) {
+        if (other.sort() == HeaderSort.Last_Modified) {
+            HeaderValueLastModified other2 = (HeaderValueLastModified) other;
+            if (date == null) {
+                return other2.date == null;
+            } else {
+                return date.equals(other2.date);
+            }
+        }
+        return false;
     }
 
     public Long date() {
