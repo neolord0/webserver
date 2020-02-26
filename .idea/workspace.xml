@@ -1,189 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2d6be526-f6b7-43e6-a845-b517f624b48f" name="Default Changelist" comment="rename : reply =&gt; response">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__joda_time_joda_time_2_10_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_jetbrains_annotations_18_0_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/util/RequestSetter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/util/ResponseSetter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/XMLUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/CacheEntry.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/CacheHost.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/CacheLoader.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/CacheManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/CacheManagerImp.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/InactiveResponseRemover.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/NullCacheManagerImp.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/PostSelectProcessing.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/SelectedResourceInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/SizeLimiter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/StoredResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/StoredResponseLoader.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/StoredResponseSet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/cache/StoredResponseStorer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/CacheOption.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/kr/dogfoot/webserver/httpMessage/header/IntegerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/kr/dogfoot/webserver/httpMessage/header/LongTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/kr/dogfoot/webserver/httpMessage/header/StringTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/kr/dogfoot/webserver/httpMessage/header/TestDeltaSecondParserAndDataSize.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/kr/dogfoot/webserver/httpMessage/header/TestInteger.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/kr/dogfoot/webserver/httpMessage/header/TestObjetWR.java" afterDir="false" />
+    <list default="true" id="2d6be526-f6b7-43e6-a845-b517f624b48f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/Context.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/Context.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/ContextManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/ContextManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/ajp/AjpProxyConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/ajp/AjpProxyConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/ajp/AjpProxyConnectionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/ajp/AjpProxyConnectionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/HttpConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/HttpConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/client/ClientConnectionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/client/ClientConnectionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/client/HttpClientConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/client/HttpClientConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/client/HttpsClientConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/client/HttpsClientConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/parserstatus/ParserStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/parserstatus/ParserStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/proxy/HttpProxyConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/proxy/HttpProxyConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/proxy/HttpProxyConnectionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/proxy/HttpProxyConnectionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/senderstatus/SenderStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/context/connection/http/senderstatus/SenderStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/HeaderItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/HeaderItem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/HeaderList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/HeaderList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValue.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValue.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAccept.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAccept.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptCharset.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptCharset.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptEncoding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptEncoding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptLanguage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptLanguage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptRanges.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAcceptRanges.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAge.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAge.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAllow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAllow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAuthorization.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueAuthorization.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueCacheControl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueCacheControl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentEncoding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentEncoding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentLanguage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentLanguage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentLength.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentLength.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentLocation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentLocation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentMD5.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentMD5.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentRange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentRange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueContentType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueDate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueDate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueETag.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueETag.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueExpect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueExpect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueExpires.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueExpires.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueFrom.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueFrom.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueHost.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueHost.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfMatch.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfMatch.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfModifiedSince.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfModifiedSince.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfNoneMatch.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfNoneMatch.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfRange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfRange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfUnmodifiedSince.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueIfUnmodifiedSince.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueKeepAlive.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueKeepAlive.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueLastModified.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueLastModified.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueLocation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueLocation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueMaxForwards.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueMaxForwards.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValuePragma.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValuePragma.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueProxyAuthenticate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueProxyAuthenticate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueProxyAuthorization.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueProxyAuthorization.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueRange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueRange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueReferer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueReferer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueRetryAfter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueRetryAfter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueTE.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueTE.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueTrailer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueTrailer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueTransferEncoding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueTransferEncoding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueUpgrade.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueUpgrade.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueUserAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueUserAgent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueVary.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueVary.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueVia.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueVia.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueWWWAuthenticate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueWWWAuthenticate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueWarning.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/HeaderValueWarning.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/CacheDirective.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/CacheDirective.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/CacheDirectiveSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/CacheDirectiveSort.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Charset.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Charset.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Coding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Coding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/ContentCodingSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/ContentCodingSort.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/ContentRange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/ContentRange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/InstanceLength.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/InstanceLength.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/LanguageRange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/LanguageRange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/MediaType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/MediaType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Parameter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Parameter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Range.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/Range.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/RecipientInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/RecipientInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/TransferCodingSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/TransferCodingSort.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/TransferEncoding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/TransferEncoding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/WarnCodeSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/WarnCodeSort.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/WarningValue.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/header/valueobj/part/WarningValue.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/request/MethodType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/request/MethodType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/request/Request.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/request/Request.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/request/URI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/request/URI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/EachRangePart.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/EachRangePart.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/Response.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/StatusCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/StatusCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/maker/DefaultMessageBody.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/maker/DefaultMessageBody.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/maker/ResponseMaker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/httpMessage/response/maker/ResponseMaker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForFilters.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForFilters.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForProxyInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForProxyInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForResourceSetting.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForResourceSetting.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForSSLConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/ForSSLConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/SettingXML.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/SettingXML.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/WebServiceLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/WebServiceLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/resourcesetting/NotServicedFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/resourcesetting/NotServicedFile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/resourcesetting/ResourceSetting.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/loader/resourcesetting/ResourceSetting.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/AjpResponseParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/AjpResponseParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/HttpChunkedBodyParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/HttpChunkedBodyParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/HttpMessageParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/HttpMessageParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/HttpResponseParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/HttpResponseParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/util/ByteParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/parser/util/ByteParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/AsyncSocketProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/AsyncSocketProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/Processor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/Processor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/BodyReceiver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/BodyReceiver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/ClientListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/ClientListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/RequestPerformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/RequestPerformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/ResponseSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/client/ResponseSender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/proxy/ProxyConnector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/proxy/ProxyConnector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/proxy/ajp/AjpProxier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/proxy/ajp/AjpProxier.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/proxy/http/HttpProxier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/proxy/http/HttpProxier.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/HttpBodyConveyor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/HttpBodyConveyor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/RequestSaver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/RequestSaver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/ToAjpServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/ToAjpServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/ToClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/ToClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/ToHttpServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/processor/util/ToHttpServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/buffersender/BufferSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/buffersender/BufferSender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/buffersender/SendBufferInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/buffersender/SendBufferInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/Host.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/Host.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/HostObjects.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/HostObjects.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/BackendServerInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/BackendServerInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/BackendServerManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/BackendServerManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/filter/ProxyFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/proxy_info/filter/ProxyFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/ssl/SSLConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/host/ssl/SSLConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/object/PooledThreadCount.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/object/PooledThreadCount.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/object/ServerObjects.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/object/ServerObjects.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/object/ServerProperties.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/object/ServerProperties.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/Resource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/Resource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/ResourceFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/ResourceFile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/ResourceNegotiatedFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/ResourceNegotiatedFile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterAllowedMethodAdding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterAllowedMethodAdding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterCharsetEncoding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterCharsetEncoding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterContentEncoding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterContentEncoding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterExpectChecking.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterExpectChecking.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterHeaderAdding.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/FilterHeaderAdding.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/part/condition/CompareOperator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/part/condition/CompareOperator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/part/condition/HeaderCondition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/filter/part/condition/HeaderCondition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/look/LookState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/look/LookState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/ConditonalGetPerformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/ConditonalGetPerformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/FilePerformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/FilePerformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/NegoFilePerformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/NegoFilePerformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/util/ContentRange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/util/ContentRange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/util/ContentRangeInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/util/ContentRangeInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/util/ContentRangeInfoMaker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/server/resource/performer/util/ContentRangeInfoMaker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/bytes/BytesUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/bytes/BytesUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/bytes/OutputBuffer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/bytes/OutputBuffer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/http/HttpDateMaker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/http/HttpDateMaker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/http/HttpString.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/http/HttpString.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/message/ajp/AjpMessageMaker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/message/ajp/AjpMessageMaker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/message/http/RequestToBuffer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/message/http/RequestToBuffer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/message/http/ResponseToBuffer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/message/http/ResponseToBuffer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/string/StringUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/kr/dogfoot/webserver/util/string/StringUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webserver.iml" beforeDir="false" afterPath="$PROJECT_DIR$/webserver.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webserver.xml" beforeDir="false" afterPath="$PROJECT_DIR$/webserver.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -436,6 +255,7 @@
       <workItem from="1582515781975" duration="8733000" />
       <workItem from="1582525288627" duration="6537000" />
       <workItem from="1582604786156" duration="11729000" />
+      <workItem from="1582616697246" duration="1026000" />
     </task>
     <task id="LOCAL-00001" summary="11/6">
       <created>1573017180948</created>
@@ -556,7 +376,14 @@
       <option name="project" value="LOCAL" />
       <updated>1578981457684</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="2/25 ...">
+      <created>1582616765080</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1582616765080</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -600,7 +427,8 @@
     <MESSAGE value="11/28 : 로드벨러싱 방법 : &quot;Least_Connection&quot; 추가..." />
     <MESSAGE value="12/2" />
     <MESSAGE value="rename : reply =&gt; response" />
-    <option name="LAST_COMMIT_MESSAGE" value="rename : reply =&gt; response" />
+    <MESSAGE value="2/25 ..." />
+    <option name="LAST_COMMIT_MESSAGE" value="2/25 ..." />
   </component>
   <component name="WindowStateProjectService">
     <state x="100" y="123" width="2360" height="1137" key="#com.intellij.execution.junit2.states.ComparisonFailureState$DiffDialog" timestamp="1578999342414">
@@ -631,10 +459,10 @@
       <screen x="0" y="23" width="2560" height="1337" />
     </state>
     <state x="853" y="23" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.23.2560.1337@0.23.2560.1337" timestamp="1582004058470" />
-    <state x="805" y="294" key="CommitChangelistDialog2" timestamp="1579674042522">
+    <state x="805" y="294" key="CommitChangelistDialog2" timestamp="1582616764648">
       <screen x="0" y="23" width="2560" height="1337" />
     </state>
-    <state x="805" y="294" key="CommitChangelistDialog2/0.23.2560.1337@0.23.2560.1337" timestamp="1579674042522" />
+    <state x="805" y="294" key="CommitChangelistDialog2/0.23.2560.1337@0.23.2560.1337" timestamp="1582616764648" />
     <state x="100" y="123" width="2360" height="1137" key="DiffContextDialog" timestamp="1579590455864">
       <screen x="0" y="23" width="2560" height="1337" />
     </state>
@@ -687,10 +515,10 @@
       <screen x="0" y="23" width="2560" height="1337" />
     </state>
     <state x="1132" y="614" key="VCS.ChangelistChooser/0.23.2560.1337@0.23.2560.1337" timestamp="1582269879988" />
-    <state x="880" y="431" key="Vcs.Push.Dialog.v2" timestamp="1578981474235">
+    <state x="880" y="431" key="Vcs.Push.Dialog.v2" timestamp="1582616780161">
       <screen x="0" y="23" width="2560" height="1337" />
     </state>
-    <state x="880" y="431" key="Vcs.Push.Dialog.v2/0.23.2560.1337@0.23.2560.1337" timestamp="1578981474235" />
+    <state x="880" y="431" key="Vcs.Push.Dialog.v2/0.23.2560.1337@0.23.2560.1337" timestamp="1582616780161" />
     <state x="1018" y="451" width="524" height="484" key="extract.method.dialog" timestamp="1582615298816">
       <screen x="0" y="23" width="2560" height="1337" />
     </state>
