@@ -221,7 +221,9 @@ public class HttpProxier extends AsyncSocketProcessor {
                     context.originalRequest(),
                     context.response());
             if (storedResponse != null) {
-                storedResponse.update(context.originalRequest(), context.response());
+                cacheManager().update(storedResponse,context.originalRequest(),
+                        context.response(),
+                        connection.backendServerInfo().cacheOption());
 
                 return procssAfterUpdating(context, storedResponse);
             }
@@ -245,8 +247,7 @@ public class HttpProxier extends AsyncSocketProcessor {
                 // test
                 System.out.println("replace");
 
-                storedResponse.replace(context.originalRequest(),
-                        context.response());
+                cacheManager().replace(storedResponse, context.originalRequest(), context.response(),connection.backendServerInfo().cacheOption());
             } else {
                 // test
                 System.out.println("store");

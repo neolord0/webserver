@@ -137,7 +137,7 @@ public class AjpProxyConnectionManager implements TimerEventHandler {
     }
 
     @Override
-    public void HandleTimerEvent(Object data, long time) {
+    public void handleTimerEvent(Object data, long time) {
         AjpProxyConnection conn = (AjpProxyConnection) data;
         if (conn != null) {
             close(conn);

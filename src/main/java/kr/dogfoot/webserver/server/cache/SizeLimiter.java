@@ -2,6 +2,7 @@ package kr.dogfoot.webserver.server.cache;
 
 public class SizeLimiter {
     private static long DEFAULT_MAX_SIZE = 1 * 1024 * 1024;
+
     private long maxSize;
     private long size;
 

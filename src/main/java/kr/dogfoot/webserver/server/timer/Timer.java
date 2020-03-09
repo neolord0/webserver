@@ -19,7 +19,7 @@ public class Timer {
                 while (running) {
                     TimerEvent e = getNextEvent();
                     if (e != null) {
-                        e.handler.HandleTimerEvent(e.data, e.time);
+                        e.handler.handleTimerEvent(e.data, e.time);
                     }
                 }
             }

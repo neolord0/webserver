@@ -146,8 +146,8 @@ public class WebServiceLoader {
             String attrName = attr.getName();
             if (SettingXML.Max_Size_Attr.equalsIgnoreCase(attrName)) {
                 cacheManagerImp.sizeLimiter().maxSize(XMLUtil.toDataSize(attr.getValue()));
-            } else if (SettingXML.Inactive_Time_Attr.equalsIgnoreCase(attrName)) {
-                cacheManagerImp.inactiveTime(XMLUtil.toDeltaSecond(attr.getValue()));
+            } else if (SettingXML.Inactive_Timeout_Attr.equalsIgnoreCase(attrName)) {
+                cacheManagerImp.inactiveTimeout(XMLUtil.toDeltaSecond(attr.getValue()));
             }
         }
 

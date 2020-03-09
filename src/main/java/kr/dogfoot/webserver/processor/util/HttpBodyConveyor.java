@@ -9,7 +9,6 @@ import kr.dogfoot.webserver.parser.HttpChunkedBodyParser;
 import kr.dogfoot.webserver.parser.util.CachedReader;
 import kr.dogfoot.webserver.server.Server;
 import kr.dogfoot.webserver.server.cache.StoredResponse;
-import kr.dogfoot.webserver.server.cache.StoredResponseStorer;
 import kr.dogfoot.webserver.util.bytes.ToBytes;
 import kr.dogfoot.webserver.util.http.HttpString;
 
@@ -44,7 +43,7 @@ public class HttpBodyConveyor {
 
                     if (target.isClientConnection()) {
                         if (cacheResponse != null) {
-                            StoredResponseStorer.storeBody(cacheResponse, writeBuffer);
+                            cacheResponse.storeBody(writeBuffer);
                             writeBuffer.rewind();
                         }
                         server.bufferSender().sendBufferToClient(target.context(), writeBuffer, true);

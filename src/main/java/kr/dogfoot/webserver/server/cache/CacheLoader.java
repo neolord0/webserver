@@ -16,8 +16,9 @@ public class CacheLoader {
         }
     }
 
+    private static final String IP_PORT_SPLITTER = "_";
     private static CacheHost newHostToFilename(String filename, CacheManagerImp cacheManager) {
-        String[] item = filename.split("_");
+        String[] item = filename.split(IP_PORT_SPLITTER);
         if (item.length == 2) {
             int port = 0;
             try {
@@ -38,15 +39,19 @@ public class CacheLoader {
     private static void loadEntry(CacheEntry entry, CacheManagerImp manager) {
         File[] filenames = entry.directoryFile().listFiles();
         for (File childFile : filenames) {
+            if (childFile.exists() == false) {
+                continue;
+            }
             String childFilename = childFile.getName();
             if (childFile.isDirectory()) {
-                CacheEntry childEntry = new CacheEntry(manager, entry, childFilename);
+                CacheEntry childEntry = new CacheEntry(manager)
+                        .openPath(entry.directoryFile(), childFilename);;
                 entry.addEntry(childEntry);
 
                 loadEntry(childEntry, manager);
             } else if (childFile.isFile() && childFilename.endsWith(".inf")) {
-
-                StoredResponse response = StoredResponseLoader.load(childFile, entry);
+                StoredResponse response = StoredResponse.pooledObject(entry);
+                response.loadFromFile(childFile);
                 entry.addResponse(response);
             }
         }

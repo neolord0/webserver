@@ -12,24 +12,22 @@ public class BackendServerInfo {
     private InetSocketAddress socketAddress;
     private long keepAlive_timeout;
     private long idle_timeout;
-    private CacheOption cacheOption;
 
-    private volatile int connectCount;
+    private int connectCount;
 
     public BackendServerInfo(ProxyInfo proxyInfo, int index) {
         this.proxyInfo = proxyInfo;
         this.index = index;
 
         connectCount = 0;
-        cacheOption = new CacheOption();
-    }
-
-    public int index() {
-        return index;
     }
 
     public ProxyInfo proxyInfo() {
         return proxyInfo;
+    }
+
+    public int index() {
+        return index;
     }
 
     public Protocol protocol() {
@@ -38,10 +36,6 @@ public class BackendServerInfo {
 
     public void protocol(Protocol protocol) {
         this.protocol = protocol;
-    }
-
-    public void protocol(String protocol) {
-        this.protocol = Protocol.fromString(protocol);
     }
 
     public boolean isAjp() {
@@ -103,6 +97,6 @@ public class BackendServerInfo {
     }
 
     public CacheOption cacheOption() {
-        return cacheOption;
+        return proxyInfo.cacheOption();
     }
 }

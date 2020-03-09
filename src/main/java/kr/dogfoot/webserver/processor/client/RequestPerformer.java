@@ -63,13 +63,13 @@ public class RequestPerformer extends GeneralProcessor {
         System.out.println(context.request());
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        boolean proxied = false;
+        boolean preformByProxy = false;
 
         context.host(findHost(context.request()));
         if (context.host() != null) {
             ProxyInfo proxyInfo = context.host().findProxyInfo(context.request().requestURI().path());
             if (proxyInfo != null) {
-                proxied = proxy(context, proxyInfo);
+                preformByProxy = proxy(context, proxyInfo);
             } else {
                 // test
                 System.out.println("perform from original server");
@@ -79,7 +79,7 @@ public class RequestPerformer extends GeneralProcessor {
             context.response(responseMaker().new_400BadRequest("no host header"));
         }
 
-        if (proxied == false && context.response() != null) {
+        if (preformByProxy == false && context.response() != null) {
             context.clientConnection().senderStatus().reset();
             server.gotoSender(context);
         }
@@ -110,25 +110,30 @@ public class RequestPerformer extends GeneralProcessor {
         BackendServerInfo backendServer = proxyInfo.backendServerManager().appropriateBackendServer();
 
         if (backendServer.cacheOption().use()) {
-            context.backupOriginalRequest();
-
-            SelectedResourceInfo selectedResourceInfo = cacheManager().select(backendServer, context.request());
-            switch (selectedResourceInfo.postSelectProcessing()) {
-                case SendRequest: {
-                    return sendRequestToBackendServer(context, proxyInfo, backendServer);
-                }
-                case SendValidationRequest:
-                    return sendValidationRequestToBackendServer(context, proxyInfo, backendServer, selectedResourceInfo);
-                case UseStoredResponse:
-                    if (context.request().hasHeader(HeaderSort.If_None_Match)
-                            || context.request().hasHeader(HeaderSort.If_Modified_Since)) {
-                        return performValidationRequest(context, proxyInfo, backendServer, selectedResourceInfo);
-                    } else {
-                        return sendStoredResponseToClient(context, selectedResourceInfo);
-                    }
-            }
+            return performByCache(context, proxyInfo, backendServer);
+        } else {
+            return sendRequestToBackendServer(context, proxyInfo, backendServer);
         }
+    }
 
+    private boolean performByCache(Context context, ProxyInfo proxyInfo, BackendServerInfo backendServer) {
+        context.backupOriginalRequest();
+
+        SelectedResourceInfo selectedResourceInfo = cacheManager().select(backendServer, context.request());
+        System.out.println("!!  " + selectedResourceInfo.postSelectProcessing());
+        switch (selectedResourceInfo.postSelectProcessing()) {
+            case SendRequest:
+                return sendRequestToBackendServer(context, proxyInfo, backendServer);
+            case SendValidationRequest:
+                return sendValidationRequestToBackendServer(context, proxyInfo, backendServer, selectedResourceInfo);
+            case UseStoredResponse:
+                if (context.request().hasHeader(HeaderSort.If_None_Match)
+                        || context.request().hasHeader(HeaderSort.If_Modified_Since)) {
+                    return performValidationRequest(context, proxyInfo, backendServer, selectedResourceInfo);
+                } else {
+                    return sendStoredResponseToClient(context, selectedResourceInfo);
+                }
+        }
         return sendRequestToBackendServer(context, proxyInfo, backendServer);
     }
 

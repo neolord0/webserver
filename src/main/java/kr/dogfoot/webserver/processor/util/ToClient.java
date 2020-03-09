@@ -2,7 +2,6 @@ package kr.dogfoot.webserver.processor.util;
 
 import kr.dogfoot.webserver.context.Context;
 import kr.dogfoot.webserver.server.Server;
-import kr.dogfoot.webserver.server.cache.StoredResponseStorer;
 import kr.dogfoot.webserver.util.http.HttpString;
 
 import java.nio.ByteBuffer;
@@ -16,7 +15,7 @@ public class ToClient {
         buffer.flip();
 
         if (context.usingStoredResponse() != null) {
-            StoredResponseStorer.storeBody(context.usingStoredResponse(), buffer);
+            context.usingStoredResponse().storeBody(buffer);
             buffer.rewind();
         }
 
@@ -32,7 +31,7 @@ public class ToClient {
         buffer.flip();
 
         if (context.usingStoredResponse() != null) {
-            StoredResponseStorer.storeBody(context.usingStoredResponse(), buffer);
+            context.usingStoredResponse().storeBody(buffer);
             buffer.rewind();
         }
 
@@ -45,7 +44,7 @@ public class ToClient {
         buffer.flip();
 
         if (context.usingStoredResponse() != null) {
-            StoredResponseStorer.storeBody(context.usingStoredResponse(), buffer);
+            context.usingStoredResponse().storeBody(buffer);
             buffer.rewind();
         }
 

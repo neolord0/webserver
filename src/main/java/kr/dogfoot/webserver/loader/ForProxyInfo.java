@@ -40,15 +40,18 @@ public class ForProxyInfo {
                 addBackendServer(proxyInfo, (Element) node);
             } else if (SettingXML.Proxy_Filters_Node.equalsIgnoreCase(nodeName)) {
                 ForProxyFilters.set(proxyInfo, (Element) node);
+            } else if (SettingXML.Cache_Option_Node.equalsIgnoreCase(nodeName)) {
+                setCacheOption(proxyInfo.cacheOption(), (Element) node);
             }
+
         }
     }
 
     private static void createBackendServerManager(ProxyInfo proxyInfo, String balance) {
         if (SettingXML.Round_Robin_Value.equalsIgnoreCase(balance)) {
-            proxyInfo.backendServerManager(new BackendServerManagerForRoundRobin(proxyInfo));
+            proxyInfo.createBackendServerManagerForRoundRodin();
         } else if (SettingXML.Least_Connection_Value.equalsIgnoreCase(balance)) {
-            proxyInfo.backendServerManager(new BackendServerManagerForLeastConnection(proxyInfo));
+            proxyInfo.createBackendServerManagerForLeastConnection();
         }
     }
 
@@ -64,7 +67,7 @@ public class ForProxyInfo {
             Attr attr = (Attr) attrMap.item(index);
             String attrName = attr.getName();
             if (SettingXML.Protocol_Attr.equalsIgnoreCase(attrName)) {
-                backend.protocol(attr.getValue());
+                backend.protocol(Protocol.fromString(attr.getValue()));
             } else if (SettingXML.IP_Or_Domain_Attr.equalsIgnoreCase(attrName)) {
                 ip_or_domain = element.getAttribute(SettingXML.IP_Or_Domain_Attr);
             } else if (SettingXML.Port_Attr.equalsIgnoreCase(attrName)) {
@@ -73,16 +76,6 @@ public class ForProxyInfo {
                 backend.keepAlive_timeout(XMLUtil.toDeltaSecond(attr.getValue()));
             } else if (SettingXML.Idle_Timeout_Attr.equalsIgnoreCase(attrName)) {
                 backend.idle_timeout(XMLUtil.toDeltaSecond(attr.getValue()));
-            }
-        }
-
-        NodeList nodeList = element.getChildNodes();
-        int count2 = nodeList.getLength();
-        for (int index = 0; index < count2; index++) {
-            Node node = nodeList.item(index);
-            String nodeName = node.getNodeName();
-            if (SettingXML.Cache_Option_Node.equalsIgnoreCase(nodeName)) {
-                setCacheOption(backend.cacheOption(), (Element) node);
             }
         }
 
@@ -98,9 +91,8 @@ public class ForProxyInfo {
             if (SettingXML.Use_Attr.equalsIgnoreCase(attrName)) {
                 cacheOption.use(XMLUtil.toBoolean(attr.getValue()));
             } else if (SettingXML.Default_Expires_Attr.equalsIgnoreCase(attrName)) {
-                cacheOption.defaultExpires(XMLUtil.toDataSize(attr.getValue()));
+                cacheOption.defaultExpires(XMLUtil.toDeltaSecond(attr.getValue()));
             }
         }
     }
-
 }

@@ -66,7 +66,7 @@ public class SettingXML {
     public final static String Timeout_Attr = "timeout";
     public final static String Max_Attr = "max";
     public final static String Max_Size_Attr = "max_size";
-    public final static String Inactive_Time_Attr = "inactive_time";
+    public final static String Inactive_Timeout_Attr = "inactive_timeout";
 
     public final static String Name_Attr = "name";
     public final static String Domain_Attr = "domain";

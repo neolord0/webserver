@@ -13,14 +13,16 @@ public class CacheHost {
         ipOrDomain = backendServerInfo.ipOrDomain();
         port = backendServerInfo.port();
 
-        rootEntry = new CacheEntry(manager, manager.storagePathFile(), ipOrDomain + "_" + port);
+        rootEntry = new CacheEntry(manager)
+                .openPath(manager.storagePathFile(),ipOrDomain + "_" + port);
     }
 
     public CacheHost(CacheManagerImp manager, String ipOrDomain, int port) {
         this.ipOrDomain = ipOrDomain;
         this.port = port;
 
-        rootEntry = new CacheEntry(manager, manager.storagePathFile(), ipOrDomain + "_" + port);
+        rootEntry = new CacheEntry(manager)
+                .openPath(manager.storagePathFile(), ipOrDomain + "_" + port);
     }
 
 
@@ -54,15 +56,5 @@ public class CacheHost {
 
     public CacheEntry rootEntry() {
         return rootEntry;
-    }
-
-    public void debug(StringBuffer sb) {
-        sb.append("{")
-                .append(ipOrDomain)
-                .append(":")
-                .append(port)
-                .append("=");
-        rootEntry.debug(sb);
-        sb.append("}");
     }
 }

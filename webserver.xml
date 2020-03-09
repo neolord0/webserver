@@ -4,7 +4,7 @@
         <pooled_thread_count ssl_handshaking="10" request_receiving="10" body_receiving="1" request_performing="10" response_sending="10" file_reading="10" buffer_sending="10" proxy_connecting="1" ajp_proxing="1" http_proxing="1"/>
         <server_header send="true"/>
         <keep_alive timeout="3s" max="1000"/>
-        <cache_info max_size="1m" inactive_time="1h">
+        <cache_info max_size="1m" inactive_timeout="1h">
             <storage_path><![CDATA[/Users/neolord/WebServerHome/Cache]]></storage_path>
         </cache_info>
     </properties>
@@ -90,13 +90,11 @@
         <root_path><![CDATA[/Users/neolord/WebServerHome/Host3]]></root_path>
         <proxy_infos>
             <proxy_info balance="round_robin" applied_url_pattern="/*.jsp" >
-                <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.28" port="8009" keep_alive_timeout="3s" idle_timeout="1800s">
-                </backend_server>
+                <backend_server protocol="ajp/1.3" ip_or_domain="192.168.10.28" port="8009" keep_alive_timeout="3s" idle_timeout="1800s" />
             </proxy_info>
             <proxy_info balance="round_robin" applied_url_pattern="/proxy/*.*">
-                <backend_server protocol="http" ip_or_domain="192.168.10.28" port="8070" keep_alive_timeout="3s">
-                    <cache_option use="true" default_expires="360s" />
-                </backend_server>
+                <backend_server protocol="http" ip_or_domain="192.168.10.28" port="8070" keep_alive_timeout="3s" />
+                <cache_option use="true" default_expires="30s" />
             </proxy_info>
             <proxy_info balance="round_robin" applied_url_pattern="/auth/*.*">
                 <backend_server protocol="http" ip_or_domain="192.168.10.28" port="8070" keep_alive_timeout="3s"/>

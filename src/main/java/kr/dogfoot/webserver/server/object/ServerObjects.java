@@ -7,7 +7,7 @@ import kr.dogfoot.webserver.context.connection.http.client.ClientConnectionManag
 import kr.dogfoot.webserver.context.connection.http.proxy.HttpProxyConnectionManager;
 import kr.dogfoot.webserver.httpMessage.response.maker.ResponseMaker;
 import kr.dogfoot.webserver.server.cache.CacheManager;
-import kr.dogfoot.webserver.server.cache.NullCacheManagerImp;
+import kr.dogfoot.webserver.server.cache.CacheManagerNull;
 import kr.dogfoot.webserver.server.timer.Timer;
 
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class ServerObjects {
         defaultMediaTypeManager = new DefinedMediaTypeManager();
         responseMaker = new ResponseMaker(serverProperties);
 
-        cacheManager = new NullCacheManagerImp();
+        cacheManager = new CacheManagerNull();
     }
 
     public void initialize() {
